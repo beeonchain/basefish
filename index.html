@@ -69,7 +69,7 @@
   .share{padding:8px 14px;border-radius:9px;background:var(--teal);color:#06101F;font-weight:800;font-size:12px;display:flex;gap:6px;align-items:center}
   .share:hover{filter:brightness(1.08)}
   /* ---------- main ---------- */
-  .main{position:relative;padding:14px 14px 14px 20px;display:flex;flex-direction:column;gap:10px;min-width:0}
+  .main{position:relative;padding:14px 14px 14px 20px;display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0}
   .tank{position:relative;flex:1;border-radius:16px;overflow:hidden;border:1px solid var(--line2);box-shadow:inset 0 0 80px rgba(0,0,0,.45),0 20px 60px rgba(0,0,0,.45);background:#061426;min-height:0}
   .tank canvas{display:block;width:100%;height:100%}
   .tank .glass{position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,rgba(255,255,255,.06),transparent 30%,transparent 70%,rgba(255,255,255,.03));border-radius:16px}
@@ -111,7 +111,7 @@
   .bar .about{margin-left:auto;color:var(--muted);font-weight:600;border:1px solid var(--line);padding:6px 12px;border-radius:8px}
   .bar .about:hover{color:var(--text)}
   /* ---------- right rail ---------- */
-  .rail{border-left:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:12px;overflow:auto;min-height:0}
+  .rail{border-left:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:12px;overflow:auto;min-height:0;max-height:100%}
   .box{border:1px solid var(--line);border-radius:var(--r);background:rgba(12,26,51,.55);padding:12px}
   .box h3{font:700 13.5px var(--font-display);margin:0 0 10px;display:flex;align-items:center;justify-content:space-between}
   .box h3 a{font:600 11px var(--font-body);color:var(--teal);cursor:pointer}
