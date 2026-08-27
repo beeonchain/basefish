@@ -59,10 +59,10 @@
   .tokpick button i{width:8px;height:8px;border-radius:0;display:inline-block}
   .tokpick button.on{background:var(--text);color:#fff}
   .stats{margin-left:auto;display:flex;border:1px solid var(--line);border-radius:0;overflow:hidden;background:var(--panel)}
-  .stats div{padding:7px 14px;border-left:1px solid var(--line);white-space:nowrap}
+  .stats div{padding:8px 16px;border-left:1px solid var(--line);white-space:nowrap}
   .stats div:first-child{border-left:0}
-  .stats small{display:block;font-size:10px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase;font-weight:700}
-  .stats b{font-weight:600;font-size:13px}
+  .stats small{display:block;font-size:9px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;font-weight:500;font-family:var(--font-mono);margin-bottom:2px}
+  .stats b{font-weight:800;font-size:15px;font-family:var(--font-display)}
   .live{display:inline-flex;align-items:center;gap:6px}
   .live i{width:7px;height:7px;border-radius:0;background:var(--teal);animation:pulse 2s infinite}
   @keyframes pulse{0%{}100%{}}
@@ -70,7 +70,9 @@
   .share:hover{filter:brightness(1.08)}
   /* ---------- main ---------- */
   .main{position:relative;padding:14px 14px 14px 20px;display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0}
-  .tank{position:relative;flex:1;border-radius:0;overflow:hidden;border:1px solid var(--line2);box-shadow:inset 0 0 80px rgba(0,0,0,.45);background:#061426;min-height:0}
+  .tank{position:relative;flex:1;border-radius:0;overflow:hidden;border:2px solid var(--text);box-shadow:inset 0 0 80px rgba(0,0,0,.45);background:#061426;min-height:0}
+  .tank::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--teal);z-index:2}
+  .tankid{position:absolute;right:12px;bottom:10px;z-index:3;font:500 9.5px var(--font-mono);letter-spacing:.14em;color:rgba(255,255,255,.55);text-transform:uppercase}
   .tank canvas{display:block;width:100%;height:100%}
   .tank .glass{position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,rgba(255,255,255,.06),transparent 30%,transparent 70%,rgba(255,255,255,.03));border-radius:0}
   .chip{position:absolute;top:12px;left:12px;display:flex;gap:6px;z-index:3}
@@ -239,7 +241,7 @@
   </aside>
 
   <header class="head">
-    <div><h2>Aquarium <em>Map</em></h2><div class="sub">Top 100 holders of every tracked Base token, as living liquidity.</div></div>
+    <div><h2>Aquarium <em>Map</em></h2><div class="sub">Every wallet is a fish. Top 100, live from Base.</div></div>
     <div class="tokpick" id="tokpick"></div>
     <div class="stats">
       <div><small>Holders</small><b class="mono" id="stHolders">—</b></div>
@@ -254,9 +256,10 @@
     <div class="tank" id="tank">
       <canvas id="cv"></canvas>
       <div class="glass"></div>
-      <div class="chip"><span style="color:var(--teal)">● Live</span><span id="chipTok">$BRETT</span><span>Top 100</span></div>
+      <div class="chip"><span><span style="color:#4D6BFF">■</span> Live</span><span id="chipTok">$BRETT</span><span>Top 100</span></div>
       <div class="zoom"><button id="zin" title="Zoom in">+</button><button id="zout" title="Zoom out">−</button><button id="zfit" title="Reset" style="font-size:11px">⟲</button></div>
       <div class="toast" id="toast"></div>
+      <div class="tankid" id="tankid">TANK 01</div>
       <div class="tip" id="tip"></div>
       <div class="card" id="card"></div>
     </div>
@@ -264,7 +267,7 @@
     <div class="view" id="walletsView"></div>
     <div class="wp" id="walletPage"></div>
     <div class="bar">
-      <div class="t">Fish size = wallet size<small>by USD value · tiers relative to this token's top 100</small></div>
+      <div class="t">Fish size = wallet size<small>Bigger fish hold more. That's it. · tiers relative to this tank</small></div>
       <div class="sz"><canvas data-tier="small"></canvas><div>Small<b id="thSmall">&lt; $10K</b></div></div>
       <div class="sz"><canvas data-tier="medium"></canvas><div>Medium<b id="thMed">$10K – $100K</b></div></div>
       <div class="sz"><canvas data-tier="large"></canvas><div>Large<b id="thLarge">$100K – $1M</b></div></div>
@@ -278,25 +281,25 @@
     <div class="box"><h3>Wallet distribution</h3><div class="dist"><canvas id="donut"></canvas><ul id="distList"></ul></div></div>
     <div class="box"><h3>Live activity <a style="color:var(--dim)">on-chain</a></h3><div class="feed" id="feed"></div></div>
     <div class="box"><h3>Legend</h3><div class="leg">
-      <div><i></i>Each fish is one wallet in the top 100</div>
-      <div><i></i>Bigger fish hold more · top 6 are whales</div>
-      <div><i></i>Small schools are holders 101+ (aggregated)</div>
-      <div><i></i>Fish grow on buys, shrink on sells</div>
-      <div><i></i>Bubbles = recent on-chain activity</div>
+      <div><i></i>Each fish is one wallet. Top 100 only.</div>
+      <div><i></i>Bigger fish hold more. Top 6 are whales.</div>
+      <div><i></i>The small schools are everyone else (101+).</div>
+      <div><i></i>Fish grow on buys. Shrink on sells.</div>
+      <div><i></i>Bubbles mean something moved on-chain.</div>
     </div></div>
   </aside>
 
-  <footer class="foot"><span><span style="color:var(--teal)">■</span> <b>Basefish</b> · a community-built holder map for the Base ecosystem</span><span>·</span><span id="modeNote">Data shown here is <b>simulated</b> for the prototype</span><span class="r">There's always a bigger $FISH · NFA</span></footer>
+  <footer class="foot"><span><span style="color:var(--teal)">■</span> <b>Basefish</b> · the Base ecosystem, as fish. Community-built.</span><span>·</span><span id="modeNote">Data shown here is <b>simulated</b> for the prototype</span><span class="r">There's always a bigger $FISH · NFA</span></footer>
 </div>
 
 <div class="drawer" id="drawer"></div>
 <div class="modal" id="modal"><div class="in">
   <h4>About the map</h4>
-  <p>Every fish is one of the top 100 wallets holding the selected token. Its size is set by the USD value of its holdings, using thresholds tuned per token — a $20K wallet is a whale in a small memecoin but a minnow in a large one.</p>
-  <p>Liquidity pools, burn addresses, exchange hot wallets and known team vesting contracts are filtered out so the biggest fish is always a real holder.</p>
-  <p>Holders 101 and beyond are shown as schools of small background fish. Click any fish for its wallet card; hover to see its share of supply.</p>
-  <p style="color:var(--dim);font-size:12px">Prototype: all wallets, balances and events on this page are generated. Real data lands next.</p>
-  <button class="share" id="modalClose" style="margin-top:6px">Got it</button>
+  <p>Every fish is one of the top 100 wallets holding this token. Size = USD value, tiers relative to this tank. A $20K wallet is a whale in a small pond. Facts.</p>
+  <p>Exchange hot wallets, pools, bridges and burn addresses are filtered out. The biggest fish is always a real holder. We checked.</p>
+  <p>Holders 101+ swim in the background schools. Click any fish for its wallet page. Hover for its cut of supply.</p>
+  <p style="color:var(--dim);font-size:12px">NFA. It's a fish.</p>
+  <button class="share" id="modalClose" style="margin-top:6px">Trust the fish</button>
 </div></div>
 
 <script>
@@ -369,7 +372,6 @@ async function loadToken(t){
 function drawWhale(x,y,s,dir,t,color,glow,wob){
   ctx.save();ctx.translate(x,y);ctx.scale(dir,1);
   const tail=Math.sin(t*2.2+wob)*0.3;
-  if(glow>0){ctx.shadowColor=color;ctx.shadowBlur=18*glow}
   const g=ctx.createLinearGradient(0,-s*.3,0,s*.3);g.addColorStop(0,lighten(color,.25));g.addColorStop(.6,color);g.addColorStop(1,darken(color,.5));ctx.fillStyle=g;
   ctx.beginPath();ctx.moveTo(s*.7,-s*.02);ctx.bezierCurveTo(s*.55,-s*.34,-s*.1,-s*.36,-s*.55,-s*.14);ctx.bezierCurveTo(-s*.75,-s*.06,-s*.8,s*.06,-s*.6,s*.12);ctx.bezierCurveTo(-s*.2,s*.32,s*.45,s*.3,s*.7,-s*.02);ctx.fill();
   // fluke
@@ -387,7 +389,6 @@ function drawFish(x,y,s,dir,t,color,glow,wob){
   if(s>62)return drawWhale(x,y,s*.95,dir,t,color,glow,wob);
   ctx.save();ctx.translate(x,y);ctx.scale(dir,1);
   const tail=Math.sin(t*6+wob)*0.35;
-  if(glow>0){ctx.shadowColor=color;ctx.shadowBlur=14*glow}
   const g=ctx.createLinearGradient(0,-s*.4,0,s*.4);g.addColorStop(0,lighten(color,.35));g.addColorStop(.55,color);g.addColorStop(1,darken(color,.45));
   ctx.fillStyle=g;
   // body
@@ -443,12 +444,20 @@ function drawFishes(t){
   const order=[...fish].sort((a,b)=>a.size-b.size);
   order.forEach(f=>{
     const s=f.size*zoom;
-    drawFish(f.x,f.y,s,f.dir,t,TIER[f.h.tier].c,f.glow+(f.pulse>0?.8:0),f.phase);
+    drawFish(f.x,f.y,s,f.dir,t,TIER[f.h.tier].c,0,f.phase);
+    if(f.glow>.25||f.pulse>0){
+      const bw=s*1.15,bh=s*.95,L=Math.max(6,s*.22);
+      ctx.save();ctx.strokeStyle=f.pulse>0?'#4D6BFF':'#FFFFFF';ctx.lineWidth=2;ctx.globalAlpha=f.pulse>0?Math.min(1,f.pulse):f.glow;
+      const x0=f.x-bw,x1=f.x+bw,y0=f.y-bh,y1=f.y+bh;
+      [[x0,y0,1,1],[x1,y0,-1,1],[x0,y1,1,-1],[x1,y1,-1,-1]].forEach(([cx,cy,dx,dy])=>{ctx.beginPath();ctx.moveTo(cx+dx*L,cy);ctx.lineTo(cx,cy);ctx.lineTo(cx,cy+dy*L);ctx.stroke()});
+      ctx.restore();
+    }
     if(f.h.tier==='whale'||f.glow>.2){
       ctx.save();ctx.globalAlpha=f.h.tier==='whale'?.9:f.glow;
       ctx.font=`500 ${f.h.tier==='whale'?11:10}px JetBrains Mono, monospace`;const lbl=short(f.h.addr);const tw=ctx.measureText(lbl).width+14;
-      ctx.fillStyle='rgba(6,16,31,.78)';roundRect(f.x-tw/2,f.y-s*.62-22,tw,18,5);ctx.fill();ctx.strokeStyle='rgba(130,175,230,.3)';ctx.stroke();
-      ctx.fillStyle='#E8F0FA';ctx.textAlign='center';ctx.fillText(lbl,f.x,f.y-s*.62-9);ctx.restore();
+      const sel=f===selected||f===hovered;
+      ctx.fillStyle=sel?'#0000FF':'rgba(10,11,13,.78)';roundRect(f.x-tw/2,f.y-s*.62-22,tw,18,0);ctx.fill();if(!sel){ctx.strokeStyle='rgba(255,255,255,.25)';ctx.stroke()}
+      ctx.fillStyle='#FFFFFF';ctx.textAlign='center';ctx.fillText(lbl,f.x,f.y-s*.62-9);ctx.restore();
     }
   });
   ctx.save();ctx.strokeStyle='rgba(180,230,255,.35)';ctx.fillStyle='rgba(180,230,255,.08)';bubbles.forEach(b=>{ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,6.28);ctx.fill();ctx.stroke()});ctx.restore();
@@ -491,6 +500,7 @@ document.getElementById('zfit').onclick=()=>zoom=1;
 function renderChrome(){
   const t=cur,L=data.list;
   document.getElementById('chipTok').textContent='$'+t.sym;
+  const ti=document.getElementById('tankid');if(ti)ti.textContent=`TANK ${String(TOKENS.findIndex(x=>x.sym===t.sym)+1).padStart(2,'0')} · $${t.sym} · TOP 100`;
   document.getElementById('tkSym').textContent='$'+t.sym;document.getElementById('tkName').textContent=t.name;
   const ic=document.getElementById('tkIc');ic.textContent=t.sym.slice(0,2);ic.style.background=t.color;
   document.getElementById('tkPrice').textContent='$'+(t.price<0.01?t.price.toFixed(5):t.price.toFixed(3));
@@ -520,7 +530,7 @@ function renderRealFeed(){
     el.style.cursor='pointer';el.onclick=()=>window.open('https://basescan.org/tx/'+x.hash,'_blank');
     f.appendChild(el);
   });
-  if(!(data.recent||[]).length)f.innerHTML='<p style="color:var(--dim);margin:0">No large transfers in the last window.</p>';
+  if(!(data.recent||[]).length)f.innerHTML='<p style="color:var(--dim);margin:0">No big moves. The fish rests.</p>';
 }
 function drawMinis(){document.querySelectorAll('canvas[data-mini],canvas[data-tier]').forEach(c=>{const tier=c.dataset.mini||c.dataset.tier;const r=c.getBoundingClientRect();c.width=r.width*2;c.height=r.height*2;const x=c.getContext('2d');x.scale(2,2);const saved=ctx;const s={small:5,medium:7,large:9,whale:12}[tier];ctx=x;(tier==='whale'?drawWhale:drawFish)(r.width/2,r.height/2,c.dataset.mini?s*.9:s*1.6,1,0,TIER[tier].c,0,0);ctx=saved})}
 function drawDonut(){
@@ -572,7 +582,7 @@ async function renderWallets(){
   }</tbody></table>
   <div style="padding:12px 14px;color:var(--dim);font-size:11.5px">${labeled.length} of ${rows.length} wallets have entity labels${REAL?'':' · demo data'} · wallets appearing in multiple aquariums are merged</div>`;
 }
-document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{if(b.querySelector('.soon'))return toastMsg(`<b>${b.querySelector('span').textContent}</b> arrives in a later release`,'var(--dim)');closeCard();setView(b.dataset.view)});
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{if(b.querySelector('.soon'))return toastMsg(`<b>${b.querySelector('span').textContent}</b> isn't ready. The prophecy says soon.`,'var(--dim)');closeCard();setView(b.dataset.view)});
 document.getElementById('viewAll').onclick=()=>setView('holders');
 document.getElementById('aboutBtn').onclick=()=>document.getElementById('modal').classList.add('show');
 document.getElementById('modalClose').onclick=()=>document.getElementById('modal').classList.remove('show');
@@ -612,7 +622,7 @@ async function tokData(sym){if(tokCache[sym])return tokCache[sym];try{tokCache[s
 function drawHistory(cv2,pts){
   const x=cv2.getContext('2d');const W2=cv2.width=cv2.clientWidth*2,H2=cv2.height=380;x.scale(1,1);
   x.clearRect(0,0,W2,H2);
-  if(!pts||pts.length<2){x.fillStyle='#717886';x.font='24px Inter Tight';x.textAlign='center';x.fillText(pts&&pts.length===1?'Collecting history — first snapshot recorded':'History builds up as refreshes accumulate',W2/2,H2/2);return}
+  if(!pts||pts.length<2){x.fillStyle='#717886';x.font='24px Inter Tight';x.textAlign='center';x.fillText(pts&&pts.length===1?'First snapshot recorded. The chart begins.':'History accumulates with every refresh. Patience.',W2/2,H2/2);return}
   const vs=pts.map(p=>p.usd),mn=Math.min(...vs),mx=Math.max(...vs),pad=44;
   const X=i=>pad+ (W2-pad*2)*i/(pts.length-1), Y=v=>H2-40-(H2-90)*((v-mn)/((mx-mn)||1));
   x.strokeStyle='rgba(10,11,13,.08)';x.lineWidth=1;
@@ -636,10 +646,10 @@ async function openProfile(h){
   const ark=`https://intel.arkm.com/explorer/address/${h.addr}`;
   el.innerHTML=`<div class="whead"><div class="fishic"><canvas data-mini="${h.tier}" width="64" height="44" style="width:32px;height:22px"></canvas></div>
     <div><h3 id="wpname">${h.entity||short(h.addr)}</h3><div class="addr">${h.addr}</div>
-      <div class="lbls" style="margin-top:6px">${[h.rank?`<span style="color:${t.c}">${t.n} · rank #${h.rank} in $${cur.sym}</span>`:`<span>not in a tracked top 100</span>`,h.entityType?`<span style="color:var(--gold)">${h.entityType}</span>`:'',h.label&&h.label!==h.entity?`<span>${h.label}</span>`:'',h.isContract?'<span>contract</span>':''].join('')}</div></div>
+      <div class="lbls" style="margin-top:6px">${[h.rank?`<span style="color:${t.c}">${t.n} · rank #${h.rank} in $${cur.sym}</span>`:`<span>free swimmer · not in a tracked top 100</span>`,h.entityType?`<span style="color:var(--gold)">${h.entityType}</span>`:'',h.label&&h.label!==h.entity?`<span>${h.label}</span>`:'',h.isContract?'<span>contract</span>':''].join('')}</div></div>
     <div class="val"><small>Portfolio value · all chains</small><b class="mono" id="wpval">—</b></div>
     <div class="wbtns"><button onclick="setView('aquarium')">← Aquarium</button><button id="wpcopy">Copy address</button><button id="wpshare">Share wallet</button><span id="wpsocials" style="display:contents"></span><a href="${ark}" target="_blank" rel="noopener">Arkham ↗</a><a href="${scan}" target="_blank" rel="noopener">Basescan ↗</a></div></div>
-  <div class="wgrid" id="wpgrid"><div class="empty2">Loading profile…</div></div>`;
+  <div class="wgrid" id="wpgrid"><div class="empty2">Loading. Trust the fish.</div></div>`;
   drawMinis();
   document.getElementById('wpcopy').onclick=e=>{navigator.clipboard&&navigator.clipboard.writeText(h.addr);e.target.textContent='copied';setTimeout(()=>e.target.textContent='Copy address',1200)};
   document.getElementById('wpshare').onclick=()=>{const u=location.origin+location.pathname+'?token='+cur.sym.toLowerCase()+'%23w='+h.addr;navigator.clipboard&&navigator.clipboard.writeText(location.href);toastMsg('Wallet link copied','var(--teal)')};
@@ -667,13 +677,13 @@ async function openProfile(h){
   const cpmax=Math.max(1,...cplist.map(c=>c.inU+c.outU));
   grid.innerHTML=`
     <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
-      <div class="wbox"><h5>Positions in Basefish aquariums</h5>${positions.length?`<table><thead><tr><th>Token</th><th class="r">Rank</th><th class="r">Amount</th><th class="r">% supply</th><th class="r">Value</th></tr></thead><tbody>${positions.map(x=>`<tr style="cursor:pointer" onclick="jumpToken('${x.sym}')"><td><span class="pill" style="background:${x.color}22;color:${x.color}">${x.sym}</span></td><td class="r mono">#${x.rank}</td><td class="r mono">${num(x.amount)}</td><td class="r mono">${x.pct.toFixed(2)}%</td><td class="r mono">${usd(x.usd)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty2">Not currently in the top 100 of any tracked token.</div>'}</div>
-      <div class="wbox"><h5>Portfolio <small>${holdings.length?holdings.length+' assets · by Arkham':''}</small></h5>${holdings.length?`<table><thead><tr><th>Asset</th><th>Chain</th><th class="r">Holdings</th><th class="r">Value</th></tr></thead><tbody>${holdings.map(x=>`<tr><td><b>${x.sym}</b>${x.name?` <span style="color:var(--dim);font-size:11px">${x.name}</span>`:''}</td><td>${x.chain?`<span class="chainpill">${x.chain}</span>`:''}</td><td class="r mono">${num(x.amount)}</td><td class="r mono">${usd(x.usd)}</td></tr>`).join('')}</tbody></table>`:`<div class="empty2">${REAL?'Portfolio enrichment covers the top 25 wallets per token — this one gets picked up in an upcoming refresh.':'Needs live mode.'}</div>`}</div>
-      <div class="wbox"><h5>Top counterparties <small>from recent transfers</small></h5>${cplist.length?cplist.map(c=>`<div class="cprow" ${c.addr?`style="cursor:pointer" onclick="openProfileByAddr('${c.addr}')" title="Open wallet page"`:''}><div><b style="${c.label?'color:var(--teal)':''}">${c.k}</b> <span style="color:var(--dim);font-size:11px">· ${c.n} transfer${c.n>1?'s':''}</span><div class="bar3"><i style="width:${(c.inU/cpmax*100)}%;background:var(--teal)"></i><i style="width:${(c.outU/cpmax*100)}%;background:var(--coral)"></i></div></div><b class="mono">${usd(c.inU+c.outU)}</b></div>`).join('')+'<div class="empty2" style="padding-top:8px"><span style="color:var(--teal)">■</span> received&nbsp;&nbsp;<span style="color:var(--coral)">■</span> sent</div>':'<div class="empty2">No transfer data yet.</div>'}</div>
+      <div class="wbox"><h5>Positions in Basefish aquariums</h5>${positions.length?`<table><thead><tr><th>Token</th><th class="r">Rank</th><th class="r">Amount</th><th class="r">% supply</th><th class="r">Value</th></tr></thead><tbody>${positions.map(x=>`<tr style="cursor:pointer" onclick="jumpToken('${x.sym}')"><td><span class="pill" style="background:${x.color}22;color:${x.color}">${x.sym}</span></td><td class="r mono">#${x.rank}</td><td class="r mono">${num(x.amount)}</td><td class="r mono">${x.pct.toFixed(2)}%</td><td class="r mono">${usd(x.usd)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty2">Not in any tracked top 100. A free swimmer.</div>'}</div>
+      <div class="wbox"><h5>Portfolio <small>${holdings.length?holdings.length+' assets · by Arkham':''}</small></h5>${holdings.length?`<table><thead><tr><th>Asset</th><th>Chain</th><th class="r">Holdings</th><th class="r">Value</th></tr></thead><tbody>${holdings.map(x=>`<tr><td><b>${x.sym}</b>${x.name?` <span style="color:var(--dim);font-size:11px">${x.name}</span>`:''}</td><td>${x.chain?`<span class="chainpill">${x.chain}</span>`:''}</td><td class="r mono">${num(x.amount)}</td><td class="r mono">${usd(x.usd)}</td></tr>`).join('')}</tbody></table>`:`<div class="empty2">${REAL?'Not enriched yet. The fish keeps its secrets until the next refresh.':'Needs live mode.'}</div>`}</div>
+      <div class="wbox"><h5>Top counterparties <small>from recent transfers</small></h5>${cplist.length?cplist.map(c=>`<div class="cprow" ${c.addr?`style="cursor:pointer" onclick="openProfileByAddr('${c.addr}')" title="Open wallet page"`:''}><div><b style="${c.label?'color:var(--teal)':''}">${c.k}</b> <span style="color:var(--dim);font-size:11px">· ${c.n} transfer${c.n>1?'s':''}</span><div class="bar3"><i style="width:${(c.inU/cpmax*100)}%;background:var(--teal)"></i><i style="width:${(c.outU/cpmax*100)}%;background:var(--coral)"></i></div></div><b class="mono">${usd(c.inU+c.outU)}</b></div>`).join('')+'<div class="empty2" style="padding-top:8px"><span style="color:var(--teal)">■</span> received&nbsp;&nbsp;<span style="color:var(--coral)">■</span> sent</div>':'<div class="empty2">No transfer data yet. Still waters.</div>'}</div>
     </div>
     <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
       <div class="wbox"><h5 id="wphtitle">Balance history</h5><div style="padding:10px 8px"><canvas class="hist" id="wphist"></canvas></div></div>
-      <div class="wbox"><h5>Transfers <small>${transfers.length} recent · by Arkham</small></h5>${transfers.length?`<div style="max-height:430px;overflow:auto"><table><thead><tr><th>Time</th><th>Dir</th><th>Counterparty</th><th>Token</th><th class="r">USD</th><th class="r">Link</th></tr></thead><tbody>${transfers.map(x=>`<tr class="txrow"><td style="color:var(--muted);white-space:nowrap">${x.ts?agoStr(x.ts)+' ago':''}</td><td><span style="color:${x.dir==='out'?'var(--coral)':'var(--teal)'}">${x.dir==='out'?'OUT':'IN'}</span></td><td onclick="openProfileByAddr('${x.cp||''}')" title="Open wallet page">${x.cpLabel?`<b style="color:var(--teal)">${x.cpLabel}</b>`:`<span class="mono">${short(x.cp||'')}</span>`}${x.chain?` <span class="chainpill">${x.chain}</span>`:''}</td><td>${x.token||''}</td><td class="r mono">${x.usd?usd(x.usd):num(x.amount)}</td><td class="r">${x.hash?`<a href="https://basescan.org/tx/${x.hash}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--dim);font-weight:700">tx ↗</a>`:''}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty2">No transfers captured yet.</div>'}</div>
+      <div class="wbox"><h5>Transfers <small>${transfers.length} recent · by Arkham</small></h5>${transfers.length?`<div style="max-height:430px;overflow:auto"><table><thead><tr><th>Time</th><th>Dir</th><th>Counterparty</th><th>Token</th><th class="r">USD</th><th class="r">Link</th></tr></thead><tbody>${transfers.map(x=>`<tr class="txrow"><td style="color:var(--muted);white-space:nowrap">${x.ts?agoStr(x.ts)+' ago':''}</td><td><span style="color:${x.dir==='out'?'var(--coral)':'var(--teal)'}">${x.dir==='out'?'OUT':'IN'}</span></td><td onclick="openProfileByAddr('${x.cp||''}')" title="Open wallet page">${x.cpLabel?`<b style="color:var(--teal)">${x.cpLabel}</b>`:`<span class="mono">${short(x.cp||'')}</span>`}${x.chain?` <span class="chainpill">${x.chain}</span>`:''}</td><td>${x.token||''}</td><td class="r mono">${x.usd?usd(x.usd):num(x.amount)}</td><td class="r">${x.hash?`<a href="https://basescan.org/tx/${x.hash}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--dim);font-weight:700">tx ↗</a>`:''}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty2">No transfers captured yet. The fish is patient.</div>'}</div>
       <div class="empty2" style="border:0">Labels, portfolio & transfer data by <a href="${ark}" target="_blank" rel="noopener" style="color:var(--muted)">Arkham Intelligence</a>${p?` · profile updated ${agoStr(p.updated)} ago`:''}</div>
     </div>`;
   const pos=(p&&p.posHistory&&p.posHistory[cur.sym])||null;
