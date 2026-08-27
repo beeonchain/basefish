@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Basefish Aquarium</title>
+<meta name="description" content="Basefish — top 100 holders of Base tokens, as a living aquarium. Community project, not affiliated with Base or Coinbase.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%90%9F%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#06101F">
+</head>
+<body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --abyss:#06101F; --panel:#0C1A33; --panel2:#112446; --panel3:#16305A;
+    --line:rgba(130,175,230,.14); --line2:rgba(130,175,230,.28);
+    --text:#E8F0FA; --muted:#8AA0BF; --dim:#5C7191;
+    --teal:#34E3C4; --coral:#FF6B5B; --whale:#6FB2FF; --gold:#F2C14E; --violet:#A78BFA; --small:#7FD3FF;
+    --font-display:'Syne',system-ui,sans-serif; --font-body:'Manrope',system-ui,sans-serif; --font-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+    --r:12px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--abyss);color:var(--text);font-family:var(--font-body);font-size:13px;line-height:1.45;-webkit-font-smoothing:antialiased;overflow:hidden}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  button:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+  .mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+  .app{display:grid;grid-template-columns:212px 1fr 300px;grid-template-rows:64px 1fr 40px;height:100vh;gap:0}
+  /* ---------- sidebar ---------- */
+  .side{grid-row:1/3;border-right:1px solid var(--line);background:linear-gradient(180deg,#0A1730 0%,#07122A 100%);display:flex;flex-direction:column;padding:16px 12px;gap:6px}
+  .brand{display:flex;align-items:center;gap:10px;padding:6px 8px 18px}
+  .brand .mark{width:30px;height:30px;border-radius:9px;background:radial-gradient(circle at 30% 30%,#7CE8D6,#1C9C88 60%,#0B4E45);position:relative;box-shadow:0 0 0 1px rgba(52,227,196,.35),0 6px 18px rgba(52,227,196,.25)}
+  .brand .mark:after{content:"";position:absolute;left:8px;top:11px;width:14px;height:8px;background:#06101F;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;clip-path:polygon(0 50%,35% 0,100% 50%,35% 100%)}
+  .brand h1{font:800 18px/1 var(--font-display);margin:0;letter-spacing:-.01em}
+  .brand small{display:block;color:var(--dim);font-size:10px;letter-spacing:.12em;text-transform:uppercase;margin-top:3px;font-weight:600}
+  .nav button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border-radius:9px;color:var(--muted);font-weight:600;text-align:left}
+  .nav button svg{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .nav button:hover{background:rgba(130,175,230,.07);color:var(--text)}
+  .nav button.on{background:linear-gradient(90deg,rgba(52,227,196,.18),rgba(52,227,196,.06));color:var(--teal)}
+  .nav .soon{margin-left:auto;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);border:1px solid var(--line);padding:1px 5px;border-radius:5px}
+  .tracked{margin-top:auto;border:1px solid var(--line);border-radius:var(--r);padding:12px;background:rgba(12,26,51,.6)}
+  .tracked .lbl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:700}
+  .tracked .tok{display:flex;align-items:center;gap:9px;margin:8px 0 10px}
+  .tracked .tok .ic{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font:800 11px var(--font-display);color:#06101F}
+  .tracked .tok b{font:700 15px var(--font-display);display:block}
+  .tracked .tok span{color:var(--muted);font-size:11px}
+  .kv{display:flex;justify-content:space-between;padding:4px 0;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+  .kv b{color:var(--text);font-weight:600}
+  .up{color:var(--teal)} .down{color:var(--coral)}
+  .disclaimer{font-size:10.5px;color:var(--dim);line-height:1.4;padding:10px 6px 0}
+  /* ---------- header ---------- */
+  .head{grid-column:2/4;display:flex;align-items:center;gap:16px;padding:0 20px;border-bottom:1px solid var(--line)}
+  .head h2{font:800 22px/1 var(--font-display);margin:0;letter-spacing:-.02em;white-space:nowrap}
+  .head h2 em{font-style:normal;color:var(--teal)}
+  .head .sub{color:var(--muted);font-size:12px;margin-top:3px;white-space:nowrap}
+  @media (max-width:1500px){.head .sub{display:none}}
+  .tokpick{display:flex;gap:4px;margin-left:12px;padding:3px;border:1px solid var(--line);border-radius:10px;background:rgba(12,26,51,.6)}
+  .tokpick button{padding:6px 10px;border-radius:7px;font-weight:700;color:var(--muted);font-size:12px;display:flex;align-items:center;gap:6px}
+  .tokpick button i{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .tokpick button.on{background:var(--panel3);color:var(--text)}
+  .stats{margin-left:auto;display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:rgba(12,26,51,.6)}
+  .stats div{padding:7px 14px;border-left:1px solid var(--line);white-space:nowrap}
+  .stats div:first-child{border-left:0}
+  .stats small{display:block;font-size:10px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+  .stats b{font-weight:600;font-size:13px}
+  .live{display:inline-flex;align-items:center;gap:6px}
+  .live i{width:7px;height:7px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 0 rgba(52,227,196,.6);animation:pulse 2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(52,227,196,.6)}100%{box-shadow:0 0 0 8px rgba(52,227,196,0)}}
+  .share{padding:8px 14px;border-radius:9px;background:var(--teal);color:#06101F;font-weight:800;font-size:12px;display:flex;gap:6px;align-items:center}
+  .share:hover{filter:brightness(1.08)}
+  /* ---------- main ---------- */
+  .main{position:relative;padding:14px 14px 14px 20px;display:flex;flex-direction:column;gap:10px;min-width:0}
+  .tank{position:relative;flex:1;border-radius:16px;overflow:hidden;border:1px solid var(--line2);box-shadow:inset 0 0 80px rgba(0,0,0,.45),0 20px 60px rgba(0,0,0,.45);background:#061426;min-height:0}
+  .tank canvas{display:block;width:100%;height:100%}
+  .tank .glass{position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,rgba(255,255,255,.06),transparent 30%,transparent 70%,rgba(255,255,255,.03));border-radius:16px}
+  .chip{position:absolute;top:12px;left:12px;display:flex;gap:6px;z-index:3}
+  .chip span{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:999px;background:rgba(6,16,31,.7);border:1px solid var(--line2);backdrop-filter:blur(6px)}
+  .zoom{position:absolute;right:12px;top:12px;z-index:3;display:flex;flex-direction:column;gap:4px}
+  .zoom button{width:30px;height:30px;border-radius:8px;background:rgba(6,16,31,.75);border:1px solid var(--line2);font-weight:700;font-size:15px;backdrop-filter:blur(6px)}
+  .zoom button:hover{background:var(--panel3)}
+  .toast{position:absolute;left:12px;bottom:12px;z-index:3;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+  .toast div{display:flex;align-items:center;gap:8px;padding:7px 11px;border-radius:9px;background:rgba(6,16,31,.85);border:1px solid var(--line2);font-size:12px;backdrop-filter:blur(6px);animation:rise .35s ease-out}
+  .toast b{font-family:var(--font-mono);font-weight:600}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .tip{position:absolute;z-index:4;pointer-events:none;background:rgba(6,16,31,.92);border:1px solid var(--line2);border-radius:8px;padding:6px 10px;font-size:12px;display:none;backdrop-filter:blur(6px);white-space:nowrap}
+  .tip b{font-family:var(--font-mono);font-weight:600}
+  /* wallet card */
+  .card{position:absolute;z-index:5;width:290px;background:rgba(8,20,40,.94);border:1px solid var(--line2);border-radius:14px;padding:14px;display:none;backdrop-filter:blur(10px);box-shadow:0 20px 50px rgba(0,0,0,.5)}
+  .card.show{display:block;animation:rise .25s ease-out}
+  .card .tier{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;display:flex;align-items:center;gap:6px}
+  .card .tier i{width:8px;height:8px;border-radius:50%}
+  .card .addr{font:600 16px var(--font-mono);margin:4px 0 10px;display:flex;align-items:center;gap:8px}
+  .card .addr button{color:var(--dim);font-size:11px;border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+  .card .addr button:hover{color:var(--text)}
+  .card .row{display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+  .card .row b{color:var(--text);font-weight:600}
+  .card .big{font:700 24px/1 var(--font-display);color:var(--text)}
+  .card .x{position:absolute;right:10px;top:10px;color:var(--dim);font-size:16px}
+  .card .acts{display:flex;gap:6px;margin-top:10px}
+  .card .acts button{flex:1;padding:7px;border-radius:8px;border:1px solid var(--line2);font-weight:700;font-size:12px}
+  .card .acts button.p{background:var(--teal);color:#06101F;border-color:transparent}
+  .card .acts button:hover{filter:brightness(1.1)}
+  .card .lbls{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+  .card .lbls span{font-size:10px;padding:2px 7px;border-radius:5px;background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
+  /* legend bar */
+  .bar{display:flex;align-items:center;gap:18px;padding:8px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(12,26,51,.5)}
+  .bar .t{font-weight:700} .bar .t small{display:block;color:var(--dim);font-weight:500;font-size:11px}
+  .bar .sz{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px}
+  .bar .sz b{display:block;color:var(--text);font-weight:600}
+  .bar .sz canvas{width:44px;height:26px}
+  .bar .about{margin-left:auto;color:var(--muted);font-weight:600;border:1px solid var(--line);padding:6px 12px;border-radius:8px}
+  .bar .about:hover{color:var(--text)}
+  /* ---------- right rail ---------- */
+  .rail{border-left:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:12px;overflow:auto;min-height:0}
+  .box{border:1px solid var(--line);border-radius:var(--r);background:rgba(12,26,51,.55);padding:12px}
+  .box h3{font:700 13.5px var(--font-display);margin:0 0 10px;display:flex;align-items:center;justify-content:space-between}
+  .box h3 a{font:600 11px var(--font-body);color:var(--teal);cursor:pointer}
+  .hold{display:flex;flex-direction:column;gap:3px}
+  .hold button{display:grid;grid-template-columns:16px 24px 1fr auto;align-items:center;gap:8px;padding:6px 6px;border-radius:8px;text-align:left}
+  .hold button:hover,.hold button.sel{background:rgba(52,227,196,.08)}
+  .hold .n{color:var(--dim);font-size:11px;font-weight:700}
+  .hold .a{font-family:var(--font-mono);font-size:11.5px;font-weight:500}
+  .hold .p{text-align:right;font-weight:700;font-size:12px}
+  .hold .p small{display:block;color:var(--muted);font-weight:500;font-size:10.5px}
+  .hold .bar2{height:3px;border-radius:2px;background:var(--panel3);margin-top:3px;overflow:hidden}
+  .hold .bar2 i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--whale))}
+  .dist{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:center}
+  .dist canvas{width:110px;height:110px}
+  .dist ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+  .dist li{display:grid;grid-template-columns:10px 1fr auto;gap:7px;align-items:center;font-size:11.5px;color:var(--muted)}
+  .dist li i{width:10px;height:10px;border-radius:3px}
+  .dist li b{color:var(--text);font-weight:600}
+  .dist li small{display:block;font-size:10px;color:var(--dim)}
+  .feed{display:flex;flex-direction:column;gap:6px;font-size:11.5px}
+  .feed div{display:grid;grid-template-columns:6px 1fr auto;gap:8px;align-items:center;padding:5px 0;border-top:1px solid var(--line)}
+  .feed div:first-child{border-top:0}
+  .feed i{width:6px;height:6px;border-radius:50%}
+  .feed .a{font-family:var(--font-mono);color:var(--text)}
+  .feed .v{font-weight:700;font-family:var(--font-mono)}
+  .feed small{color:var(--dim)}
+  .leg{display:flex;flex-direction:column;gap:6px;font-size:11.5px;color:var(--muted)}
+  .leg div{display:flex;gap:9px;align-items:center}
+  .leg i{width:22px;height:2px;background:var(--dim);border-radius:2px;position:relative}
+  .leg i:after{content:"";position:absolute;right:-2px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--teal)}
+  /* ---------- footer ---------- */
+  .foot{grid-column:1/4;border-top:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 20px;font-size:11.5px;color:var(--dim)}
+  .foot b{color:var(--muted);font-weight:600}
+  .foot .r{margin-left:auto}
+  /* ---------- holders table view ---------- */
+  .view{display:none;flex:1;min-height:0;overflow:auto;border:1px solid var(--line);border-radius:16px;background:rgba(12,26,51,.4)}
+  .view.show{display:block}
+  .view table{width:100%;border-collapse:collapse}
+  .view th{position:sticky;top:0;background:#0C1A33;text-align:left;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:10px 14px;border-bottom:1px solid var(--line2)}
+  .view td{padding:9px 14px;border-bottom:1px solid var(--line);font-size:12.5px}
+  .view tr:hover td{background:rgba(52,227,196,.05);cursor:pointer}
+  .view td.r,.view th.r{text-align:right}
+  .pill{font-size:10px;padding:2px 7px;border-radius:5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  .modal{position:fixed;inset:0;background:rgba(3,8,18,.7);display:none;place-items:center;z-index:20;backdrop-filter:blur(4px)}
+  .modal.show{display:grid}
+  .modal .in{width:460px;background:var(--panel);border:1px solid var(--line2);border-radius:16px;padding:22px}
+  .modal h4{font:800 18px var(--font-display);margin:0 0 8px}
+  .modal p{color:var(--muted);margin:0 0 10px;font-size:13px}
+  @media (prefers-reduced-motion:reduce){.live i{animation:none}.toast div,.card.show{animation:none}}
+  @media (max-width:1100px){.app{grid-template-columns:64px 1fr 280px}.brand h1,.brand small,.nav button span,.tracked,.disclaimer{display:none}.nav button{justify-content:center}}
+</style>
+
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="mark"></div><div><h1>Basefish</h1><small>Community project</small></div></div>
+    <nav class="nav" id="nav">
+      <button class="on" data-view="aquarium"><svg viewBox="0 0 24 24"><path d="M3 12c3-5 8-6 12-3 1 .8 2 2 3 3-1 1-2 2.2-3 3-4 3-9 2-12-3z"/><path d="M15 9l5-3-1 6 1 6-5-3"/></svg><span>Aquarium</span></button>
+      <button data-view="holders"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Top holders</span></button>
+      <button data-view="wallets"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M16 12h5"/></svg><span>Wallets</span><em class="soon">soon</em></button>
+      <button data-view="flows"><svg viewBox="0 0 24 24"><path d="M4 7h12l-3-3M20 17H8l3 3"/></svg><span>Flows</span><em class="soon">v1</em></button>
+      <button data-view="alerts"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0112 0v5l2 2H4z"/><path d="M10 21h4"/></svg><span>Alerts</span><em class="soon">v2</em></button>
+      <button data-view="watch"><svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.3.9-4.5 4.4 1 6.1L12 17l-5.5 3 1-6.1L3 9.5l6.3-.9z"/></svg><span>Watchlist</span><em class="soon">v2</em></button>
+    </nav>
+    <div class="tracked">
+      <div class="lbl">Tracked token</div>
+      <div class="tok"><div class="ic" id="tkIc">BR</div><div><b id="tkSym">$BRETT</b><span id="tkName">Brett</span></div></div>
+      <div class="kv"><span>Price</span><b class="mono" id="tkPrice">—</b></div>
+      <div class="kv"><span>24h</span><b class="mono" id="tkChg">—</b></div>
+      <div class="kv"><span>Market cap</span><b class="mono" id="tkMcap">—</b></div>
+      <div class="kv"><span>Holders</span><b class="mono" id="tkHolders">—</b></div>
+    </div>
+    <p class="disclaimer">Basefish is an independent community project. Not affiliated with Base, Coinbase, or any token team.</p>
+  </aside>
+
+  <header class="head">
+    <div><h2>Aquarium <em>Map</em></h2><div class="sub">Top 100 holders of every tracked Base token, as living liquidity.</div></div>
+    <div class="tokpick" id="tokpick"></div>
+    <div class="stats">
+      <div><small>Holders</small><b class="mono" id="stHolders">—</b></div>
+      <div><small>Top 100 hold</small><b class="mono" id="stTop">—</b></div>
+      <div><small>Whales</small><b class="mono" id="stWhales">—</b></div>
+      <div><small>Updated</small><b class="live"><i></i><span id="stUpd">just now</span></b></div>
+    </div>
+    <button class="share" id="shareBtn">Share aquarium ↗</button>
+  </header>
+
+  <main class="main">
+    <div class="tank" id="tank">
+      <canvas id="cv"></canvas>
+      <div class="glass"></div>
+      <div class="chip"><span style="color:var(--teal)">● Live</span><span id="chipTok">$BRETT</span><span>Top 100</span></div>
+      <div class="zoom"><button id="zin" title="Zoom in">+</button><button id="zout" title="Zoom out">−</button><button id="zfit" title="Reset" style="font-size:11px">⟲</button></div>
+      <div class="toast" id="toast"></div>
+      <div class="tip" id="tip"></div>
+      <div class="card" id="card"></div>
+    </div>
+    <div class="view" id="holdersView"></div>
+    <div class="bar">
+      <div class="t">Fish size = wallet size<small>by USD value · tiers relative to this token's top 100</small></div>
+      <div class="sz"><canvas data-tier="small"></canvas><div>Small<b id="thSmall">&lt; $10K</b></div></div>
+      <div class="sz"><canvas data-tier="medium"></canvas><div>Medium<b id="thMed">$10K – $100K</b></div></div>
+      <div class="sz"><canvas data-tier="large"></canvas><div>Large<b id="thLarge">$100K – $1M</b></div></div>
+      <div class="sz"><canvas data-tier="whale"></canvas><div>Whale<b id="thWhale">&gt; $1M</b></div></div>
+      <button class="about" id="aboutBtn">ⓘ About the map</button>
+    </div>
+  </main>
+
+  <aside class="rail">
+    <div class="box"><h3>Top holders <a id="viewAll">View all 100</a></h3><div class="hold" id="holdList"></div></div>
+    <div class="box"><h3>Wallet distribution</h3><div class="dist"><canvas id="donut"></canvas><ul id="distList"></ul></div></div>
+    <div class="box"><h3>Live activity <a style="color:var(--dim)">on-chain</a></h3><div class="feed" id="feed"></div></div>
+    <div class="box"><h3>Legend</h3><div class="leg">
+      <div><i></i>Each fish is one wallet in the top 100</div>
+      <div><i></i>Bigger fish hold more · top 6 are whales</div>
+      <div><i></i>Small schools are holders 101+ (aggregated)</div>
+      <div><i></i>Fish grow on buys, shrink on sells</div>
+      <div><i></i>Bubbles = recent on-chain activity</div>
+    </div></div>
+  </aside>
+
+  <footer class="foot"><span>🐟 <b>Basefish</b> · a community-built holder map for the Base ecosystem</span><span>·</span><span id="modeNote">Data shown here is <b>simulated</b> for the prototype</span><span class="r">Not affiliated with Base or Coinbase</span></footer>
+</div>
+
+<div class="modal" id="modal"><div class="in">
+  <h4>About the map</h4>
+  <p>Every fish is one of the top 100 wallets holding the selected token. Its size is set by the USD value of its holdings, using thresholds tuned per token — a $20K wallet is a whale in a small memecoin but a minnow in a large one.</p>
+  <p>Liquidity pools, burn addresses, exchange hot wallets and known team vesting contracts are filtered out so the biggest fish is always a real holder.</p>
+  <p>Holders 101 and beyond are shown as schools of small background fish. Click any fish for its wallet card; hover to see its share of supply.</p>
+  <p style="color:var(--dim);font-size:12px">Prototype: all wallets, balances and events on this page are generated. Real data lands next.</p>
+  <button class="share" id="modalClose" style="margin-top:6px">Got it</button>
+</div></div>
+
+<script>
+/* ============ mock data ============ */
+let REAL=false;
+const DEMO_TOKENS=[
+  {sym:'BRETT',name:'Brett',color:'#4C8DFF',price:0.121,chg:6.35,mcap:1.19e9,holders:412587,seed:11,th:[10e3,100e3,1e6]},
+  {sym:'TOSHI',name:'Toshi',color:'#F2C14E',price:0.00062,chg:-3.2,mcap:2.6e8,holders:181022,seed:23,th:[5e3,50e3,500e3]},
+  {sym:'DEGEN',name:'Degen',color:'#A78BFA',price:0.0081,chg:12.8,mcap:3.0e8,holders:530140,seed:37,th:[5e3,50e3,500e3]},
+  {sym:'AERO',name:'Aerodrome',color:'#34E3C4',price:1.42,chg:1.1,mcap:1.05e9,holders:96210,seed:41,th:[10e3,100e3,1e6]},
+  {sym:'VIRTUAL',name:'Virtuals',color:'#FF6B5B',price:2.08,chg:-7.4,mcap:1.34e9,holders:220334,seed:53,th:[10e3,100e3,1e6]},
+];
+let TOKENS=DEMO_TOKENS;
+const TIER={small:{c:'#7FD3FF',n:'Small'},medium:{c:'#34E3C4',n:'Medium'},large:{c:'#F2C14E',n:'Large'},whale:{c:'#6FB2FF',n:'Whale'}};
+const LABELS=['','','','','Smart money','Early buyer','Airdrop farmer','Bridged from ETH','LP provider','DAO treasury','Long-term holder'];
+function rng(seed){let s=seed*9301+49297;return()=>{s=(s*9301+49297)%233280;return s/233280}}
+function hex(r,n){let o='';for(let i=0;i<n;i++)o+='0123456789abcdef'[Math.floor(r()*16)];return o}
+function short(a){return a.slice(0,6)+'…'+a.slice(-4)}
+function usd(v){return v>=1e9?'$'+(v/1e9).toFixed(2)+'B':v>=1e6?'$'+(v/1e6).toFixed(2)+'M':v>=1e3?'$'+(v/1e3).toFixed(1)+'K':'$'+v.toFixed(0)}
+function num(v){return v.toLocaleString('en-US',{maximumFractionDigits:0})}
+function tierOf(u,th){return u>=th[2]?'whale':u>=th[1]?'large':u>=th[0]?'medium':'small'}
+function buildHolders(t){
+  const r=rng(t.seed);const list=[];
+  let top=0.62+r()*0.12; // top-100 share of supply
+  let rem=top;
+  for(let i=0;i<100;i++){
+    const share=i<3?rem*(0.09+r()*0.06):rem*(0.05+r()*0.04)/(1+i*0.03);
+    rem-=share;
+    const pct=share*100;const value=pct/100*t.mcap;
+    list.push({rank:i+1,addr:'0x'+hex(r,40),pct,value,amount:value/t.price,tier:'small',
+      label:LABELS[Math.floor(r()*LABELS.length)],first:Math.floor(r()*400)+3,tx:Math.floor(r()*900)+4,
+      bought:value*(1+r()*.6),sold:value*r()*.4,last:Math.floor(r()*72)+1});
+  }
+  list.sort((a,b)=>b.value-a.value).forEach((h,i)=>h.rank=i+1);
+  // tiers are relative to the top 100 of this token: 6 whales, 18 large, 36 medium, rest small
+  list.forEach(h=>h.tier=h.rank<=6?'whale':h.rank<=24?'large':h.rank<=60?'medium':'small');
+  t.th=[list[59].value,list[23].value,list[5].value];
+  return {list,topShare:top,min:list[99].value,max:list[0].value};
+}
+/* ============ state ============ */
+let cur=DEMO_TOKENS[0], data, fish=[], schools=[], bubbles=[], selected=null, hovered=null, zoom=1, view='aquarium';
+const cv=document.getElementById('cv'), tank=document.getElementById('tank');let ctx=cv.getContext('2d');
+let W=0,H=0,DPR=1;
+function resize(){DPR=Math.min(2,devicePixelRatio||1);const r=tank.getBoundingClientRect();W=r.width;H=r.height;cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);}
+addEventListener('resize',resize);resize();
+
+function sizeFor(f){if(!(data.max>data.min))return 30;const lo=Math.log(Math.max(1e-6,data.min)),hi=Math.log(Math.max(1e-5,data.max));const n=Math.max(0,Math.min(1,(Math.log(Math.max(f.value,data.min))-lo)/(hi-lo)));return 13+Math.pow(n,1.7)*85}
+function fromReal(d){
+  const list=(d.holdersTop||[]).map((h,i)=>({rank:i+1,addr:h.addr,pct:h.pct||0,value:h.usd||0,amount:h.amount||0,tier:'small',label:h.label||'',isContract:!!h.isContract}));
+  list.sort((a,b)=>b.value-a.value).forEach((h,i)=>h.rank=i+1);
+  list.forEach(h=>h.tier=h.rank<=6?'whale':h.rank<=24?'large':h.rank<=60?'medium':'small');
+  const at=i=>list[Math.min(i,list.length-1)].value;
+  cur.th=[at(59),at(23),at(5)];
+  cur.price=d.price;cur.chg=d.chg;cur.mcap=d.mcap;cur.holders=d.holders;cur.contract=d.contract;
+  return {list,topShare:list.reduce((s,h)=>s+h.pct,0)/100,min:list[list.length-1].value,max:list[0].value,recent:d.recent||[],generated_at:d.generated_at};
+}
+async function fetchToken(sym){const r=await fetch('data/'+sym.toLowerCase()+'.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;return r.json()}
+async function loadToken(t){
+  cur=t;selected=null;hovered=null;
+  if(REAL){try{data=fromReal(await fetchToken(t.sym))}catch(e){data=buildHolders(t)}}
+  else data=buildHolders(t);
+  if(t.seed==null)t.seed=[...t.sym].reduce((a,c)=>a+c.charCodeAt(0),13);
+  const r=rng(t.seed+7);
+  fish=data.list.map(h=>({h,x:W*(0.08+r()*0.84),y:H*(0.12+r()*0.72),dir:r()<.5?1:-1,speed:0,phase:r()*6.28,size:sizeFor(h),tsize:sizeFor(h),wob:0.6+r()*0.8,vy:0,ty:0,pulse:0,glow:0}));
+  fish.forEach(f=>{f.speed=(f.h.tier==='whale'?10:f.h.tier==='large'?16:f.h.tier==='medium'?22:30)*(0.8+r()*.5);f.ty=f.y});
+  schools=[];for(let s=0;s<7;s++){const cx=W*(0.1+r()*0.8),cy=H*(0.2+r()*0.6),n=14+Math.floor(r()*18),dir=r()<.5?1:-1;const m=[];for(let i=0;i<n;i++)m.push({ox:(r()-.5)*90,oy:(r()-.5)*44,ph:r()*6.28});schools.push({x:cx,y:cy,dir,m,sp:26+r()*14,ph:r()*6.28})}
+  renderChrome();
+}
+/* ============ drawing ============ */
+function drawWhale(x,y,s,dir,t,color,glow,wob){
+  ctx.save();ctx.translate(x,y);ctx.scale(dir,1);
+  const tail=Math.sin(t*2.2+wob)*0.3;
+  if(glow>0){ctx.shadowColor=color;ctx.shadowBlur=18*glow}
+  const g=ctx.createLinearGradient(0,-s*.3,0,s*.3);g.addColorStop(0,lighten(color,.25));g.addColorStop(.6,color);g.addColorStop(1,darken(color,.5));ctx.fillStyle=g;
+  ctx.beginPath();ctx.moveTo(s*.7,-s*.02);ctx.bezierCurveTo(s*.55,-s*.34,-s*.1,-s*.36,-s*.55,-s*.14);ctx.bezierCurveTo(-s*.75,-s*.06,-s*.8,s*.06,-s*.6,s*.12);ctx.bezierCurveTo(-s*.2,s*.32,s*.45,s*.3,s*.7,-s*.02);ctx.fill();
+  // fluke
+  ctx.fillStyle=darken(color,.25);ctx.beginPath();ctx.moveTo(-s*.62,0);ctx.quadraticCurveTo(-s*.95,-s*.05+tail*s*.3,-s*1.02,-s*.22+tail*s*.3);ctx.quadraticCurveTo(-s*.9,-s*.02+tail*s*.3,-s*.82,tail*s*.3);ctx.quadraticCurveTo(-s*.9,s*.02+tail*s*.3,-s*1.0,s*.2+tail*s*.3);ctx.quadraticCurveTo(-s*.92,s*.06+tail*s*.3,-s*.62,s*.03);ctx.fill();
+  // fin + dorsal
+  ctx.beginPath();ctx.moveTo(s*.1,s*.14);ctx.quadraticCurveTo(-s*.05,s*.42+tail*s*.1,-s*.28,s*.2);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(-s*.28,-s*.28);ctx.quadraticCurveTo(-s*.32,-s*.42,-s*.42,-s*.24);ctx.closePath();ctx.fill();
+  // belly + eye
+  ctx.shadowBlur=0;ctx.fillStyle='rgba(255,255,255,.14)';ctx.beginPath();ctx.ellipse(s*.15,s*.14,s*.45,s*.09,0,0,6.28);ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=1;for(let i=0;i<4;i++){ctx.beginPath();ctx.moveTo(s*.55-i*s*.09,s*.05+i*s*.02);ctx.lineTo(s*.3-i*s*.1,s*.24);ctx.stroke()}
+  ctx.fillStyle='#06101F';ctx.beginPath();ctx.arc(s*.5,-s*.06,Math.max(1.5,s*.03),0,6.28);ctx.fill();
+  ctx.restore();
+}
+function drawFish(x,y,s,dir,t,color,glow,wob){
+  if(s>62)return drawWhale(x,y,s*.95,dir,t,color,glow,wob);
+  ctx.save();ctx.translate(x,y);ctx.scale(dir,1);
+  const tail=Math.sin(t*6+wob)*0.35;
+  if(glow>0){ctx.shadowColor=color;ctx.shadowBlur=14*glow}
+  const g=ctx.createLinearGradient(0,-s*.4,0,s*.4);g.addColorStop(0,lighten(color,.35));g.addColorStop(.55,color);g.addColorStop(1,darken(color,.45));
+  ctx.fillStyle=g;
+  // body
+  ctx.beginPath();ctx.moveTo(s*.55,0);ctx.bezierCurveTo(s*.3,-s*.42,-s*.35,-s*.42,-s*.6,-s*.05);ctx.bezierCurveTo(-s*.35,s*.42,s*.3,s*.42,s*.55,0);ctx.fill();
+  // tail
+  ctx.beginPath();ctx.moveTo(-s*.55,0);ctx.lineTo(-s*.95,-s*.32+tail*s*.25);ctx.lineTo(-s*.85,0);ctx.lineTo(-s*.95,s*.32+tail*s*.25);ctx.closePath();ctx.fillStyle=darken(color,.2);ctx.fill();
+  // dorsal + pectoral
+  ctx.fillStyle=darken(color,.15);ctx.beginPath();ctx.moveTo(-s*.1,-s*.36);ctx.quadraticCurveTo(s*.05,-s*.62,s*.22,-s*.3);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(s*.05,s*.12);ctx.quadraticCurveTo(-s*.1,s*.4+tail*s*.1,-s*.2,s*.14);ctx.closePath();ctx.fill();
+  // belly sheen
+  ctx.shadowBlur=0;ctx.fillStyle='rgba(255,255,255,.12)';ctx.beginPath();ctx.ellipse(s*.05,s*.12,s*.36,s*.12,0,0,6.28);ctx.fill();
+  // eye
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(s*.34,-s*.08,Math.max(1.6,s*.07),0,6.28);ctx.fill();
+  ctx.fillStyle='#06101F';ctx.beginPath();ctx.arc(s*.36,-s*.08,Math.max(.9,s*.04),0,6.28);ctx.fill();
+  ctx.restore();
+}
+function lighten(h,a){return mix(h,'#ffffff',a)}function darken(h,a){return mix(h,'#03101f',a)}
+function mix(a,b,t){const p=x=>[1,3,5].map(i=>parseInt(x.slice(i,i+2),16));const A=p(a),B=p(b);return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join('')}
+function drawBg(t){
+  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0B2A55');g.addColorStop(.45,'#071B3B');g.addColorStop(1,'#040E20');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  // light rays
+  ctx.save();ctx.globalCompositeOperation='lighter';
+  for(let i=0;i<5;i++){const x=W*(0.15+i*0.18)+Math.sin(t*.3+i)*30;const rg=ctx.createLinearGradient(x,0,x+80,H);rg.addColorStop(0,'rgba(120,200,255,.10)');rg.addColorStop(1,'rgba(120,200,255,0)');ctx.fillStyle=rg;ctx.beginPath();ctx.moveTo(x-30,0);ctx.lineTo(x+40,0);ctx.lineTo(x+220,H);ctx.lineTo(x+60,H);ctx.fill()}
+  ctx.restore();
+  // caustics shimmer near top
+  ctx.save();ctx.globalAlpha=.08;ctx.strokeStyle='#9fe3ff';ctx.lineWidth=1.2;for(let i=0;i<9;i++){ctx.beginPath();for(let x=0;x<=W;x+=24){const y=30+i*9+Math.sin(x*.02+t*1.2+i)*6+Math.cos(x*.011-t*.7)*4;x?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.stroke()}ctx.restore();
+  // seabed
+  const sg=ctx.createLinearGradient(0,H-90,0,H);sg.addColorStop(0,'rgba(20,40,70,0)');sg.addColorStop(1,'rgba(30,50,80,.9)');ctx.fillStyle=sg;ctx.fillRect(0,H-90,W,90);
+  ctx.save();ctx.globalAlpha=.55;for(let i=0;i<W/38;i++){const x=i*38+((i*37)%17);const h=18+((i*53)%34);const sway=Math.sin(t*1.1+i)*5;ctx.strokeStyle=i%3?'#1F6B5C':'#7A3B6B';ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(x,H-2);ctx.quadraticCurveTo(x+sway,H-h*.6,x+sway*1.6,H-h);ctx.stroke()}ctx.restore();
+}
+function drawSchools(t){
+  schools.forEach(s=>{
+    s.x+=s.dir*s.sp*DT*zoom;s.y+=Math.sin(t*.5+s.ph)*.15;
+    if(s.x>W+80)s.dir=-1;if(s.x<-80)s.dir=1;
+    s.m.forEach(m=>{const x=s.x+m.ox+Math.sin(t*2+m.ph)*4,y=s.y+m.oy+Math.cos(t*1.7+m.ph)*3;drawFish(x,y,5.5*zoom,s.dir,t,'#5FA8D8',0,m.ph)})
+  });
+}
+function step(dt,t){
+  fish.forEach(f=>{
+    f.size+=(f.tsize-f.size)*Math.min(1,dt*2);
+    const hov=f===hovered||f===selected;
+    f.glow+=((hov?1:0)-f.glow)*Math.min(1,dt*8);
+    const sp=f.speed*(hov?.35:1);
+    f.x+=f.dir*sp*dt;f.y+=Math.sin(t*.8+f.phase)*.25+(f.ty-f.y)*dt*.3;
+    if(Math.random()<dt*.05)f.ty=H*(0.1+Math.random()*.75);
+    const m=f.size*zoom*1.05+8;if(f.x>W-m)f.dir=-1;if(f.x<m)f.dir=1;f.y=Math.max(f.size*zoom*.5+30,Math.min(H-70,f.y));
+    if(f.pulse>0)f.pulse-=dt;
+  });
+  bubbles=bubbles.filter(b=>b.y>-10);bubbles.forEach(b=>{b.y-=b.v*dt;b.x+=Math.sin(b.y*.05+b.p)*.4});
+  if(Math.random()<dt*2.2)bubbles.push({x:Math.random()*W,y:H-20,v:22+Math.random()*30,r:1+Math.random()*2.6,p:Math.random()*6});
+}
+function drawFishes(t){
+  const order=[...fish].sort((a,b)=>a.size-b.size);
+  order.forEach(f=>{
+    const s=f.size*zoom;
+    drawFish(f.x,f.y,s,f.dir,t,TIER[f.h.tier].c,f.glow+(f.pulse>0?.8:0),f.phase);
+    if(f.h.tier==='whale'||f.glow>.2){
+      ctx.save();ctx.globalAlpha=f.h.tier==='whale'?.9:f.glow;
+      ctx.font=`500 ${f.h.tier==='whale'?11:10}px JetBrains Mono, monospace`;const lbl=short(f.h.addr);const tw=ctx.measureText(lbl).width+14;
+      ctx.fillStyle='rgba(6,16,31,.78)';roundRect(f.x-tw/2,f.y-s*.62-22,tw,18,5);ctx.fill();ctx.strokeStyle='rgba(130,175,230,.3)';ctx.stroke();
+      ctx.fillStyle='#E8F0FA';ctx.textAlign='center';ctx.fillText(lbl,f.x,f.y-s*.62-9);ctx.restore();
+    }
+  });
+  ctx.save();ctx.strokeStyle='rgba(180,230,255,.35)';ctx.fillStyle='rgba(180,230,255,.08)';bubbles.forEach(b=>{ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,6.28);ctx.fill();ctx.stroke()});ctx.restore();
+}
+function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+let last=performance.now(),DT=0,T=0;
+function loop(now){DT=Math.min(.05,(now-last)/1000);last=now;T+=DT;if(view==='aquarium'){drawBg(T);drawSchools(T);step(DT,T);drawFishes(T)}requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+/* ============ interaction ============ */
+const tip=document.getElementById('tip'),card=document.getElementById('card');
+function hit(mx,my){let best=null,bd=1e9;fish.forEach(f=>{const d=Math.hypot(f.x-mx,f.y-my);const r=f.size*zoom*.6+8;if(d<r&&d<bd){bd=d;best=f}});return best}
+tank.addEventListener('mousemove',e=>{const r=tank.getBoundingClientRect();const mx=e.clientX-r.left,my=e.clientY-r.top;hovered=hit(mx,my);tank.style.cursor=hovered?'pointer':'default';
+  if(hovered&&hovered!==selected){tip.style.display='block';tip.innerHTML=`<b>${short(hovered.h.addr)}</b> · ${hovered.h.pct.toFixed(2)}% · ${usd(hovered.h.value)}`;tip.style.left=Math.min(W-220,mx+14)+'px';tip.style.top=(my-34)+'px'}else tip.style.display='none'});
+tank.addEventListener('mouseleave',()=>{hovered=null;tip.style.display='none'});
+tank.addEventListener('click',e=>{const r=tank.getBoundingClientRect();const f=hit(e.clientX-r.left,e.clientY-r.top);if(f)select(f);else if(!card.contains(e.target))closeCard()});
+function select(f){selected=f;tip.style.display='none';const h=f.h,t=TIER[h.tier];
+  const scan=`https://basescan.org/token/${cur.contract||''}?a=${h.addr}`;
+  const chips=[h.label?`<span>${h.label}</span>`:'',h.isContract?`<span>contract</span>`:'',(!REAL)?`<span>${h.first}d on-chain</span><span>${h.tx} txs</span>`:''].join('');
+  card.innerHTML=`<button class="x" id="cx">✕</button><div class="tier" style="color:${t.c}"><i style="background:${t.c}"></i>${t.n} wallet · rank #${h.rank}</div>
+  <div class="addr">${short(h.addr)}<button id="ccopy" title="Copy address">copy</button></div>
+  ${chips?`<div class="lbls">${chips}</div>`:''}
+  <div class="row"><span>Token held</span><b>$${cur.sym}</b></div>
+  <div class="row"><span>Amount</span><b class="mono">${num(h.amount)}</b></div>
+  <div class="row"><span>% of supply</span><b class="mono" style="color:var(--teal)">${h.pct.toFixed(2)}%</b></div>
+  ${!REAL?`<div class="row"><span>Bought / sold</span><b class="mono">${usd(h.bought)} / ${usd(h.sold)}</b></div>`:''}
+  <div class="row" style="align-items:center"><span>Value (USD)</span><span class="big mono">${usd(h.value)}</span></div>
+  <div class="acts"><button class="p" id="cscan">View on Basescan ↗</button></div>`;
+  let x=f.x+f.size*zoom*.5+16,y=f.y-60;if(x+300>W)x=f.x-f.size*zoom*.5-306;y=Math.max(10,Math.min(H-280,y));card.style.left=x+'px';card.style.top=y+'px';card.classList.add('show');
+  document.getElementById('cx').onclick=closeCard;
+  document.getElementById('cscan').onclick=()=>{if(REAL||cur.contract)window.open(scan,'_blank');else toastMsg('Basescan link works once real data is connected','var(--dim)')};
+  document.getElementById('ccopy').onclick=e=>{navigator.clipboard&&navigator.clipboard.writeText(h.addr);e.target.textContent='copied';setTimeout(()=>e.target.textContent='copy',1200)};
+  document.querySelectorAll('#holdList button').forEach(b=>b.classList.toggle('sel',b.dataset.i==h.rank-1));
+}
+function closeCard(){selected=null;card.classList.remove('show');document.querySelectorAll('#holdList button').forEach(b=>b.classList.remove('sel'))}
+document.getElementById('zin').onclick=()=>zoom=Math.min(2,zoom*1.25);
+document.getElementById('zout').onclick=()=>zoom=Math.max(.6,zoom/1.25);
+document.getElementById('zfit').onclick=()=>zoom=1;
+/* ============ chrome ============ */
+function renderChrome(){
+  const t=cur,L=data.list;
+  document.getElementById('chipTok').textContent='$'+t.sym;
+  document.getElementById('tkSym').textContent='$'+t.sym;document.getElementById('tkName').textContent=t.name;
+  const ic=document.getElementById('tkIc');ic.textContent=t.sym.slice(0,2);ic.style.background=t.color;
+  document.getElementById('tkPrice').textContent='$'+(t.price<0.01?t.price.toFixed(5):t.price.toFixed(3));
+  const c=document.getElementById('tkChg');c.textContent=(t.chg>0?'+':'')+t.chg.toFixed(2)+'%';c.className='mono '+(t.chg>0?'up':'down');
+  document.getElementById('tkMcap').textContent=usd(t.mcap);document.getElementById('tkHolders').textContent=num(t.holders);
+  document.getElementById('stHolders').textContent=num(t.holders);
+  document.getElementById('stTop').textContent=(data.topShare*100).toFixed(1)+'%';
+  document.getElementById('stWhales').textContent=L.filter(h=>h.tier==='whale').length;
+  const th=t.th;document.getElementById('thSmall').textContent='< '+usd(th[0]);document.getElementById('thMed').textContent=usd(th[0])+' – '+usd(th[1]);document.getElementById('thLarge').textContent=usd(th[1])+' – '+usd(th[2]);document.getElementById('thWhale').textContent='> '+usd(th[2]);
+  document.getElementById('holdList').innerHTML=L.slice(0,7).map((h,i)=>`<button data-i="${i}"><span class="n">${h.rank}</span><span style="width:24px;height:16px"><canvas data-mini="${h.tier}" width="48" height="32" style="width:24px;height:16px"></canvas></span><span><div class="a">${short(h.addr)}</div><div class="bar2"><i style="width:${Math.min(100,h.pct/L[0].pct*100)}%"></i></div></span><span class="p mono">${h.pct.toFixed(2)}%<small>${usd(h.value)}</small></span></button>`).join('');
+  document.querySelectorAll('#holdList button').forEach(b=>b.onclick=()=>{setView('aquarium');select(fish[+b.dataset.i])});
+  drawMinis();drawDonut();renderTable();
+  document.querySelectorAll('#tokpick button').forEach(b=>b.classList.toggle('on',b.dataset.sym===t.sym));
+  const f=document.getElementById('feed');f.innerHTML='';
+  if(REAL)renderRealFeed();else for(let i=0;i<5;i++)pushFeed(true);
+}
+function agoStr(ts){const m=Math.max(1,Math.round((Date.now()-new Date(ts))/60000));return m<60?m+'m':m<1440?Math.floor(m/60)+'h':Math.floor(m/1440)+'d'}
+function renderRealFeed(){
+  const f=document.getElementById('feed');f.innerHTML='';
+  const set=new Set(data.list.map(h=>h.addr.toLowerCase()));
+  (data.recent||[]).slice(0,6).forEach(x=>{
+    const buy=set.has((x.to||'').toLowerCase()),sell=set.has((x.from||'').toLowerCase());
+    const who=buy?x.to:sell?x.from:x.to;const verb=buy?'received':sell?'sent':'moved';
+    const col=buy?'var(--teal)':sell?'var(--coral)':'var(--dim)';
+    const el=document.createElement('div');
+    el.innerHTML=`<i style="background:${col}"></i><span><span class="a">${short(who||'')}</span> <span style="color:var(--muted)">${verb}</span><br><small>${agoStr(x.ts)} ago</small></span><span class="v" style="color:${col}">${(buy?'+':sell?'−':'')}${usd(x.usd)}</span>`;
+    el.style.cursor='pointer';el.onclick=()=>window.open('https://basescan.org/tx/'+x.hash,'_blank');
+    f.appendChild(el);
+  });
+  if(!(data.recent||[]).length)f.innerHTML='<div style="color:var(--dim)">No large transfers in the last window.</div>';
+}
+function drawMinis(){document.querySelectorAll('canvas[data-mini],canvas[data-tier]').forEach(c=>{const tier=c.dataset.mini||c.dataset.tier;const r=c.getBoundingClientRect();c.width=r.width*2;c.height=r.height*2;const x=c.getContext('2d');x.scale(2,2);const saved=ctx;const s={small:5,medium:7,large:9,whale:12}[tier];ctx=x;(tier==='whale'?drawWhale:drawFish)(r.width/2,r.height/2,c.dataset.mini?s*.9:s*1.6,1,0,TIER[tier].c,0,0);ctx=saved})}
+function drawDonut(){
+  const c=document.getElementById('donut');c.width=220;c.height=220;const x=c.getContext('2d');
+  const tot=data.list.reduce((s,h)=>s+h.value,0)||1;
+  const shr=t=>data.list.filter(h=>h.tier===t).reduce((s,h)=>s+h.value,0)/tot;
+  const segs=[['Whales','top 6',shr('whale'),TIER.whale.c],['Large','7–24',shr('large'),TIER.large.c],['Medium','25–60',shr('medium'),TIER.medium.c],['Small','61–100',shr('small'),TIER.small.c]];
+  let a=-Math.PI/2;segs.forEach(s=>{x.beginPath();x.arc(110,110,92,a,a+s[2]*6.283);x.arc(110,110,62,a+s[2]*6.283,a,true);x.closePath();x.fillStyle=s[3];x.fill();a+=s[2]*6.283});
+  x.fillStyle='#E8F0FA';x.textAlign='center';x.font='700 24px Syne, sans-serif';x.fillText(cur.holders?num(cur.holders):String(data.list.length),110,108);x.font='500 12px Manrope, sans-serif';x.fillStyle='#8AA0BF';x.fillText(cur.holders?'holders':'top wallets',110,128);
+  document.getElementById('distList').innerHTML=segs.map(s=>`<li><i style="background:${s[3]}"></i><span><b>${s[0]}</b> <small>${s[1]}</small></span><b class="mono">${(s[2]*100).toFixed(1)}%</b></li>`).join('');
+}
+function renderTable(){
+  document.getElementById('holdersView').innerHTML=`<table><thead><tr><th>#</th><th>Wallet</th><th>Tier</th><th>Labels</th><th class="r">Amount</th><th class="r">% supply</th><th class="r">Value</th><th class="r">Type</th></tr></thead><tbody>${data.list.map((h,i)=>`<tr data-i="${i}"><td class="mono" style="color:var(--dim)">${h.rank}</td><td class="mono">${short(h.addr)}</td><td><span class="pill" style="background:${TIER[h.tier].c}22;color:${TIER[h.tier].c}">${TIER[h.tier].n}</span></td><td style="color:var(--muted)">${h.label||'—'}</td><td class="r mono">${num(h.amount)}</td><td class="r mono">${h.pct.toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:var(--muted)">${REAL?(h.isContract?'contract':'wallet'):h.last+'h ago'}</td></tr>`).join('')}</tbody></table>`;
+  document.querySelectorAll('#holdersView tr[data-i]').forEach(r=>r.onclick=()=>{setView('aquarium');select(fish[+r.dataset.i])});
+}
+/* token picker */
+function buildPicker(){
+  document.getElementById('tokpick').innerHTML=TOKENS.map(t=>`<button data-sym="${t.sym}"><i style="background:${t.color}"></i>${t.sym}</button>`).join('');
+  document.querySelectorAll('#tokpick button').forEach(b=>b.onclick=()=>{closeCard();loadToken(TOKENS.find(t=>t.sym===b.dataset.sym));toastMsg(`Aquarium switched to <b>$${cur.sym}</b>`,'var(--muted)')});
+}
+/* views */
+function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
+  document.getElementById('tank').style.display=v==='aquarium'?'':'none';document.getElementById('holdersView').classList.toggle('show',v==='holders');
+  if(v==='aquarium')resize()}
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{if(b.querySelector('.soon'))return toastMsg(`<b>${b.querySelector('span').textContent}</b> arrives in a later release`,'var(--dim)');closeCard();setView(b.dataset.view)});
+document.getElementById('viewAll').onclick=()=>setView('holders');
+document.getElementById('aboutBtn').onclick=()=>document.getElementById('modal').classList.add('show');
+document.getElementById('modalClose').onclick=()=>document.getElementById('modal').classList.remove('show');
+document.getElementById('modal').onclick=e=>{if(e.target.id==='modal')e.target.classList.remove('show')};
+document.getElementById('shareBtn').onclick=()=>{const u=location.origin+location.pathname+'?token='+cur.sym.toLowerCase();if(navigator.clipboard)navigator.clipboard.writeText(u);toastMsg(`Link copied: <b>${u.replace(/^https?:\/\//,'')}</b>`,'var(--teal)')};
+/* ============ live events (simulated) ============ */
+function toastMsg(html,color){const t=document.getElementById('toast');const d=document.createElement('div');d.innerHTML=`<i style="width:7px;height:7px;border-radius:50%;background:${color}"></i><span>${html}</span>`;t.appendChild(d);while(t.children.length>3)t.firstChild.remove();setTimeout(()=>{d.style.opacity='0';d.style.transition='opacity .5s';setTimeout(()=>d.remove(),500)},5200)}
+function pushFeed(silent){
+  const f=fish[Math.floor(Math.random()*Math.min(40,fish.length))];if(!f)return;
+  const buy=Math.random()<.55;const amt=f.h.value*(0.03+Math.random()*.18);
+  const ago=silent?Math.floor(Math.random()*50)+2+'m':'now';
+  const el=document.createElement('div');el.innerHTML=`<i style="background:${buy?'var(--teal)':'var(--coral)'}"></i><span><span class="a">${short(f.h.addr)}</span> <span style="color:var(--muted)">${buy?'bought':'sold'}</span><br><small>${ago}</small></span><span class="v" style="color:${buy?'var(--teal)':'var(--coral)'}">${buy?'+':'−'}${usd(amt)}</span>`;
+  const feed=document.getElementById('feed');feed.prepend(el);while(feed.children.length>6)feed.lastChild.remove();
+  if(!silent){f.h.value+=buy?amt:-amt;f.h.pct=f.h.value/cur.mcap*100;if(!REAL)data.list.sort((a,b)=>b.value-a.value).forEach((h,i)=>{h.rank=i+1;h.tier=h.rank<=6?'whale':h.rank<=24?'large':h.rank<=60?'medium':'small'});data.max=data.list[0].value;fish.forEach(g=>g.tsize=sizeFor(g.h));f.pulse=1.2;
+    for(let i=0;i<8;i++)bubbles.push({x:f.x+(Math.random()-.5)*f.size,y:f.y,v:30+Math.random()*30,r:1+Math.random()*2,p:Math.random()*6});
+    toastMsg(`${f.h.tier==='whale'?'Whale':'Wallet'} <b>${short(f.h.addr)}</b> ${buy?'bought':'sold'} <b style="color:${buy?'var(--teal)':'var(--coral)'}">${buy?'+':'−'}${usd(amt)}</b>`,buy?'var(--teal)':'var(--coral)');
+    document.getElementById('stUpd').textContent='just now';upd=0}
+}
+let upd=0;setInterval(()=>{if(REAL&&data&&data.generated_at){document.getElementById('stUpd').textContent=agoStr(data.generated_at)+' ago'}else{upd+=5;document.getElementById('stUpd').textContent=upd<60?upd+'s ago':Math.floor(upd/60)+'m ago'}},5000);
+setInterval(()=>{if(!REAL&&view==='aquarium'&&document.visibilityState==='visible')pushFeed(false)},6500);
+async function pollRefresh(){
+  if(!REAL||document.visibilityState!=='visible')return;
+  try{const d=await fetchToken(cur.sym);
+    if(d.generated_at!==data.generated_at){
+      const old=new Map(data.list.map(h=>[h.addr.toLowerCase(),h.value]));
+      data=fromReal(d);
+      fish.forEach(f2=>{const nh=data.list.find(h=>h.addr===f2.h.addr);if(nh){const ov=old.get(nh.addr.toLowerCase());f2.h=nh;f2.tsize=sizeFor(nh);if(ov&&Math.abs(nh.value-ov)/ov>0.03){f2.pulse=1.2;toastMsg(`<b>${short(nh.addr)}</b> ${nh.value>ov?'grew':'shrank'} to <b>${usd(nh.value)}</b>`,nh.value>ov?'var(--teal)':'var(--coral)')}}});
+      renderChrome();
+    }
+  }catch(e){}
+}
+setInterval(pollRefresh,120000);
+async function boot(){
+  try{
+    const r=await fetch('data/index.json?t='+Date.now(),{cache:'no-store'});
+    if(r.ok){const idx=await r.json();if(idx.tokens&&idx.tokens.length){TOKENS=idx.tokens;REAL=true}}
+  }catch(e){}
+  buildPicker();
+  const badge=document.getElementById('modeNote');
+  if(badge)badge.innerHTML=REAL?'<b>Live on-chain data</b> · top 100 holders per token · refreshed every ~2h':'Data shown here is <b>simulated</b> — live data loads when deployed with the fetch pipeline';
+  const q=new URLSearchParams(location.search).get('token');
+  await loadToken(TOKENS.find(t=>t.sym.toLowerCase()===String(q||'').toLowerCase())||TOKENS[0]);
+}
+boot();
+</script>
+
+</body>
+</html>
