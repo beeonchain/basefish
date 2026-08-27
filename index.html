@@ -319,7 +319,7 @@ const DEMO_TOKENS=[
   {sym:'VIRTUAL',name:'Virtuals',color:'#FF6B5B',price:2.08,chg:-7.4,mcap:1.34e9,holders:220334,seed:53,th:[10e3,100e3,1e6]},
 ];
 let TOKENS=DEMO_TOKENS;
-const TIER={small:{c:'#7FD3FF',n:'Small'},medium:{c:'#34E3C4',n:'Medium'},large:{c:'#F2C14E',n:'Large'},whale:{c:'#6FB2FF',n:'Whale'}};
+const TIER={small:{c:'#AFCBE8',n:'Small'},medium:{c:'#53C7F0',n:'Medium'},large:{c:'#F2C14E',n:'Large'},whale:{c:'#3B6BFF',n:'Whale'}};
 const LABELS=['','','','','Smart money','Early buyer','Airdrop farmer','Bridged from ETH','LP provider','DAO treasury','Long-term holder'];
 function rng(seed){let s=seed*9301+49297;return()=>{s=(s*9301+49297)%233280;return s/233280}}
 function hex(r,n){let o='';for(let i=0;i<n;i++)o+='0123456789abcdef'[Math.floor(r()*16)];return o}
@@ -378,37 +378,86 @@ async function loadToken(t){
 function drawWhale(x,y,s,dir,t,color,glow,wob){
   ctx.save();ctx.translate(x,y);ctx.scale(dir,1);
   const tail=Math.sin(t*2.2+wob)*0.3;
-  const g=ctx.createLinearGradient(0,-s*.3,0,s*.3);g.addColorStop(0,lighten(color,.25));g.addColorStop(.6,color);g.addColorStop(1,darken(color,.5));ctx.fillStyle=g;
-  ctx.beginPath();ctx.moveTo(s*.7,-s*.02);ctx.bezierCurveTo(s*.55,-s*.34,-s*.1,-s*.36,-s*.55,-s*.14);ctx.bezierCurveTo(-s*.75,-s*.06,-s*.8,s*.06,-s*.6,s*.12);ctx.bezierCurveTo(-s*.2,s*.32,s*.45,s*.3,s*.7,-s*.02);ctx.fill();
-  // fluke
-  ctx.fillStyle=darken(color,.25);ctx.beginPath();ctx.moveTo(-s*.62,0);ctx.quadraticCurveTo(-s*.95,-s*.05+tail*s*.3,-s*1.02,-s*.22+tail*s*.3);ctx.quadraticCurveTo(-s*.9,-s*.02+tail*s*.3,-s*.82,tail*s*.3);ctx.quadraticCurveTo(-s*.9,s*.02+tail*s*.3,-s*1.0,s*.2+tail*s*.3);ctx.quadraticCurveTo(-s*.92,s*.06+tail*s*.3,-s*.62,s*.03);ctx.fill();
-  // fin + dorsal
-  ctx.beginPath();ctx.moveTo(s*.1,s*.14);ctx.quadraticCurveTo(-s*.05,s*.42+tail*s*.1,-s*.28,s*.2);ctx.closePath();ctx.fill();
-  ctx.beginPath();ctx.moveTo(-s*.28,-s*.28);ctx.quadraticCurveTo(-s*.32,-s*.42,-s*.42,-s*.24);ctx.closePath();ctx.fill();
-  // belly + eye
-  ctx.shadowBlur=0;ctx.fillStyle='rgba(255,255,255,.14)';ctx.beginPath();ctx.ellipse(s*.15,s*.14,s*.45,s*.09,0,0,6.28);ctx.fill();
-  ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=1;for(let i=0;i<4;i++){ctx.beginPath();ctx.moveTo(s*.55-i*s*.09,s*.05+i*s*.02);ctx.lineTo(s*.3-i*s*.1,s*.24);ctx.stroke()}
-  ctx.fillStyle='#06101F';ctx.beginPath();ctx.arc(s*.5,-s*.06,Math.max(1.5,s*.03),0,6.28);ctx.fill();
+  const O=Math.max(1.4,s*.045),R=Math.max(2,s*.11);
+  const body=()=>{ctx.beginPath();ctx.moveTo(s*.7,-s*.02);ctx.bezierCurveTo(s*.55,-s*.34,-s*.1,-s*.36,-s*.55,-s*.14);ctx.bezierCurveTo(-s*.75,-s*.06,-s*.8,s*.06,-s*.6,s*.12);ctx.bezierCurveTo(-s*.2,s*.32,s*.45,s*.3,s*.7,-s*.02);ctx.closePath()};
+  const fluke=()=>{ctx.beginPath();ctx.moveTo(-s*.62,0);ctx.quadraticCurveTo(-s*.95,-s*.05+tail*s*.3,-s*1.02,-s*.24+tail*s*.3);ctx.quadraticCurveTo(-s*.9,-s*.02+tail*s*.3,-s*.82,tail*s*.3);ctx.quadraticCurveTo(-s*.9,s*.02+tail*s*.3,-s*1.0,s*.22+tail*s*.3);ctx.quadraticCurveTo(-s*.92,s*.06+tail*s*.3,-s*.62,s*.03);ctx.closePath()};
+  ctx.lineJoin='round';ctx.lineCap='round';
+  ctx.strokeStyle='#FFFFFF';ctx.lineWidth=R*2;fluke();ctx.stroke();body();ctx.stroke();
+  fluke();ctx.fillStyle=darken(color,.2);ctx.fill();ctx.strokeStyle='#0A0B0D';ctx.lineWidth=O;ctx.stroke();
+  body();ctx.fillStyle=color;ctx.fill();
+  ctx.save();body();ctx.clip();
+  ctx.fillStyle=lighten(color,.55);ctx.beginPath();ctx.ellipse(s*.1,s*.3,s*.75,s*.26,0,0,6.28);ctx.fill();
+  ctx.fillStyle=darken(color,.22);ctx.beginPath();ctx.ellipse(-s*.05,-s*.3,s*.7,s*.16,0,0,6.28);ctx.fill();
+  ctx.strokeStyle='rgba(10,11,13,.35)';ctx.lineWidth=O*.7;
+  for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(s*.5-i*s*.09,s*.02+i*s*.03);ctx.quadraticCurveTo(s*.34-i*s*.1,s*.2,s*.2-i*s*.11,s*.26);ctx.stroke()}
+  ctx.restore();
+  body();ctx.strokeStyle='#0A0B0D';ctx.lineWidth=O;ctx.stroke();
+  // pectoral fin
+  ctx.beginPath();ctx.moveTo(s*.12,s*.14);ctx.quadraticCurveTo(-s*.02,s*.42+tail*s*.08,-s*.26,s*.2);ctx.closePath();ctx.fillStyle=darken(color,.12);ctx.fill();ctx.stroke();
+  // eye: big cartoon
+  const ex=s*.46,ey=-s*.08,er=Math.max(2.5,s*.09);
+  ctx.beginPath();ctx.arc(ex,ey,er,0,6.28);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#0A0B0D';ctx.lineWidth=O;ctx.stroke();
+  ctx.beginPath();ctx.arc(ex+er*.25,ey,er*.5,0,6.28);ctx.fillStyle='#0A0B0D';ctx.fill();
+  ctx.beginPath();ctx.arc(ex+er*.05,ey-er*.3,er*.18,0,6.28);ctx.fillStyle='#fff';ctx.fill();
+  // beanie (whales wear it; skip when tiny)
+  if(s>=26){
+    const bx=s*.3,by=-s*.26;
+    ctx.strokeStyle='#FFFFFF';ctx.lineWidth=R*1.4;
+    ctx.beginPath();ctx.moveTo(bx-s*.26,by+s*.02);ctx.quadraticCurveTo(bx,by-s*.34,bx+s*.26,by+s*.02);ctx.closePath();ctx.stroke();
+    ctx.fillStyle='#1414E6';ctx.fill();ctx.strokeStyle='#0A0B0D';ctx.lineWidth=O;ctx.stroke();
+    ctx.fillStyle='#0000CC';ctx.beginPath();ctx.rect(bx-s*.28,by,s*.56,s*.1);ctx.fill();ctx.stroke();
+    const q=s*.07;ctx.fillStyle='#fff';ctx.fillRect(bx-q/2,by+s*.015,q,q);ctx.fillStyle='#0000FF';ctx.fillRect(bx-q*.3,by+s*.015+q*.2,q*.6,q*.6);
+  }
+  ctx.restore();
+}
+function drawChain(x,y,s,dir){
+  ctx.save();ctx.translate(x,y);ctx.scale(dir,1);
+  const O=Math.max(1,s*.03);
+  ctx.strokeStyle='#0A0B0D';ctx.lineWidth=O;
+  for(let i=0;i<=6;i++){
+    const u=i/6, cx=s*.5-u*s*.62, cy=s*.16+Math.sin(u*Math.PI)*s*.16;
+    ctx.beginPath();ctx.arc(cx,cy,Math.max(1.5,s*.035),0,6.28);ctx.fillStyle='#F2C14E';ctx.fill();ctx.stroke();
+  }
+  const px=s*.19,py=s*.3,q=Math.max(3,s*.11);
+  ctx.fillStyle='#F2C14E';ctx.fillRect(px-q/2,py,q,q);ctx.strokeRect(px-q/2,py,q,q);
+  ctx.fillStyle='#0000FF';ctx.fillRect(px-q*.28,py+q*.22,q*.56,q*.56);
   ctx.restore();
 }
 function drawFish(x,y,s,dir,t,color,glow,wob){
   if(s>62)return drawWhale(x,y,s*.95,dir,t,color,glow,wob);
+  if(s<9){ // background minnows: flat silhouette, no sticker treatment
+    ctx.save();ctx.translate(x,y);ctx.scale(dir,1);
+    const tl=Math.sin(t*6+wob)*0.3;
+    ctx.fillStyle=color;
+    ctx.beginPath();ctx.ellipse(0,0,s*.6,s*.34,0,0,6.28);ctx.fill();
+    ctx.beginPath();ctx.moveTo(-s*.5,0);ctx.lineTo(-s*.9,-s*.3+tl*s*.2);ctx.lineTo(-s*.9,s*.3+tl*s*.2);ctx.closePath();ctx.fill();
+    ctx.restore();return;
+  }
   ctx.save();ctx.translate(x,y);ctx.scale(dir,1);
   const tail=Math.sin(t*6+wob)*0.35;
-  const g=ctx.createLinearGradient(0,-s*.4,0,s*.4);g.addColorStop(0,lighten(color,.35));g.addColorStop(.55,color);g.addColorStop(1,darken(color,.45));
-  ctx.fillStyle=g;
-  // body
-  ctx.beginPath();ctx.moveTo(s*.55,0);ctx.bezierCurveTo(s*.3,-s*.42,-s*.35,-s*.42,-s*.6,-s*.05);ctx.bezierCurveTo(-s*.35,s*.42,s*.3,s*.42,s*.55,0);ctx.fill();
-  // tail
-  ctx.beginPath();ctx.moveTo(-s*.55,0);ctx.lineTo(-s*.95,-s*.32+tail*s*.25);ctx.lineTo(-s*.85,0);ctx.lineTo(-s*.95,s*.32+tail*s*.25);ctx.closePath();ctx.fillStyle=darken(color,.2);ctx.fill();
-  // dorsal + pectoral
-  ctx.fillStyle=darken(color,.15);ctx.beginPath();ctx.moveTo(-s*.1,-s*.36);ctx.quadraticCurveTo(s*.05,-s*.62,s*.22,-s*.3);ctx.closePath();ctx.fill();
-  ctx.beginPath();ctx.moveTo(s*.05,s*.12);ctx.quadraticCurveTo(-s*.1,s*.4+tail*s*.1,-s*.2,s*.14);ctx.closePath();ctx.fill();
-  // belly sheen
-  ctx.shadowBlur=0;ctx.fillStyle='rgba(255,255,255,.12)';ctx.beginPath();ctx.ellipse(s*.05,s*.12,s*.36,s*.12,0,0,6.28);ctx.fill();
+  const O=Math.max(1.1,s*.055),R=Math.max(1.6,s*.12);
+  const body=()=>{ctx.beginPath();ctx.moveTo(s*.55,0);ctx.bezierCurveTo(s*.3,-s*.42,-s*.35,-s*.42,-s*.6,-s*.05);ctx.bezierCurveTo(-s*.35,s*.42,s*.3,s*.42,s*.55,0);ctx.closePath()};
+  const tailP=()=>{ctx.beginPath();ctx.moveTo(-s*.5,0);ctx.lineTo(-s*.95,-s*.34+tail*s*.25);ctx.lineTo(-s*.8,tail*s*.12);ctx.lineTo(-s*.95,s*.34+tail*s*.25);ctx.closePath()};
+  ctx.lineJoin='round';ctx.lineCap='round';
+  ctx.strokeStyle='#FFFFFF';ctx.lineWidth=R*2;tailP();ctx.stroke();body();ctx.stroke();
+  tailP();ctx.fillStyle=darken(color,.18);ctx.fill();ctx.strokeStyle='#0A0B0D';ctx.lineWidth=O;ctx.stroke();
+  body();ctx.fillStyle=color;ctx.fill();
+  ctx.save();body();ctx.clip();
+  ctx.fillStyle=lighten(color,.5);ctx.beginPath();ctx.ellipse(s*.05,s*.3,s*.6,s*.26,0,0,6.28);ctx.fill();
+  ctx.fillStyle=darken(color,.16);ctx.beginPath();ctx.ellipse(0,-s*.36,s*.55,s*.17,0,0,6.28);ctx.fill();
+  ctx.restore();
+  body();ctx.strokeStyle='#0A0B0D';ctx.lineWidth=O;ctx.stroke();
+  // dorsal
+  ctx.beginPath();ctx.moveTo(-s*.05,-s*.34);ctx.quadraticCurveTo(s*.1,-s*.6,s*.26,-s*.3);ctx.closePath();ctx.fillStyle=darken(color,.1);ctx.fill();ctx.stroke();
+  // pectoral
+  ctx.beginPath();ctx.moveTo(s*.06,s*.1);ctx.quadraticCurveTo(-s*.1,s*.36,-s*.2,s*.12);ctx.closePath();ctx.fillStyle=darken(color,.12);ctx.fill();ctx.stroke();
+  // gill
+  ctx.beginPath();ctx.moveTo(s*.2,-s*.16);ctx.quadraticCurveTo(s*.12,0,s*.2,s*.16);ctx.strokeStyle='rgba(10,11,13,.45)';ctx.lineWidth=O*.8;ctx.stroke();
   // eye
-  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(s*.34,-s*.08,Math.max(1.6,s*.07),0,6.28);ctx.fill();
-  ctx.fillStyle='#06101F';ctx.beginPath();ctx.arc(s*.36,-s*.08,Math.max(.9,s*.04),0,6.28);ctx.fill();
+  const ex=s*.32,ey=-s*.06,er=Math.max(1.8,s*.14);
+  ctx.beginPath();ctx.arc(ex,ey,er,0,6.28);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#0A0B0D';ctx.lineWidth=O;ctx.stroke();
+  ctx.beginPath();ctx.arc(ex+er*.25,ey,er*.5,0,6.28);ctx.fillStyle='#0A0B0D';ctx.fill();
+  ctx.beginPath();ctx.arc(ex+er*.05,ey-er*.32,er*.2,0,6.28);ctx.fillStyle='#fff';ctx.fill();
   ctx.restore();
 }
 function lighten(h,a){return mix(h,'#ffffff',a)}function darken(h,a){return mix(h,'#03101f',a)}
@@ -429,7 +478,7 @@ function drawSchools(t){
   schools.forEach(s=>{
     s.x+=s.dir*s.sp*DT*zoom;s.y+=Math.sin(t*.5+s.ph)*.15;
     if(s.x>W+80)s.dir=-1;if(s.x<-80)s.dir=1;
-    s.m.forEach(m=>{const x=s.x+m.ox+Math.sin(t*2+m.ph)*4,y=s.y+m.oy+Math.cos(t*1.7+m.ph)*3;drawFish(x,y,5.5*zoom,s.dir,t,'#5FA8D8',0,m.ph)})
+    s.m.forEach(m=>{const x=s.x+m.ox+Math.sin(t*2+m.ph)*4,y=s.y+m.oy+Math.cos(t*1.7+m.ph)*3;drawFish(x,y,5.5*zoom,s.dir,t,'#8FB8DC',0,m.ph)})
   });
 }
 function step(dt,t){
@@ -451,6 +500,7 @@ function drawFishes(t){
   order.forEach(f=>{
     const s=f.size*zoom;
     drawFish(f.x,f.y,s,f.dir,t,TIER[f.h.tier].c,0,f.phase);
+    if(f.h.rank===1&&s>40)drawChain(f.x,f.y,s*.95,f.dir);
     if(f.glow>.25||f.pulse>0){
       const bw=s*1.15,bh=s*.95,L=Math.max(6,s*.22);
       ctx.save();ctx.strokeStyle=f.pulse>0?'#4D6BFF':'#FFFFFF';ctx.lineWidth=2;ctx.globalAlpha=f.pulse>0?Math.min(1,f.pulse):f.glow;
