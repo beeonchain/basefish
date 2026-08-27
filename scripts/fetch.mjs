@@ -60,6 +60,100 @@ async function arkhamLookup(addr) {
 // entity types that should never count as a "holder fish"
 const EXCLUDE_TYPES = new Set(['cex', 'exchange', 'bridge', 'dex', 'staking', 'burn', 'locker']);
 
+// ---- Arkham wallet profile enrichment (top wallets only) ----
+const WALLET_DIR = 'data/wallets';
+const WALLET_DETAIL_PER_TOKEN = 25;
+const WALLET_TTL_H = 12;
+let profileBudget = 160; // total arkham profile calls per run
+let loggedShapes = false;
+
+async function arkhamGet(pathname) {
+  if (!ARKHAM_KEY || profileBudget <= 0) return null;
+  const bases = arkhamBase ? [arkhamBase] : ARKHAM_BASES;
+  for (const base of bases) {
+    try {
+      const r = await fetch(base + pathname, { headers: { 'API-Key': ARKHAM_KEY, accept: 'application/json' } });
+      if (r.status === 429) { await new Promise(s => setTimeout(s, 2500)); continue; }
+      if (!r.ok) { if (!loggedShapes) console.log(`  arkham ${r.status} on ${pathname.split('?')[0]}`); continue; }
+      arkhamBase = base; profileBudget--;
+      await new Promise(s => setTimeout(s, 300));
+      return r.json();
+    } catch (e) { /* next base */ }
+  }
+  return null;
+}
+
+function num2(x) { const n = Number(x); return isFinite(n) ? n : 0; }
+
+function parsePortfolio(p) {
+  if (!p) return null;
+  // walk for arrays of balance-like objects
+  const holdings = [];
+  let totalUsd = 0;
+  const walk = (o, chainHint, depth) => {
+    if (!o || depth > 4) return;
+    if (Array.isArray(o)) { o.forEach(v => walk(v, chainHint, depth + 1)); return; }
+    if (typeof o !== 'object') return;
+    const usd = num2(o.usd ?? o.usdValue ?? o.balanceUsd ?? o.valueUsd);
+    const symb = o.symbol ?? o.tokenSymbol ?? (o.token && o.token.symbol);
+    if (symb && usd > 0) {
+      holdings.push({ sym: String(symb).toUpperCase().slice(0, 12), name: o.name || (o.token && o.token.name) || null,
+        amount: num2(o.balance ?? o.amount ?? o.formattedBalance), usd, chain: o.chain || chainHint || null });
+      return;
+    }
+    for (const [k, v] of Object.entries(o)) walk(v, /^[a-z0-9_]+$/.test(k) && typeof v === 'object' ? k : chainHint, depth + 1);
+  };
+  walk(p, null, 0);
+  holdings.sort((a, b) => b.usd - a.usd);
+  const seen = new Set(); const dedup = [];
+  for (const h of holdings) { const k = h.sym + '|' + (h.chain || ''); if (seen.has(k)) continue; seen.add(k); dedup.push(h); }
+  totalUsd = num2(p.totalBalance ?? p.totalUsd ?? p.total) || dedup.reduce((s, h) => s + h.usd, 0);
+  return { totalUsd, holdings: dedup.slice(0, 10) };
+}
+
+function parseTransfers(t, self) {
+  const arr = (t && (t.transfers || t.result || (Array.isArray(t) ? t : []))) || [];
+  return arr.slice(0, 10).map(x => {
+    const from = (x.fromAddress && (x.fromAddress.address || x.fromAddress)) || x.from || '';
+    const to = (x.toAddress && (x.toAddress.address || x.toAddress)) || x.to || '';
+    const fromLbl = (x.fromAddress && x.fromAddress.arkhamEntity && x.fromAddress.arkhamEntity.name) || (x.fromAddress && x.fromAddress.arkhamLabel && x.fromAddress.arkhamLabel.name) || null;
+    const toLbl = (x.toAddress && x.toAddress.arkhamEntity && x.toAddress.arkhamEntity.name) || (x.toAddress && x.toAddress.arkhamLabel && x.toAddress.arkhamLabel.name) || null;
+    const out = String(from).toLowerCase() === self.toLowerCase();
+    return { ts: x.blockTimestamp || x.timestamp || x.time || null, dir: out ? 'out' : 'in',
+      cp: out ? to : from, cpLabel: out ? toLbl : fromLbl,
+      token: x.tokenSymbol || (x.token && x.token.symbol) || x.symbol || null,
+      amount: num2(x.unitValue ?? x.amount ?? x.value), usd: num2(x.historicalUSD ?? x.usd ?? x.usdValue),
+      hash: x.transactionHash || x.txHash || x.hash || null, chain: x.chain || null };
+  });
+}
+
+async function enrichWalletProfile(addr) {
+  fs.mkdirSync(WALLET_DIR, { recursive: true });
+  const p = path.join(WALLET_DIR, addr.toLowerCase() + '.json');
+  try {
+    const old = JSON.parse(fs.readFileSync(p, 'utf8'));
+    if (Date.now() - new Date(old.updated).getTime() < WALLET_TTL_H * 36e5) return;
+  } catch {}
+  const [intel, portfolio, transfers] = [
+    await arkhamGet(`/intelligence/address/${addr}/all`),
+    await arkhamGet(`/portfolio/address/${addr}`),
+    await arkhamGet(`/transfers?base=${addr}&limit=10&sortDir=desc`),
+  ];
+  if (!intel && !portfolio && !transfers) return;
+  if (!loggedShapes && (portfolio || transfers)) {
+    loggedShapes = true;
+    if (portfolio) console.log('  [shape] portfolio keys:', Object.keys(portfolio).slice(0, 12).join(','));
+    if (transfers) console.log('  [shape] transfers keys:', Object.keys(transfers).slice(0, 12).join(','));
+  }
+  const ent = parseArkham(intel || {});
+  fs.writeFileSync(p, JSON.stringify({
+    addr, updated: new Date().toISOString(),
+    entity: { name: ent.name, type: ent.type, label: ent.label },
+    portfolio: parsePortfolio(portfolio),
+    transfers: transfers ? parseTransfers(transfers, addr) : [],
+  }));
+}
+
 const BURN = new Set([
   '0x0000000000000000000000000000000000000000',
   '0x000000000000000000000000000000000000dead',
@@ -143,6 +237,12 @@ for (const t of cfg.tokens) {
     if (dropped) console.log(`  arkham-excluded ${dropped} CEX/bridge/dex wallets`);
     const top = filtered.slice(0, 100);
     console.log(`  scanned ${seen}, kept ${kept.length}, top ${top.length}`);
+    if (ARKHAM_KEY) {
+      for (const h of top.slice(0, WALLET_DETAIL_PER_TOKEN)) {
+        try { await enrichWalletProfile(h.addr); } catch (e) { console.log('  profile err', h.addr.slice(0, 10), e.message.slice(0, 60)); }
+      }
+      console.log(`  wallet profiles refreshed (budget left ${profileBudget})`);
+    }
 
     // recent meaningful transfers
     let recent = [];

@@ -142,6 +142,25 @@
   .leg div{display:flex;gap:9px;align-items:center}
   .leg i{width:22px;height:2px;background:var(--dim);border-radius:2px;position:relative}
   .leg i:after{content:"";position:absolute;right:-2px;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--teal)}
+  /* profile drawer */
+  .drawer{position:fixed;top:0;right:-420px;width:400px;height:100vh;z-index:30;background:#0A1730;border-left:1px solid var(--line2);box-shadow:-30px 0 60px rgba(0,0,0,.5);transition:right .25s ease;display:flex;flex-direction:column}
+  .drawer.open{right:0}
+  .drawer .dh{padding:16px;border-bottom:1px solid var(--line)}
+  .drawer .dh .tier{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;display:flex;align-items:center;gap:6px}
+  .drawer .dh h4{font:700 17px var(--font-mono);margin:6px 0 4px;word-break:break-all}
+  .drawer .dh .ent{font:700 15px var(--font-display);color:var(--teal)}
+  .drawer .body{flex:1;overflow:auto;padding:14px 16px;display:flex;flex-direction:column;gap:14px}
+  .drawer .sec h5{font:700 11px var(--font-body);letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin:0 0 8px}
+  .drawer .hrow{display:grid;grid-template-columns:1fr auto auto;gap:8px;padding:5px 0;border-top:1px solid var(--line);font-size:12px;align-items:center}
+  .drawer .hrow b{font-weight:600}
+  .drawer .trow{display:grid;grid-template-columns:8px 1fr auto;gap:8px;padding:6px 0;border-top:1px solid var(--line);font-size:11.5px;align-items:center;cursor:pointer}
+  .drawer .trow:hover{background:rgba(52,227,196,.05)}
+  .drawer .trow i{width:7px;height:7px;border-radius:50%}
+  .drawer .total{font:700 26px/1 var(--font-display)}
+  .drawer .x{position:absolute;top:12px;right:12px;color:var(--dim);font-size:18px}
+  .drawer .alink{display:block;text-align:center;padding:9px;border:1px solid var(--line2);border-radius:9px;color:var(--muted);font-weight:700;text-decoration:none;font-size:12px}
+  .drawer .alink:hover{color:var(--text)}
+  .drawer .empty{color:var(--dim);font-size:12px}
   /* ---------- footer ---------- */
   .foot{grid-column:1/4;border-top:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 20px;font-size:11.5px;color:var(--dim)}
   .foot b{color:var(--muted);font-weight:600}
@@ -236,6 +255,7 @@
   <footer class="foot"><span>🐟 <b>Basefish</b> · a community-built holder map for the Base ecosystem</span><span>·</span><span id="modeNote">Data shown here is <b>simulated</b> for the prototype</span><span class="r">Not affiliated with Base or Coinbase</span></footer>
 </div>
 
+<div class="drawer" id="drawer"></div>
 <div class="modal" id="modal"><div class="in">
   <h4>About the map</h4>
   <p>Every fish is one of the top 100 wallets holding the selected token. Its size is set by the USD value of its holdings, using thresholds tuned per token — a $20K wallet is a whale in a small memecoin but a minnow in a large one.</p>
@@ -421,14 +441,15 @@ function select(f){selected=f;tip.style.display='none';const h=f.h,t=TIER[h.tier
   <div class="row"><span>% of supply</span><b class="mono" style="color:var(--teal)">${h.pct.toFixed(2)}%</b></div>
   ${!REAL?`<div class="row"><span>Bought / sold</span><b class="mono">${usd(h.bought)} / ${usd(h.sold)}</b></div>`:''}
   <div class="row" style="align-items:center"><span>Value (USD)</span><span class="big mono">${usd(h.value)}</span></div>
-  <div class="acts"><button class="p" id="cscan">View on Basescan ↗</button></div>`;
+  <div class="acts"><button class="p" id="cprof">Wallet profile</button><button id="cscan">Basescan ↗</button></div>`;
   let x=f.x+f.size*zoom*.5+16,y=f.y-60;if(x+300>W)x=f.x-f.size*zoom*.5-306;y=Math.max(10,Math.min(H-280,y));card.style.left=x+'px';card.style.top=y+'px';card.classList.add('show');
   document.getElementById('cx').onclick=closeCard;
+  document.getElementById('cprof').onclick=()=>openProfile(h);
   document.getElementById('cscan').onclick=()=>{if(REAL||cur.contract)window.open(scan,'_blank');else toastMsg('Basescan link works once real data is connected','var(--dim)')};
   document.getElementById('ccopy').onclick=e=>{navigator.clipboard&&navigator.clipboard.writeText(h.addr);e.target.textContent='copied';setTimeout(()=>e.target.textContent='copy',1200)};
   document.querySelectorAll('#holdList button').forEach(b=>b.classList.toggle('sel',b.dataset.i==h.rank-1));
 }
-function closeCard(){selected=null;card.classList.remove('show');document.querySelectorAll('#holdList button').forEach(b=>b.classList.remove('sel'))}
+function closeCard(){selected=null;card.classList.remove('show');document.getElementById('drawer').classList.remove('open');document.querySelectorAll('#holdList button').forEach(b=>b.classList.remove('sel'))}
 document.getElementById('zin').onclick=()=>zoom=Math.min(2,zoom*1.25);
 document.getElementById('zout').onclick=()=>zoom=Math.max(.6,zoom/1.25);
 document.getElementById('zfit').onclick=()=>zoom=1;
@@ -548,6 +569,43 @@ async function pollRefresh(){
   }catch(e){}
 }
 setInterval(pollRefresh,120000);
+const profCache={};
+async function openProfile(h){
+  const d=document.getElementById('drawer');
+  const t=TIER[h.tier]||TIER.small;
+  const head=`<div class="dh"><button class="x" id="dx">✕</button>
+    <div class="tier" style="color:${t.c}"><i style="background:${t.c}"></i>${t.n} wallet · rank #${h.rank} · $${cur.sym}</div>
+    ${h.entity?`<div class="ent">${h.entity}</div>`:''}
+    <h4>${h.addr}</h4>
+    <div class="lbls">${[h.entityType?`<span style="color:var(--gold)">${h.entityType}</span>`:'',h.label&&h.label!==h.entity?`<span>${h.label}</span>`:'',h.isContract?'<span>contract</span>':''].join('')}</div></div>`;
+  d.innerHTML=head+`<div class="body"><div class="empty">Loading profile…</div></div>`;
+  d.classList.add('open');
+  document.getElementById('dx').onclick=()=>d.classList.remove('open');
+  let p=profCache[h.addr];
+  if(!p&&REAL){try{const r=await fetch('data/wallets/'+h.addr.toLowerCase()+'.json?t='+Date.now(),{cache:'no-store'});if(r.ok)p=profCache[h.addr]=await r.json()}catch(e){}}
+  const body=d.querySelector('.body');
+  const scan=`https://basescan.org/address/${h.addr}`;
+  const ark=`https://intel.arkm.com/explorer/address/${h.addr}`;
+  if(!p){
+    body.innerHTML=`<div class="sec"><h5>This aquarium</h5>
+      <div class="hrow"><span>$${cur.sym} held</span><b class="mono">${num(h.amount)}</b><b class="mono" style="color:var(--teal)">${usd(h.value)}</b></div>
+      <div class="hrow"><span>% of supply</span><span></span><b class="mono">${h.pct.toFixed(2)}%</b></div></div>
+      <div class="empty">${REAL?'Full profile (portfolio + transfers) is enriched for the top 25 wallets of each token — this one isn\'t enriched yet, or the data refresh hasn\'t run since profiles shipped.':'Profiles need live data mode.'}</div>
+      <a class="alink" href="${ark}" target="_blank" rel="noopener">Full analysis on Arkham ↗</a>
+      <a class="alink" href="${scan}" target="_blank" rel="noopener">Basescan ↗</a>`;
+    return;
+  }
+  const port=p.portfolio;
+  body.innerHTML=`
+    ${port&&port.totalUsd?`<div class="sec"><h5>Portfolio value (all chains)</h5><div class="total mono">${usd(port.totalUsd)}</div></div>`:''}
+    <div class="sec"><h5>This aquarium</h5>
+      <div class="hrow"><span>$${cur.sym} held</span><b class="mono">${num(h.amount)}</b><b class="mono" style="color:var(--teal)">${usd(h.value)}</b></div>
+      <div class="hrow"><span>% of supply</span><span></span><b class="mono">${h.pct.toFixed(2)}%</b></div></div>
+    ${port&&port.holdings&&port.holdings.length?`<div class="sec"><h5>Top holdings</h5>${port.holdings.map(x=>`<div class="hrow"><span><b>${x.sym}</b>${x.chain?` <small style="color:var(--dim)">${x.chain}</small>`:''}</span><span class="mono" style="color:var(--muted)">${num(x.amount)}</span><b class="mono">${usd(x.usd)}</b></div>`).join('')}</div>`:''}
+    ${p.transfers&&p.transfers.length?`<div class="sec"><h5>Recent transfers</h5>${p.transfers.map(x=>`<div class="trow" ${x.hash?`onclick="window.open('https://basescan.org/tx/${x.hash}','_blank')"`:''}><i style="background:${x.dir==='out'?'var(--coral)':'var(--teal)'}"></i><span>${x.dir==='out'?'Sent':'Received'} ${x.token?`<b>${x.token}</b>`:''} ${x.dir==='out'?'to':'from'} <span class="mono">${x.cpLabel||short(x.cp||'')}</span><br><small style="color:var(--dim)">${x.ts?agoStr(x.ts)+' ago':''}${x.chain?' · '+x.chain:''}</small></span><b class="mono" style="color:${x.dir==='out'?'var(--coral)':'var(--teal)'}">${x.usd?usd(x.usd):num(x.amount)}</b></div>`).join('')}</div>`:''}
+    <div class="sec" style="margin-top:auto"><div style="display:flex;gap:8px"><a class="alink" style="flex:1" href="${ark}" target="_blank" rel="noopener">Arkham ↗</a><a class="alink" style="flex:1" href="${scan}" target="_blank" rel="noopener">Basescan ↗</a></div>
+    <div style="color:var(--dim);font-size:10.5px;margin-top:8px">Labels & portfolio data by Arkham Intelligence · updated ${agoStr(p.updated)} ago</div></div>`;
+}
 async function boot(){
   try{
     const r=await fetch('data/index.json?t='+Date.now(),{cache:'no-store'});
