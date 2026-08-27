@@ -23,6 +23,7 @@ jobs:
       - name: Fetch holder data
         env:
           MORALIS_API_KEY: ${{ secrets.MORALIS_API_KEY }}
+          ARKHAM_API_KEY: ${{ secrets.ARKHAM_API_KEY }}
         run: node scripts/fetch.mjs
       - name: Commit data
         run: |
