@@ -568,7 +568,7 @@ async function renderWallets(){
   const rows=[...agg.values()].sort((a,b)=>b.usd-a.usd).slice(0,150);
   const labeled=rows.filter(r=>r.entity||r.label);
   el.innerHTML=`<table><thead><tr><th>Wallet</th><th>Entity / label</th><th>Type</th><th>Holds</th><th class="r">Combined value (top-100 positions)</th></tr></thead><tbody>${
-    rows.map(r=>`<tr style="cursor:pointer" onclick="openProfileByAddr('${r.addr}')"><td class="mono">${short(r.addr)}</td><td>${r.entity||r.label||'<span style="color:var(--dim)">—</span>'}</td><td>${r.type?`<span class="pill" style="background:${'#F2C14E'}22;color:var(--gold)">${r.type}</span>`:''}</td><td>${r.toks.map(sym=>{const tk=TOKENS.find(x=>x.sym===sym);return `<span class="pill" style="background:${tk?tk.color:'#888'}22;color:${tk?tk.color:'#aaa'}">${sym}</span>`}).join(' ')}</td><td class="r mono">${usd(r.usd)}</td></tr>`).join('')
+    rows.map(r=>`<tr style="cursor:pointer" onclick="openProfileByAddr('${r.addr}')"><td class="mono">${short(r.addr)}</td><td>${r.entity||r.label||'<span style="color:var(--dim)">Unknown</span>'}</td><td>${r.type?`<span class="pill" style="background:${'#F2C14E'}22;color:var(--gold)">${r.type}</span>`:''}</td><td>${r.toks.map(sym=>{const tk=TOKENS.find(x=>x.sym===sym);return `<span class="pill" style="background:${tk?tk.color:'#888'}22;color:${tk?tk.color:'#aaa'}">${sym}</span>`}).join(' ')}</td><td class="r mono">${usd(r.usd)}</td></tr>`).join('')
   }</tbody></table>
   <div style="padding:12px 14px;color:var(--dim);font-size:11.5px">${labeled.length} of ${rows.length} wallets have entity labels${REAL?'':' · demo data'} · wallets appearing in multiple aquariums are merged</div>`;
 }
@@ -636,9 +636,9 @@ async function openProfile(h){
   const ark=`https://intel.arkm.com/explorer/address/${h.addr}`;
   el.innerHTML=`<div class="whead"><div class="fishic"><canvas data-mini="${h.tier}" width="64" height="44" style="width:32px;height:22px"></canvas></div>
     <div><h3 id="wpname">${h.entity||short(h.addr)}</h3><div class="addr">${h.addr}</div>
-      <div class="lbls" style="margin-top:6px">${[`<span style="color:${t.c}">${t.n} · rank #${h.rank} in $${cur.sym}</span>`,h.entityType?`<span style="color:var(--gold)">${h.entityType}</span>`:'',h.label&&h.label!==h.entity?`<span>${h.label}</span>`:'',h.isContract?'<span>contract</span>':''].join('')}</div></div>
+      <div class="lbls" style="margin-top:6px">${[h.rank?`<span style="color:${t.c}">${t.n} · rank #${h.rank} in $${cur.sym}</span>`:`<span>not in a tracked top 100</span>`,h.entityType?`<span style="color:var(--gold)">${h.entityType}</span>`:'',h.label&&h.label!==h.entity?`<span>${h.label}</span>`:'',h.isContract?'<span>contract</span>':''].join('')}</div></div>
     <div class="val"><small>Portfolio value · all chains</small><b class="mono" id="wpval">—</b></div>
-    <div class="wbtns"><button onclick="setView('aquarium')">← Aquarium</button><button id="wpcopy">Copy address</button><button id="wpshare">Share wallet</button><a href="${ark}" target="_blank" rel="noopener">Arkham ↗</a><a href="${scan}" target="_blank" rel="noopener">Basescan ↗</a></div></div>
+    <div class="wbtns"><button onclick="setView('aquarium')">← Aquarium</button><button id="wpcopy">Copy address</button><button id="wpshare">Share wallet</button><span id="wpsocials" style="display:contents"></span><a href="${ark}" target="_blank" rel="noopener">Arkham ↗</a><a href="${scan}" target="_blank" rel="noopener">Basescan ↗</a></div></div>
   <div class="wgrid" id="wpgrid"><div class="empty2">Loading profile…</div></div>`;
   drawMinis();
   document.getElementById('wpcopy').onclick=e=>{navigator.clipboard&&navigator.clipboard.writeText(h.addr);e.target.textContent='copied';setTimeout(()=>e.target.textContent='Copy address',1200)};
@@ -650,36 +650,46 @@ async function openProfile(h){
   for(const tk of TOKENS){const d=REAL?await tokData(tk.sym):null;const list=d?d.holdersTop:[];
     const m=list.find(x=>x.addr.toLowerCase()===h.addr.toLowerCase());
     if(m)positions.push({sym:tk.sym,color:tk.color,usd:m.usd,pct:m.pct,amount:m.amount,rank:list.indexOf(m)+1});}
-  if(!positions.length)positions.push({sym:cur.sym,color:cur.color,usd:h.value,pct:h.pct,amount:h.amount,rank:h.rank});
+  if(!positions.length&&h.value)positions.push({sym:cur.sym,color:cur.color,usd:h.value,pct:h.pct,amount:h.amount,rank:h.rank||0});
   const grid=document.getElementById('wpgrid');
   if(p&&p.entity&&p.entity.name)document.getElementById('wpname').textContent=p.entity.name;
+  if(p&&p.entity){const so=document.getElementById('wpsocials');const parts=[];
+    if(p.entity.website)parts.push(`<a href="${p.entity.website}" target="_blank" rel="noopener">🌐 Website</a>`);
+    if(p.entity.twitter){const tw=String(p.entity.twitter).replace(/^@/,'').replace(/^https?:\/\/(x|twitter)\.com\//,'');parts.push(`<a href="https://x.com/${tw}" target="_blank" rel="noopener">𝕏 @${tw}</a>`)}
+    if(so)so.innerHTML=parts.join('');}
   const total=p&&p.portfolio&&p.portfolio.totalUsd?p.portfolio.totalUsd:positions.reduce((s,x)=>s+x.usd,0);
   document.getElementById('wpval').textContent=usd(total);
   const holdings=(p&&p.portfolio&&p.portfolio.holdings)||[];
   const transfers=(p&&p.transfers)||[];
   // counterparties from transfer flows
-  const cps={};transfers.forEach(x=>{const k=x.cpLabel||short(x.cp||'?');cps[k]=cps[k]||{k,label:!!x.cpLabel,inU:0,outU:0,n:0};cps[k].n++;cps[k][x.dir==='out'?'outU':'inU']+=x.usd||0});
+  const cps={};transfers.forEach(x=>{const k=x.cpLabel||short(x.cp||'?');cps[k]=cps[k]||{k,addr:x.cp||null,label:!!x.cpLabel,inU:0,outU:0,n:0};cps[k].n++;cps[k][x.dir==='out'?'outU':'inU']+=x.usd||0});
   const cplist=Object.values(cps).sort((a,b)=>(b.inU+b.outU)-(a.inU+a.outU)).slice(0,8);
   const cpmax=Math.max(1,...cplist.map(c=>c.inU+c.outU));
   grid.innerHTML=`
     <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
-      <div class="wbox"><h5>Positions in Basefish aquariums</h5><table><thead><tr><th>Token</th><th class="r">Rank</th><th class="r">Amount</th><th class="r">% supply</th><th class="r">Value</th></tr></thead><tbody>${positions.map(x=>`<tr style="cursor:pointer" onclick="jumpToken('${x.sym}')"><td><span class="pill" style="background:${x.color}22;color:${x.color}">${x.sym}</span></td><td class="r mono">#${x.rank}</td><td class="r mono">${num(x.amount)}</td><td class="r mono">${x.pct.toFixed(2)}%</td><td class="r mono">${usd(x.usd)}</td></tr>`).join('')}</tbody></table></div>
+      <div class="wbox"><h5>Positions in Basefish aquariums</h5>${positions.length?`<table><thead><tr><th>Token</th><th class="r">Rank</th><th class="r">Amount</th><th class="r">% supply</th><th class="r">Value</th></tr></thead><tbody>${positions.map(x=>`<tr style="cursor:pointer" onclick="jumpToken('${x.sym}')"><td><span class="pill" style="background:${x.color}22;color:${x.color}">${x.sym}</span></td><td class="r mono">#${x.rank}</td><td class="r mono">${num(x.amount)}</td><td class="r mono">${x.pct.toFixed(2)}%</td><td class="r mono">${usd(x.usd)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty2">Not currently in the top 100 of any tracked token.</div>'}</div>
       <div class="wbox"><h5>Portfolio <small>${holdings.length?holdings.length+' assets · by Arkham':''}</small></h5>${holdings.length?`<table><thead><tr><th>Asset</th><th>Chain</th><th class="r">Holdings</th><th class="r">Value</th></tr></thead><tbody>${holdings.map(x=>`<tr><td><b>${x.sym}</b>${x.name?` <span style="color:var(--dim);font-size:11px">${x.name}</span>`:''}</td><td>${x.chain?`<span class="chainpill">${x.chain}</span>`:''}</td><td class="r mono">${num(x.amount)}</td><td class="r mono">${usd(x.usd)}</td></tr>`).join('')}</tbody></table>`:`<div class="empty2">${REAL?'Portfolio enrichment covers the top 25 wallets per token — this one gets picked up in an upcoming refresh.':'Needs live mode.'}</div>`}</div>
-      <div class="wbox"><h5>Top counterparties <small>from recent transfers</small></h5>${cplist.length?cplist.map(c=>`<div class="cprow"><div><b style="${c.label?'color:var(--teal)':''}">${c.k}</b> <span style="color:var(--dim);font-size:11px">· ${c.n} transfer${c.n>1?'s':''}</span><div class="bar3"><i style="width:${(c.inU/cpmax*100)}%;background:var(--teal)"></i><i style="width:${(c.outU/cpmax*100)}%;background:var(--coral)"></i></div></div><b class="mono">${usd(c.inU+c.outU)}</b></div>`).join('')+'<div class="empty2" style="padding-top:8px"><span style="color:var(--teal)">■</span> received&nbsp;&nbsp;<span style="color:var(--coral)">■</span> sent</div>':'<div class="empty2">No transfer data yet.</div>'}</div>
+      <div class="wbox"><h5>Top counterparties <small>from recent transfers</small></h5>${cplist.length?cplist.map(c=>`<div class="cprow" ${c.addr?`style="cursor:pointer" onclick="openProfileByAddr('${c.addr}')" title="Open wallet page"`:''}><div><b style="${c.label?'color:var(--teal)':''}">${c.k}</b> <span style="color:var(--dim);font-size:11px">· ${c.n} transfer${c.n>1?'s':''}</span><div class="bar3"><i style="width:${(c.inU/cpmax*100)}%;background:var(--teal)"></i><i style="width:${(c.outU/cpmax*100)}%;background:var(--coral)"></i></div></div><b class="mono">${usd(c.inU+c.outU)}</b></div>`).join('')+'<div class="empty2" style="padding-top:8px"><span style="color:var(--teal)">■</span> received&nbsp;&nbsp;<span style="color:var(--coral)">■</span> sent</div>':'<div class="empty2">No transfer data yet.</div>'}</div>
     </div>
     <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
-      <div class="wbox"><h5>Balance history <small>snapshots each refresh · builds over time</small></h5><div style="padding:10px 8px"><canvas class="hist" id="wphist"></canvas></div></div>
-      <div class="wbox"><h5>Transfers <small>${transfers.length} recent · by Arkham</small></h5>${transfers.length?`<div style="max-height:430px;overflow:auto"><table><thead><tr><th>Time</th><th>Dir</th><th>Counterparty</th><th>Token</th><th class="r">USD</th></tr></thead><tbody>${transfers.map(x=>`<tr class="txrow" onclick="window.open('${x.hash?('https://basescan.org/tx/'+x.hash):scan}','_blank')"><td style="color:var(--muted);white-space:nowrap">${x.ts?agoStr(x.ts)+' ago':''}</td><td><span style="color:${x.dir==='out'?'var(--coral)':'var(--teal)'}">${x.dir==='out'?'OUT':'IN'}</span></td><td>${x.cpLabel?`<b style="color:var(--teal)">${x.cpLabel}</b>`:`<span class="mono">${short(x.cp||'')}</span>`}${x.chain?` <span class="chainpill">${x.chain}</span>`:''}</td><td>${x.token||''}</td><td class="r mono">${x.usd?usd(x.usd):num(x.amount)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty2">No transfers captured yet.</div>'}</div>
+      <div class="wbox"><h5 id="wphtitle">Balance history</h5><div style="padding:10px 8px"><canvas class="hist" id="wphist"></canvas></div></div>
+      <div class="wbox"><h5>Transfers <small>${transfers.length} recent · by Arkham</small></h5>${transfers.length?`<div style="max-height:430px;overflow:auto"><table><thead><tr><th>Time</th><th>Dir</th><th>Counterparty</th><th>Token</th><th class="r">USD</th><th class="r">Link</th></tr></thead><tbody>${transfers.map(x=>`<tr class="txrow"><td style="color:var(--muted);white-space:nowrap">${x.ts?agoStr(x.ts)+' ago':''}</td><td><span style="color:${x.dir==='out'?'var(--coral)':'var(--teal)'}">${x.dir==='out'?'OUT':'IN'}</span></td><td onclick="openProfileByAddr('${x.cp||''}')" title="Open wallet page">${x.cpLabel?`<b style="color:var(--teal)">${x.cpLabel}</b>`:`<span class="mono">${short(x.cp||'')}</span>`}${x.chain?` <span class="chainpill">${x.chain}</span>`:''}</td><td>${x.token||''}</td><td class="r mono">${x.usd?usd(x.usd):num(x.amount)}</td><td class="r">${x.hash?`<a href="https://basescan.org/tx/${x.hash}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--dim);font-weight:700">tx ↗</a>`:''}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty2">No transfers captured yet.</div>'}</div>
       <div class="empty2" style="border:0">Labels, portfolio & transfer data by <a href="${ark}" target="_blank" rel="noopener" style="color:var(--muted)">Arkham Intelligence</a>${p?` · profile updated ${agoStr(p.updated)} ago`:''}</div>
     </div>`;
-  drawHistory(document.getElementById('wphist'),(p&&p.history)||[]);
+  const pos=(p&&p.posHistory&&p.posHistory[cur.sym])||null;
+  const series=pos&&pos.length>2?pos:((p&&p.history)||[]);
+  const htitle=document.getElementById('wphtitle');
+  if(htitle)htitle.innerHTML=pos&&pos.length>2?`$${cur.sym} position value <small>last 30 days · reconstructed on-chain</small>`:`Balance history <small>snapshots each refresh · builds over time</small>`;
+  drawHistory(document.getElementById('wphist'),series);
 }
 function jumpToken(sym){const t=TOKENS.find(x=>x.sym===sym);if(t){closeCard();loadToken(t).then(()=>setView('aquarium'))}}
 function closeCardOnly(){card.classList.remove('show')}
 async function openProfileByAddr(addr){
+  if(!/^0x[0-9a-fA-F]{40}$/.test(addr||''))return;
   let h=data&&data.list.find(x=>x.addr.toLowerCase()===addr.toLowerCase());
-  if(!h){for(const tk of TOKENS){const d=REAL?await tokData(tk.sym):null;if(!d)continue;const m=d.holdersTop.find(x=>x.addr.toLowerCase()===addr.toLowerCase());if(m){h={rank:1,addr:m.addr,pct:m.pct||0,value:m.usd||0,amount:m.amount||0,tier:'medium',label:m.label||'',entity:m.entity||null,entityType:m.entityType||null,isContract:!!m.isContract};break}}}
-  if(h)openProfile(h);
+  if(!h){for(const tk of TOKENS){const d=REAL?await tokData(tk.sym):null;if(!d)continue;const m=d.holdersTop.find(x=>x.addr.toLowerCase()===addr.toLowerCase());if(m){h={rank:d.holdersTop.indexOf(m)+1,addr:m.addr,pct:m.pct||0,value:m.usd||0,amount:m.amount||0,tier:'medium',label:m.label||'',entity:m.entity||null,entityType:m.entityType||null,isContract:!!m.isContract};break}}}
+  if(!h)h={rank:null,addr,pct:0,value:0,amount:0,tier:'small',label:'',entity:null,entityType:null,isContract:false};
+  openProfile(h);
 }
 async function legacyDrawerProfile(h){
   const d=document.getElementById('drawer');

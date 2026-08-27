@@ -20,16 +20,35 @@ const LABEL_TTL_DAYS = 30, ARKHAM_MAX_LOOKUPS = 300;
 let arkhamBudget = ARKHAM_MAX_LOOKUPS, arkhamBase = null;
 
 function parseArkham(payload) {
-  // response may be flat or keyed per-chain; walk it for arkhamEntity/arkhamLabel
-  const found = { name: null, type: null, label: null };
+  // response may be flat or keyed per-chain; walk it for arkhamEntity/arkhamLabel (+ id, socials)
+  const found = { name: null, type: null, label: null, id: null, twitter: null, website: null };
   const walk = (o, depth) => {
     if (!o || typeof o !== 'object' || depth > 3) return;
-    if (o.arkhamEntity && !found.name) { found.name = o.arkhamEntity.name || null; found.type = o.arkhamEntity.type || null; }
+    if (o.arkhamEntity && !found.name) {
+      const e = o.arkhamEntity;
+      found.name = e.name || null; found.type = e.type || null; found.id = e.id || null;
+      found.twitter = e.twitter || e.twitterUsername || null; found.website = e.website || e.websiteLink || null;
+    }
     if (o.arkhamLabel && !found.label) found.label = o.arkhamLabel.name || null;
     if (!found.name || !found.label) for (const v of Object.values(o)) walk(v, depth + 1);
   };
   walk(payload, 0);
   return found;
+}
+function pickSocials(payload) {
+  const out = { twitter: null, website: null };
+  const walk = (o, depth) => {
+    if (!o || typeof o !== 'object' || depth > 3) return;
+    for (const [k, v] of Object.entries(o)) {
+      if (typeof v === 'string' && v) {
+        const kl = k.toLowerCase();
+        if (!out.twitter && (kl === 'twitter' || kl === 'twitterusername' || kl === 'x')) out.twitter = v;
+        if (!out.website && (kl === 'website' || kl === 'websitelink' || kl === 'site' || kl === 'url') && /^https?:/.test(v)) out.website = v;
+      } else if (typeof v === 'object') walk(v, depth + 1);
+    }
+  };
+  walk(payload, 0);
+  return out;
 }
 
 async function arkhamLookup(addr) {
@@ -46,7 +65,7 @@ async function arkhamLookup(addr) {
         if (!r.ok) continue;
         arkhamBase = base; arkhamBudget--;
         const info = parseArkham(await r.json());
-        const rec = { name: info.name, type: info.type, label: info.label, ts: Date.now() };
+        const rec = { name: info.name, type: info.type, label: info.label, id: info.id, twitter: info.twitter, website: info.website, ts: Date.now() };
         labelCache[a] = rec;
         await new Promise(s => setTimeout(s, 250)); // be polite
         return rec;
@@ -132,11 +151,11 @@ function parseTransfers(t, self) {
 async function enrichWalletProfile(addr) {
   fs.mkdirSync(WALLET_DIR, { recursive: true });
   const p = path.join(WALLET_DIR, addr.toLowerCase() + '.json');
-  let oldHistory = [];
+  let oldHistory = [], oldPos = {};
   try {
     const old = JSON.parse(fs.readFileSync(p, 'utf8'));
-    oldHistory = old.history || [];
-    if (old.v === 2 && Date.now() - new Date(old.updated).getTime() < WALLET_TTL_H * 36e5) return;
+    oldHistory = old.history || []; oldPos = old.posHistory || {};
+    if (old.v === 3 && Date.now() - new Date(old.updated).getTime() < WALLET_TTL_H * 36e5) return;
   } catch {}
   // entity comes from the label cache (filled by arkhamLookup) — no duplicate intel call
   const cached = labelCache[addr.toLowerCase()] || null;
@@ -150,7 +169,13 @@ async function enrichWalletProfile(addr) {
     if (portfolio) console.log('  [shape] portfolio keys:', Object.keys(portfolio).slice(0, 12).join(','));
     if (transfers) console.log('  [shape] transfers keys:', Object.keys(transfers).slice(0, 12).join(','));
   }
-  const ent = cached ? { name: cached.name, type: cached.type, label: cached.label } : parseArkham(intel || {});
+  let ent = cached ? { name: cached.name, type: cached.type, label: cached.label, id: cached.id || null, twitter: cached.twitter || null, website: cached.website || null } : parseArkham(intel || {});
+  // fetch entity-level socials once when we know the entity but lack socials
+  if (ent.id && !ent.twitter && !ent.website) {
+    const ei = await arkhamGet(`/intelligence/entity/${encodeURIComponent(ent.id)}`);
+    if (ei) { const s2 = pickSocials(ei); ent.twitter = ent.twitter || s2.twitter; ent.website = ent.website || s2.website;
+      const lc = labelCache[addr.toLowerCase()]; if (lc) { lc.twitter = lc.twitter || s2.twitter; lc.website = lc.website || s2.website; } }
+  }
   const port = parsePortfolio(portfolio);
   // own balance-history: one point per refresh cycle, grows forever (capped)
   const history = oldHistory.slice(-400);
@@ -159,7 +184,8 @@ async function enrichWalletProfile(addr) {
     if (!last || Date.now() - new Date(last.ts).getTime() > 6 * 36e5) history.push({ ts: new Date().toISOString(), usd: Math.round(port.totalUsd) });
   }
   fs.writeFileSync(p, JSON.stringify({
-    v: 2, addr, updated: new Date().toISOString(),
+    v: 3, addr, updated: new Date().toISOString(),
+    posHistory: oldPos,
     entity: ent,
     portfolio: port,
     history,
@@ -186,6 +212,65 @@ async function j(url, tries = 3) {
 
 fs.mkdirSync('data', { recursive: true });
 const index = { generated_at: new Date().toISOString(), tokens: [] };
+
+// ---- 30d position-history backfill (real on-chain data via to_block) ----
+const HIST_POINTS = 10, HIST_DAYS = 30, HIST_TOP = 15;
+let histBlocks = null; // shared dates→blocks across tokens
+async function getHistBlocks() {
+  if (histBlocks) return histBlocks;
+  histBlocks = [];
+  for (let i = HIST_POINTS - 1; i >= 0; i--) {
+    const d = new Date(Date.now() - i * (HIST_DAYS / (HIST_POINTS - 1)) * 864e5);
+    try {
+      const r = await j(`${M}/dateToBlock?chain=${cfg.chain}&date=${encodeURIComponent(d.toISOString())}`);
+      histBlocks.push({ ts: d.toISOString(), block: r.block });
+    } catch (e) { console.log('  dateToBlock failed:', e.message.slice(0, 80)); }
+  }
+  return histBlocks;
+}
+async function backfillPositions(t, top) {
+  const c = t.contract.toLowerCase();
+  const blocks = await getHistBlocks();
+  if (!blocks.length) return;
+  // token price at each block (shared across wallets)
+  const prices = [];
+  for (const b of blocks) {
+    try { prices.push(Number((await j(`${M}/erc20/${c}/price?chain=${cfg.chain}&to_block=${b.block}`)).usdPrice) || 0); }
+    catch (e) { prices.push(0); }
+  }
+  fs.mkdirSync(WALLET_DIR, { recursive: true });
+  let done = 0;
+  for (const h of top.slice(0, HIST_TOP)) {
+    const p = path.join(WALLET_DIR, h.addr.toLowerCase() + '.json');
+    let cur2 = {}; try { cur2 = JSON.parse(fs.readFileSync(p, 'utf8')); } catch {}
+    const ph = cur2.posHistory || {};
+    if (ph[t.sym] && ph[t.sym].length >= HIST_POINTS - 2) continue; // already backfilled
+    const pts = [];
+    for (let i = 0; i < blocks.length; i++) {
+      try {
+        let amt = 0;
+        try {
+          const bal = await j(`${M}/wallets/${h.addr}/tokens?chain=${cfg.chain}&token_addresses%5B0%5D=${c}&to_block=${blocks[i].block}`);
+          const row = (bal.result || [])[0];
+          amt = row ? Number(row.balance_formatted) || 0 : 0;
+        } catch (e1) {
+          // fallback: classic erc20 balances endpoint (raw balance + decimals)
+          const bal2 = await j(`${M}/${h.addr}/erc20?chain=${cfg.chain}&token_addresses%5B0%5D=${c}&to_block=${blocks[i].block}`);
+          const row2 = (Array.isArray(bal2) ? bal2 : bal2.result || [])[0];
+          amt = row2 ? Number(row2.balance) / Math.pow(10, Number(row2.decimals) || 18) : 0;
+        }
+        pts.push({ ts: blocks[i].ts, usd: Math.round(amt * (prices[i] || 0)), amount: amt });
+      } catch (e) { /* skip point */ }
+    }
+    if (pts.length >= 3) {
+      ph[t.sym] = pts;
+      cur2.posHistory = ph; cur2.addr = cur2.addr || h.addr;
+      fs.writeFileSync(p, JSON.stringify(cur2));
+      done++;
+    }
+  }
+  if (done) console.log(`  backfilled 30d position history for ${done} wallets`);
+}
 
 for (const t of cfg.tokens) {
   const c = t.contract.toLowerCase();
@@ -256,6 +341,7 @@ for (const t of cfg.tokens) {
       }
       console.log(`  wallet profiles refreshed (budget left ${profileBudget})`);
     }
+    try { await backfillPositions(t, top); } catch (e) { console.log('  backfill err:', e.message.slice(0, 90)); }
 
     // recent meaningful transfers
     let recent = [];
