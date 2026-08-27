@@ -170,6 +170,12 @@ async function enrichWalletProfile(addr) {
     if (transfers) console.log('  [shape] transfers keys:', Object.keys(transfers).slice(0, 12).join(','));
   }
   let ent = cached ? { name: cached.name, type: cached.type, label: cached.label, id: cached.id || null, twitter: cached.twitter || null, website: cached.website || null } : parseArkham(intel || {});
+  // older cache entries lack the entity id — refresh intel once for named entities so socials can resolve
+  if (cached && ent.name && !ent.id && !cached.idChecked) {
+    const re = await arkhamGet(`/intelligence/address/${addr}/all`);
+    if (re) { const pi = parseArkham(re); ent.id = pi.id; ent.twitter = ent.twitter || pi.twitter; ent.website = ent.website || pi.website; }
+    const lc = labelCache[addr.toLowerCase()]; if (lc) { lc.idChecked = true; lc.id = ent.id || lc.id; lc.twitter = lc.twitter || ent.twitter; lc.website = lc.website || ent.website; }
+  }
   // fetch entity-level socials once when we know the entity but lack socials
   if (ent.id && !ent.twitter && !ent.website) {
     const ei = await arkhamGet(`/intelligence/entity/${encodeURIComponent(ent.id)}`);
