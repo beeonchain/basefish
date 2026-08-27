@@ -16,7 +16,7 @@ const ARKHAM_BASES = ['https://api.arkm.com', 'https://api.arkhamintelligence.co
 const LABELS_PATH = 'data/labels.json';
 let labelCache = {};
 try { labelCache = JSON.parse(fs.readFileSync(LABELS_PATH, 'utf8')); } catch {}
-const LABEL_TTL_DAYS = 30, ARKHAM_MAX_LOOKUPS = 150;
+const LABEL_TTL_DAYS = 30, ARKHAM_MAX_LOOKUPS = 300;
 let arkhamBudget = ARKHAM_MAX_LOOKUPS, arkhamBase = null;
 
 function parseArkham(payload) {
@@ -64,7 +64,7 @@ const EXCLUDE_TYPES = new Set(['cex', 'exchange', 'bridge', 'dex', 'staking', 'b
 const WALLET_DIR = 'data/wallets';
 const WALLET_DETAIL_PER_TOKEN = 25;
 const WALLET_TTL_H = 12;
-let profileBudget = 160; // total arkham profile calls per run
+let profileBudget = 320; // total arkham profile calls per run
 let loggedShapes = false;
 
 async function arkhamGet(pathname) {
@@ -74,7 +74,7 @@ async function arkhamGet(pathname) {
     try {
       const r = await fetch(base + pathname, { headers: { 'API-Key': ARKHAM_KEY, accept: 'application/json' } });
       if (r.status === 429) { await new Promise(s => setTimeout(s, 2500)); continue; }
-      if (!r.ok) { if (!loggedShapes) console.log(`  arkham ${r.status} on ${pathname.split('?')[0]}`); continue; }
+      if (!r.ok) { if (!loggedShapes) console.log(`  arkham ${r.status} on ${pathname.split('?')[0]} :: ${(await r.text()).slice(0, 140)}`); continue; }
       arkhamBase = base; profileBudget--;
       await new Promise(s => setTimeout(s, 300));
       return r.json();
@@ -112,7 +112,9 @@ function parsePortfolio(p) {
 }
 
 function parseTransfers(t, self) {
-  const arr = (t && (t.transfers || t.result || (Array.isArray(t) ? t : []))) || [];
+  let arr = (t && (t.transfers || t.result || (Array.isArray(t) ? t : []))) || [];
+  const meaningful = arr.filter(x => num2(x.historicalUSD ?? x.usd ?? x.usdValue) >= 1);
+  if (meaningful.length >= 3) arr = meaningful;
   return arr.slice(0, 10).map(x => {
     const from = (x.fromAddress && (x.fromAddress.address || x.fromAddress)) || x.from || '';
     const to = (x.toAddress && (x.toAddress.address || x.toAddress)) || x.to || '';
@@ -134,21 +136,22 @@ async function enrichWalletProfile(addr) {
     const old = JSON.parse(fs.readFileSync(p, 'utf8'));
     if (Date.now() - new Date(old.updated).getTime() < WALLET_TTL_H * 36e5) return;
   } catch {}
-  const [intel, portfolio, transfers] = [
-    await arkhamGet(`/intelligence/address/${addr}/all`),
-    await arkhamGet(`/portfolio/address/${addr}`),
-    await arkhamGet(`/transfers?base=${addr}&limit=10&sortDir=desc`),
-  ];
-  if (!intel && !portfolio && !transfers) return;
+  // entity comes from the label cache (filled by arkhamLookup) — no duplicate intel call
+  const cached = labelCache[addr.toLowerCase()] || null;
+  const intel = cached ? null : await arkhamGet(`/intelligence/address/${addr}/all`);
+  const portfolio = await arkhamGet(`/portfolio/address/${addr}?time=${Date.now()}`)
+    || await arkhamGet(`/portfolio/address/${addr}`);
+  const transfers = await arkhamGet(`/transfers?base=${addr}&limit=12&sortDir=desc&usdGte=1`);
+  if (!cached && !intel && !portfolio && !transfers) return;
   if (!loggedShapes && (portfolio || transfers)) {
     loggedShapes = true;
     if (portfolio) console.log('  [shape] portfolio keys:', Object.keys(portfolio).slice(0, 12).join(','));
     if (transfers) console.log('  [shape] transfers keys:', Object.keys(transfers).slice(0, 12).join(','));
   }
-  const ent = parseArkham(intel || {});
+  const ent = cached ? { name: cached.name, type: cached.type, label: cached.label } : parseArkham(intel || {});
   fs.writeFileSync(p, JSON.stringify({
     addr, updated: new Date().toISOString(),
-    entity: { name: ent.name, type: ent.type, label: ent.label },
+    entity: ent,
     portfolio: parsePortfolio(portfolio),
     transfers: transfers ? parseTransfers(transfers, addr) : [],
   }));
