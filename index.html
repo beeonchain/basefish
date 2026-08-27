@@ -161,6 +161,39 @@
   .drawer .alink{display:block;text-align:center;padding:9px;border:1px solid var(--line2);border-radius:9px;color:var(--muted);font-weight:700;text-decoration:none;font-size:12px}
   .drawer .alink:hover{color:var(--text)}
   .drawer .empty{color:var(--dim);font-size:12px}
+  /* wallet page */
+  .wp{display:none;flex:1;min-height:0;overflow:auto;border:1px solid var(--line);border-radius:16px;background:rgba(10,23,48,.5)}
+  .wp.show{display:block}
+  .wp .whead{display:flex;align-items:center;gap:18px;padding:18px 22px;border-bottom:1px solid var(--line2);flex-wrap:wrap;position:sticky;top:0;background:#0A1730;z-index:2}
+  .wp .whead .fishic{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--panel3),var(--panel));display:grid;place-items:center;border:1px solid var(--line2)}
+  .wp .whead h3{font:800 22px/1.1 var(--font-display);margin:0}
+  .wp .whead .addr{font:500 12px var(--font-mono);color:var(--muted);word-break:break-all;margin-top:4px}
+  .wp .whead .val{margin-left:auto;text-align:right}
+  .wp .whead .val b{font:800 30px/1 var(--font-display)}
+  .wp .whead .val small{display:block;color:var(--dim);font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin-bottom:4px}
+  .wp .wbtns{display:flex;gap:8px;width:100%}
+  .wp .wbtns button,.wp .wbtns a{padding:7px 13px;border:1px solid var(--line2);border-radius:8px;font-weight:700;font-size:12px;color:var(--muted);text-decoration:none}
+  .wp .wbtns button:hover,.wp .wbtns a:hover{color:var(--text);background:var(--panel2)}
+  .wp .wgrid{display:grid;grid-template-columns:1fr 1.2fr;gap:14px;padding:16px 20px}
+  @media (max-width:1250px){.wp .wgrid{grid-template-columns:1fr}}
+  .wp .wbox{border:1px solid var(--line);border-radius:12px;background:rgba(12,26,51,.55);overflow:hidden}
+  .wp .wbox>h5{font:700 11px var(--font-body);letter-spacing:.11em;text-transform:uppercase;color:var(--dim);margin:0;padding:11px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .wp .wbox>h5 small{color:var(--dim);text-transform:none;letter-spacing:0;font-weight:500}
+  .wp table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .wp th{text-align:left;font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);padding:8px 14px;border-bottom:1px solid var(--line)}
+  .wp td{padding:8px 14px;border-bottom:1px solid var(--line)}
+  .wp tr:last-child td{border-bottom:0}
+  .wp td.r,.wp th.r{text-align:right}
+  .wp .chainpill{font-size:9.5px;padding:1px 6px;border-radius:4px;background:var(--panel2);color:var(--muted);border:1px solid var(--line);text-transform:lowercase}
+  .wp .cprow{display:grid;grid-template-columns:1fr auto;gap:6px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:12.5px;align-items:center}
+  .wp .cprow:last-child{border-bottom:0}
+  .wp .cprow .bar3{height:4px;border-radius:2px;background:var(--panel2);margin-top:5px;overflow:hidden;display:flex}
+  .wp .cprow .bar3 i{display:block;height:100%}
+  .wp .txrow:hover td{background:rgba(52,227,196,.05);cursor:pointer}
+  .wp .empty2{padding:18px 14px;color:var(--dim);font-size:12px}
+  .wp canvas.hist{display:block;width:100%;height:190px}
+  .wp .lbls{display:flex;gap:4px;flex-wrap:wrap}
+  .wp .lbls span{font-size:10px;padding:2px 7px;border-radius:5px;background:var(--panel2);color:var(--muted);border:1px solid var(--line);font-weight:700}
   /* ---------- footer ---------- */
   .foot{grid-column:1/4;border-top:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 20px;font-size:11.5px;color:var(--dim)}
   .foot b{color:var(--muted);font-weight:600}
@@ -229,6 +262,7 @@
     </div>
     <div class="view" id="holdersView"></div>
     <div class="view" id="walletsView"></div>
+    <div class="wp" id="walletPage"></div>
     <div class="bar">
       <div class="t">Fish size = wallet size<small>by USD value · tiers relative to this token's top 100</small></div>
       <div class="sz"><canvas data-tier="small"></canvas><div>Small<b id="thSmall">&lt; $10K</b></div></div>
@@ -512,6 +546,8 @@ function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>b
   document.getElementById('tank').style.display=v==='aquarium'?'':'none';
   document.getElementById('holdersView').classList.toggle('show',v==='holders');
   document.getElementById('walletsView').classList.toggle('show',v==='wallets');
+  document.getElementById('walletPage').classList.toggle('show',v==='wallet');
+  if(v!=='wallet'&&location.hash.startsWith('#w='))history.replaceState(null,'',location.pathname+location.search);
   if(v==='wallets')renderWallets();
   if(v==='aquarium')resize()}
 async function renderWallets(){
@@ -532,7 +568,7 @@ async function renderWallets(){
   const rows=[...agg.values()].sort((a,b)=>b.usd-a.usd).slice(0,150);
   const labeled=rows.filter(r=>r.entity||r.label);
   el.innerHTML=`<table><thead><tr><th>Wallet</th><th>Entity / label</th><th>Type</th><th>Holds</th><th class="r">Combined value (top-100 positions)</th></tr></thead><tbody>${
-    rows.map(r=>`<tr><td class="mono">${short(r.addr)}</td><td>${r.entity||r.label||'<span style="color:var(--dim)">—</span>'}</td><td>${r.type?`<span class="pill" style="background:${'#F2C14E'}22;color:var(--gold)">${r.type}</span>`:''}</td><td>${r.toks.map(sym=>{const tk=TOKENS.find(x=>x.sym===sym);return `<span class="pill" style="background:${tk?tk.color:'#888'}22;color:${tk?tk.color:'#aaa'}">${sym}</span>`}).join(' ')}</td><td class="r mono">${usd(r.usd)}</td></tr>`).join('')
+    rows.map(r=>`<tr style="cursor:pointer" onclick="openProfileByAddr('${r.addr}')"><td class="mono">${short(r.addr)}</td><td>${r.entity||r.label||'<span style="color:var(--dim)">—</span>'}</td><td>${r.type?`<span class="pill" style="background:${'#F2C14E'}22;color:var(--gold)">${r.type}</span>`:''}</td><td>${r.toks.map(sym=>{const tk=TOKENS.find(x=>x.sym===sym);return `<span class="pill" style="background:${tk?tk.color:'#888'}22;color:${tk?tk.color:'#aaa'}">${sym}</span>`}).join(' ')}</td><td class="r mono">${usd(r.usd)}</td></tr>`).join('')
   }</tbody></table>
   <div style="padding:12px 14px;color:var(--dim);font-size:11.5px">${labeled.length} of ${rows.length} wallets have entity labels${REAL?'':' · demo data'} · wallets appearing in multiple aquariums are merged</div>`;
 }
@@ -561,6 +597,7 @@ async function pollRefresh(){
   if(!REAL||document.visibilityState!=='visible')return;
   try{const d=await fetchToken(cur.sym);
     if(d.generated_at!==data.generated_at){
+      for(const k in tokCache)delete tokCache[k];
       const old=new Map(data.list.map(h=>[h.addr.toLowerCase(),h.value]));
       data=fromReal(d);
       fish.forEach(f2=>{const nh=data.list.find(h=>h.addr===f2.h.addr);if(nh){const ov=old.get(nh.addr.toLowerCase());f2.h=nh;f2.tsize=sizeFor(nh);if(ov&&Math.abs(nh.value-ov)/ov>0.03){f2.pulse=1.2;toastMsg(`<b>${short(nh.addr)}</b> ${nh.value>ov?'grew':'shrank'} to <b>${usd(nh.value)}</b>`,nh.value>ov?'var(--teal)':'var(--coral)')}}});
@@ -570,7 +607,81 @@ async function pollRefresh(){
 }
 setInterval(pollRefresh,120000);
 const profCache={};
+const tokCache={};
+async function tokData(sym){if(tokCache[sym])return tokCache[sym];try{tokCache[sym]=await fetchToken(sym)}catch(e){tokCache[sym]=null}return tokCache[sym]}
+function drawHistory(cv2,pts){
+  const x=cv2.getContext('2d');const W2=cv2.width=cv2.clientWidth*2,H2=cv2.height=380;x.scale(1,1);
+  x.clearRect(0,0,W2,H2);
+  if(!pts||pts.length<2){x.fillStyle='#5C7191';x.font='24px Manrope';x.textAlign='center';x.fillText(pts&&pts.length===1?'Collecting history — first snapshot recorded':'History builds up as refreshes accumulate',W2/2,H2/2);return}
+  const vs=pts.map(p=>p.usd),mn=Math.min(...vs),mx=Math.max(...vs),pad=44;
+  const X=i=>pad+ (W2-pad*2)*i/(pts.length-1), Y=v=>H2-40-(H2-90)*((v-mn)/((mx-mn)||1));
+  x.strokeStyle='rgba(130,175,230,.12)';x.lineWidth=1;
+  for(let g=0;g<4;g++){const y=50+g*(H2-90)/3;x.beginPath();x.moveTo(pad,y);x.lineTo(W2-pad,y);x.stroke()}
+  const grd=x.createLinearGradient(0,40,0,H2);grd.addColorStop(0,'rgba(52,227,196,.28)');grd.addColorStop(1,'rgba(52,227,196,0)');
+  x.beginPath();pts.forEach((p,i)=>i?x.lineTo(X(i),Y(p.usd)):x.moveTo(X(0),Y(p.usd)));
+  x.strokeStyle='#34E3C4';x.lineWidth=3;x.stroke();
+  x.lineTo(X(pts.length-1),H2-40);x.lineTo(X(0),H2-40);x.closePath();x.fillStyle=grd;x.fill();
+  const lp=pts[pts.length-1];x.fillStyle='#34E3C4';x.beginPath();x.arc(X(pts.length-1),Y(lp.usd),6,0,6.28);x.fill();
+  x.fillStyle='#8AA0BF';x.font='20px JetBrains Mono';x.textAlign='left';x.fillText(usd(mx),pad,40);x.fillText(usd(mn),pad,H2-14);
+  x.textAlign='right';x.fillStyle='#5C7191';x.font='18px Manrope';
+  x.fillText(new Date(pts[0].ts).toLocaleDateString(),W2/2-20,H2-14);x.fillText(new Date(lp.ts).toLocaleDateString(),W2-pad,H2-14);
+}
 async function openProfile(h){
+  // full-screen wallet page
+  setView('wallet');closeCardOnly();
+  history.replaceState(null,'',location.pathname+location.search+'#w='+h.addr);
+  const el=document.getElementById('walletPage');
+  const t=TIER[h.tier]||TIER.small;
+  const scan=`https://basescan.org/address/${h.addr}`;
+  const ark=`https://intel.arkm.com/explorer/address/${h.addr}`;
+  el.innerHTML=`<div class="whead"><div class="fishic"><canvas data-mini="${h.tier}" width="64" height="44" style="width:32px;height:22px"></canvas></div>
+    <div><h3 id="wpname">${h.entity||short(h.addr)}</h3><div class="addr">${h.addr}</div>
+      <div class="lbls" style="margin-top:6px">${[`<span style="color:${t.c}">${t.n} · rank #${h.rank} in $${cur.sym}</span>`,h.entityType?`<span style="color:var(--gold)">${h.entityType}</span>`:'',h.label&&h.label!==h.entity?`<span>${h.label}</span>`:'',h.isContract?'<span>contract</span>':''].join('')}</div></div>
+    <div class="val"><small>Portfolio value · all chains</small><b class="mono" id="wpval">—</b></div>
+    <div class="wbtns"><button onclick="setView('aquarium')">← Aquarium</button><button id="wpcopy">Copy address</button><button id="wpshare">Share wallet</button><a href="${ark}" target="_blank" rel="noopener">Arkham ↗</a><a href="${scan}" target="_blank" rel="noopener">Basescan ↗</a></div></div>
+  <div class="wgrid" id="wpgrid"><div class="empty2">Loading profile…</div></div>`;
+  drawMinis();
+  document.getElementById('wpcopy').onclick=e=>{navigator.clipboard&&navigator.clipboard.writeText(h.addr);e.target.textContent='copied';setTimeout(()=>e.target.textContent='Copy address',1200)};
+  document.getElementById('wpshare').onclick=()=>{const u=location.origin+location.pathname+'?token='+cur.sym.toLowerCase()+'%23w='+h.addr;navigator.clipboard&&navigator.clipboard.writeText(location.href);toastMsg('Wallet link copied','var(--teal)')};
+  let p=profCache[h.addr];
+  if(!p&&REAL){try{const r=await fetch('data/wallets/'+h.addr.toLowerCase()+'.json?t='+Date.now(),{cache:'no-store'});if(r.ok)p=profCache[h.addr]=await r.json()}catch(e){}}
+  // positions across our aquariums
+  const positions=[];
+  for(const tk of TOKENS){const d=REAL?await tokData(tk.sym):null;const list=d?d.holdersTop:[];
+    const m=list.find(x=>x.addr.toLowerCase()===h.addr.toLowerCase());
+    if(m)positions.push({sym:tk.sym,color:tk.color,usd:m.usd,pct:m.pct,amount:m.amount,rank:list.indexOf(m)+1});}
+  if(!positions.length)positions.push({sym:cur.sym,color:cur.color,usd:h.value,pct:h.pct,amount:h.amount,rank:h.rank});
+  const grid=document.getElementById('wpgrid');
+  if(p&&p.entity&&p.entity.name)document.getElementById('wpname').textContent=p.entity.name;
+  const total=p&&p.portfolio&&p.portfolio.totalUsd?p.portfolio.totalUsd:positions.reduce((s,x)=>s+x.usd,0);
+  document.getElementById('wpval').textContent=usd(total);
+  const holdings=(p&&p.portfolio&&p.portfolio.holdings)||[];
+  const transfers=(p&&p.transfers)||[];
+  // counterparties from transfer flows
+  const cps={};transfers.forEach(x=>{const k=x.cpLabel||short(x.cp||'?');cps[k]=cps[k]||{k,label:!!x.cpLabel,inU:0,outU:0,n:0};cps[k].n++;cps[k][x.dir==='out'?'outU':'inU']+=x.usd||0});
+  const cplist=Object.values(cps).sort((a,b)=>(b.inU+b.outU)-(a.inU+a.outU)).slice(0,8);
+  const cpmax=Math.max(1,...cplist.map(c=>c.inU+c.outU));
+  grid.innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div class="wbox"><h5>Positions in Basefish aquariums</h5><table><thead><tr><th>Token</th><th class="r">Rank</th><th class="r">Amount</th><th class="r">% supply</th><th class="r">Value</th></tr></thead><tbody>${positions.map(x=>`<tr style="cursor:pointer" onclick="jumpToken('${x.sym}')"><td><span class="pill" style="background:${x.color}22;color:${x.color}">${x.sym}</span></td><td class="r mono">#${x.rank}</td><td class="r mono">${num(x.amount)}</td><td class="r mono">${x.pct.toFixed(2)}%</td><td class="r mono">${usd(x.usd)}</td></tr>`).join('')}</tbody></table></div>
+      <div class="wbox"><h5>Portfolio <small>${holdings.length?holdings.length+' assets · by Arkham':''}</small></h5>${holdings.length?`<table><thead><tr><th>Asset</th><th>Chain</th><th class="r">Holdings</th><th class="r">Value</th></tr></thead><tbody>${holdings.map(x=>`<tr><td><b>${x.sym}</b>${x.name?` <span style="color:var(--dim);font-size:11px">${x.name}</span>`:''}</td><td>${x.chain?`<span class="chainpill">${x.chain}</span>`:''}</td><td class="r mono">${num(x.amount)}</td><td class="r mono">${usd(x.usd)}</td></tr>`).join('')}</tbody></table>`:`<div class="empty2">${REAL?'Portfolio enrichment covers the top 25 wallets per token — this one gets picked up in an upcoming refresh.':'Needs live mode.'}</div>`}</div>
+      <div class="wbox"><h5>Top counterparties <small>from recent transfers</small></h5>${cplist.length?cplist.map(c=>`<div class="cprow"><div><b style="${c.label?'color:var(--teal)':''}">${c.k}</b> <span style="color:var(--dim);font-size:11px">· ${c.n} transfer${c.n>1?'s':''}</span><div class="bar3"><i style="width:${(c.inU/cpmax*100)}%;background:var(--teal)"></i><i style="width:${(c.outU/cpmax*100)}%;background:var(--coral)"></i></div></div><b class="mono">${usd(c.inU+c.outU)}</b></div>`).join('')+'<div class="empty2" style="padding-top:8px"><span style="color:var(--teal)">■</span> received&nbsp;&nbsp;<span style="color:var(--coral)">■</span> sent</div>':'<div class="empty2">No transfer data yet.</div>'}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div class="wbox"><h5>Balance history <small>snapshots each refresh · builds over time</small></h5><div style="padding:10px 8px"><canvas class="hist" id="wphist"></canvas></div></div>
+      <div class="wbox"><h5>Transfers <small>${transfers.length} recent · by Arkham</small></h5>${transfers.length?`<div style="max-height:430px;overflow:auto"><table><thead><tr><th>Time</th><th>Dir</th><th>Counterparty</th><th>Token</th><th class="r">USD</th></tr></thead><tbody>${transfers.map(x=>`<tr class="txrow" onclick="window.open('${x.hash?('https://basescan.org/tx/'+x.hash):scan}','_blank')"><td style="color:var(--muted);white-space:nowrap">${x.ts?agoStr(x.ts)+' ago':''}</td><td><span style="color:${x.dir==='out'?'var(--coral)':'var(--teal)'}">${x.dir==='out'?'OUT':'IN'}</span></td><td>${x.cpLabel?`<b style="color:var(--teal)">${x.cpLabel}</b>`:`<span class="mono">${short(x.cp||'')}</span>`}${x.chain?` <span class="chainpill">${x.chain}</span>`:''}</td><td>${x.token||''}</td><td class="r mono">${x.usd?usd(x.usd):num(x.amount)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty2">No transfers captured yet.</div>'}</div>
+      <div class="empty2" style="border:0">Labels, portfolio & transfer data by <a href="${ark}" target="_blank" rel="noopener" style="color:var(--muted)">Arkham Intelligence</a>${p?` · profile updated ${agoStr(p.updated)} ago`:''}</div>
+    </div>`;
+  drawHistory(document.getElementById('wphist'),(p&&p.history)||[]);
+}
+function jumpToken(sym){const t=TOKENS.find(x=>x.sym===sym);if(t){closeCard();loadToken(t).then(()=>setView('aquarium'))}}
+function closeCardOnly(){card.classList.remove('show')}
+async function openProfileByAddr(addr){
+  let h=data&&data.list.find(x=>x.addr.toLowerCase()===addr.toLowerCase());
+  if(!h){for(const tk of TOKENS){const d=REAL?await tokData(tk.sym):null;if(!d)continue;const m=d.holdersTop.find(x=>x.addr.toLowerCase()===addr.toLowerCase());if(m){h={rank:1,addr:m.addr,pct:m.pct||0,value:m.usd||0,amount:m.amount||0,tier:'medium',label:m.label||'',entity:m.entity||null,entityType:m.entityType||null,isContract:!!m.isContract};break}}}
+  if(h)openProfile(h);
+}
+async function legacyDrawerProfile(h){
   const d=document.getElementById('drawer');
   const t=TIER[h.tier]||TIER.small;
   const head=`<div class="dh"><button class="x" id="dx">✕</button>
@@ -616,6 +727,8 @@ async function boot(){
   if(badge)badge.innerHTML=REAL?'<b>Live on-chain data</b> · top 100 holders per token · refreshed every ~2h':'Data shown here is <b>simulated</b> — live data loads when deployed with the fetch pipeline';
   const q=new URLSearchParams(location.search).get('token');
   await loadToken(TOKENS.find(t=>t.sym.toLowerCase()===String(q||'').toLowerCase())||TOKENS[0]);
+  const wm=location.hash.match(/^#w=(0x[0-9a-fA-F]{40})/);
+  if(wm)openProfileByAddr(wm[1]);
 }
 boot();
 </script>

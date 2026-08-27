@@ -108,14 +108,14 @@ function parsePortfolio(p) {
   const seen = new Set(); const dedup = [];
   for (const h of holdings) { const k = h.sym + '|' + (h.chain || ''); if (seen.has(k)) continue; seen.add(k); dedup.push(h); }
   totalUsd = num2(p.totalBalance ?? p.totalUsd ?? p.total) || dedup.reduce((s, h) => s + h.usd, 0);
-  return { totalUsd, holdings: dedup.slice(0, 10) };
+  return { totalUsd, holdings: dedup.slice(0, 15) };
 }
 
 function parseTransfers(t, self) {
   let arr = (t && (t.transfers || t.result || (Array.isArray(t) ? t : []))) || [];
   const meaningful = arr.filter(x => num2(x.historicalUSD ?? x.usd ?? x.usdValue) >= 1);
   if (meaningful.length >= 3) arr = meaningful;
-  return arr.slice(0, 10).map(x => {
+  return arr.slice(0, 40).map(x => {
     const from = (x.fromAddress && (x.fromAddress.address || x.fromAddress)) || x.from || '';
     const to = (x.toAddress && (x.toAddress.address || x.toAddress)) || x.to || '';
     const fromLbl = (x.fromAddress && x.fromAddress.arkhamEntity && x.fromAddress.arkhamEntity.name) || (x.fromAddress && x.fromAddress.arkhamLabel && x.fromAddress.arkhamLabel.name) || null;
@@ -132,16 +132,18 @@ function parseTransfers(t, self) {
 async function enrichWalletProfile(addr) {
   fs.mkdirSync(WALLET_DIR, { recursive: true });
   const p = path.join(WALLET_DIR, addr.toLowerCase() + '.json');
+  let oldHistory = [];
   try {
     const old = JSON.parse(fs.readFileSync(p, 'utf8'));
-    if (Date.now() - new Date(old.updated).getTime() < WALLET_TTL_H * 36e5) return;
+    oldHistory = old.history || [];
+    if (old.v === 2 && Date.now() - new Date(old.updated).getTime() < WALLET_TTL_H * 36e5) return;
   } catch {}
   // entity comes from the label cache (filled by arkhamLookup) — no duplicate intel call
   const cached = labelCache[addr.toLowerCase()] || null;
   const intel = cached ? null : await arkhamGet(`/intelligence/address/${addr}/all`);
   const portfolio = await arkhamGet(`/portfolio/address/${addr}?time=${Date.now()}`)
     || await arkhamGet(`/portfolio/address/${addr}`);
-  const transfers = await arkhamGet(`/transfers?base=${addr}&limit=12&sortDir=desc&usdGte=1`);
+  const transfers = await arkhamGet(`/transfers?base=${addr}&limit=40&sortDir=desc&usdGte=1`);
   if (!cached && !intel && !portfolio && !transfers) return;
   if (!loggedShapes && (portfolio || transfers)) {
     loggedShapes = true;
@@ -149,10 +151,18 @@ async function enrichWalletProfile(addr) {
     if (transfers) console.log('  [shape] transfers keys:', Object.keys(transfers).slice(0, 12).join(','));
   }
   const ent = cached ? { name: cached.name, type: cached.type, label: cached.label } : parseArkham(intel || {});
+  const port = parsePortfolio(portfolio);
+  // own balance-history: one point per refresh cycle, grows forever (capped)
+  const history = oldHistory.slice(-400);
+  if (port && port.totalUsd > 0) {
+    const last = history[history.length - 1];
+    if (!last || Date.now() - new Date(last.ts).getTime() > 6 * 36e5) history.push({ ts: new Date().toISOString(), usd: Math.round(port.totalUsd) });
+  }
   fs.writeFileSync(p, JSON.stringify({
-    addr, updated: new Date().toISOString(),
+    v: 2, addr, updated: new Date().toISOString(),
     entity: ent,
-    portfolio: parsePortfolio(portfolio),
+    portfolio: port,
+    history,
     transfers: transfers ? parseTransfers(transfers, addr) : [],
   }));
 }
