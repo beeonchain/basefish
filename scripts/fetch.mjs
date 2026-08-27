@@ -10,6 +10,56 @@ const cfg = JSON.parse(fs.readFileSync('tokens.config.json', 'utf8'));
 const M = 'https://deep-index.moralis.io/api/v2.2';
 const H = { 'X-API-Key': KEY, accept: 'application/json' };
 
+// ---- Arkham label enrichment (optional; skipped when no key) ----
+const ARKHAM_KEY = process.env.ARKHAM_API_KEY || '';
+const ARKHAM_BASES = ['https://api.arkm.com', 'https://api.arkhamintelligence.com'];
+const LABELS_PATH = 'data/labels.json';
+let labelCache = {};
+try { labelCache = JSON.parse(fs.readFileSync(LABELS_PATH, 'utf8')); } catch {}
+const LABEL_TTL_DAYS = 30, ARKHAM_MAX_LOOKUPS = 150;
+let arkhamBudget = ARKHAM_MAX_LOOKUPS, arkhamBase = null;
+
+function parseArkham(payload) {
+  // response may be flat or keyed per-chain; walk it for arkhamEntity/arkhamLabel
+  const found = { name: null, type: null, label: null };
+  const walk = (o, depth) => {
+    if (!o || typeof o !== 'object' || depth > 3) return;
+    if (o.arkhamEntity && !found.name) { found.name = o.arkhamEntity.name || null; found.type = o.arkhamEntity.type || null; }
+    if (o.arkhamLabel && !found.label) found.label = o.arkhamLabel.name || null;
+    if (!found.name || !found.label) for (const v of Object.values(o)) walk(v, depth + 1);
+  };
+  walk(payload, 0);
+  return found;
+}
+
+async function arkhamLookup(addr) {
+  const a = addr.toLowerCase();
+  const hit = labelCache[a];
+  if (hit && (Date.now() - (hit.ts || 0)) < LABEL_TTL_DAYS * 864e5) return hit;
+  if (!ARKHAM_KEY || arkhamBudget <= 0) return hit || null;
+  const bases = arkhamBase ? [arkhamBase] : ARKHAM_BASES;
+  for (const base of bases) {
+    for (const path of [`/intelligence/address/${addr}/all`, `/intelligence/address/${addr}`]) {
+      try {
+        const r = await fetch(base + path, { headers: { 'API-Key': ARKHAM_KEY, accept: 'application/json' } });
+        if (r.status === 429) { console.log('  arkham rate-limited, pausing'); await new Promise(s => setTimeout(s, 2000)); continue; }
+        if (!r.ok) continue;
+        arkhamBase = base; arkhamBudget--;
+        const info = parseArkham(await r.json());
+        const rec = { name: info.name, type: info.type, label: info.label, ts: Date.now() };
+        labelCache[a] = rec;
+        await new Promise(s => setTimeout(s, 250)); // be polite
+        return rec;
+      } catch (e) { /* try next */ }
+    }
+  }
+  arkhamBudget--; // avoid hammering a dead endpoint
+  return hit || null;
+}
+
+// entity types that should never count as a "holder fish"
+const EXCLUDE_TYPES = new Set(['cex', 'exchange', 'bridge', 'dex', 'staking', 'burn', 'locker']);
+
 const BURN = new Set([
   '0x0000000000000000000000000000000000000000',
   '0x000000000000000000000000000000000000dead',
@@ -76,7 +126,22 @@ for (const t of cfg.tokens) {
       if (!cursor) break;
     }
     kept.sort((a, b) => b.usd - a.usd);
-    const top = kept.slice(0, 100);
+    // Arkham enrichment for the head of the list (cache-first, budgeted)
+    if (ARKHAM_KEY || Object.keys(labelCache).length) {
+      const head = kept.slice(0, 120);
+      for (const h of head) {
+        const info = await arkhamLookup(h.addr);
+        if (!info) continue;
+        const name = info.name || info.label;
+        if (name) h.label = h.label ? h.label : name;
+        if (info.name) h.entity = info.name;
+        if (info.type) h.entityType = info.type;
+      }
+    }
+    const filtered = kept.filter(h => !(h.entityType && EXCLUDE_TYPES.has(String(h.entityType).toLowerCase())));
+    const dropped = kept.length - filtered.length;
+    if (dropped) console.log(`  arkham-excluded ${dropped} CEX/bridge/dex wallets`);
+    const top = filtered.slice(0, 100);
     console.log(`  scanned ${seen}, kept ${kept.length}, top ${top.length}`);
 
     // recent meaningful transfers
@@ -117,5 +182,6 @@ for (const t of cfg.tokens) {
 }
 
 if (!index.tokens.length) { console.error('No token data fetched at all — aborting without writing index.'); process.exit(1); }
+fs.writeFileSync(LABELS_PATH, JSON.stringify(labelCache));
 fs.writeFileSync('data/index.json', JSON.stringify(index));
-console.log(`\nWrote data/index.json with ${index.tokens.length} tokens.`);
+console.log(`\nWrote data/index.json with ${index.tokens.length} tokens. Label cache: ${Object.keys(labelCache).length} addresses${ARKHAM_KEY ? '' : ' (no ARKHAM_API_KEY — enrichment skipped)'}.`);

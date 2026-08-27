@@ -170,7 +170,7 @@
     <nav class="nav" id="nav">
       <button class="on" data-view="aquarium"><svg viewBox="0 0 24 24"><path d="M3 12c3-5 8-6 12-3 1 .8 2 2 3 3-1 1-2 2.2-3 3-4 3-9 2-12-3z"/><path d="M15 9l5-3-1 6 1 6-5-3"/></svg><span>Aquarium</span></button>
       <button data-view="holders"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Top holders</span></button>
-      <button data-view="wallets"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M16 12h5"/></svg><span>Wallets</span><em class="soon">soon</em></button>
+      <button data-view="wallets"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M16 12h5"/></svg><span>Wallets</span></button>
       <button data-view="flows"><svg viewBox="0 0 24 24"><path d="M4 7h12l-3-3M20 17H8l3 3"/></svg><span>Flows</span><em class="soon">v1</em></button>
       <button data-view="alerts"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0112 0v5l2 2H4z"/><path d="M10 21h4"/></svg><span>Alerts</span><em class="soon">v2</em></button>
       <button data-view="watch"><svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.3.9-4.5 4.4 1 6.1L12 17l-5.5 3 1-6.1L3 9.5l6.3-.9z"/></svg><span>Watchlist</span><em class="soon">v2</em></button>
@@ -209,6 +209,7 @@
       <div class="card" id="card"></div>
     </div>
     <div class="view" id="holdersView"></div>
+    <div class="view" id="walletsView"></div>
     <div class="bar">
       <div class="t">Fish size = wallet size<small>by USD value · tiers relative to this token's top 100</small></div>
       <div class="sz"><canvas data-tier="small"></canvas><div>Small<b id="thSmall">&lt; $10K</b></div></div>
@@ -290,7 +291,7 @@ addEventListener('resize',resize);resize();
 
 function sizeFor(f){if(!(data.max>data.min))return 30;const lo=Math.log(Math.max(1e-6,data.min)),hi=Math.log(Math.max(1e-5,data.max));const n=Math.max(0,Math.min(1,(Math.log(Math.max(f.value,data.min))-lo)/(hi-lo)));return 13+Math.pow(n,1.7)*85}
 function fromReal(d){
-  const list=(d.holdersTop||[]).map((h,i)=>({rank:i+1,addr:h.addr,pct:h.pct||0,value:h.usd||0,amount:h.amount||0,tier:'small',label:h.label||'',isContract:!!h.isContract}));
+  const list=(d.holdersTop||[]).map((h,i)=>({rank:i+1,addr:h.addr,pct:h.pct||0,value:h.usd||0,amount:h.amount||0,tier:'small',label:h.label||'',entity:h.entity||null,entityType:h.entityType||null,isContract:!!h.isContract}));
   list.sort((a,b)=>b.value-a.value).forEach((h,i)=>h.rank=i+1);
   list.forEach(h=>h.tier=h.rank<=6?'whale':h.rank<=24?'large':h.rank<=60?'medium':'small');
   const at=i=>list[Math.min(i,list.length-1)].value;
@@ -411,7 +412,7 @@ tank.addEventListener('mouseleave',()=>{hovered=null;tip.style.display='none'});
 tank.addEventListener('click',e=>{const r=tank.getBoundingClientRect();const f=hit(e.clientX-r.left,e.clientY-r.top);if(f)select(f);else if(!card.contains(e.target))closeCard()});
 function select(f){selected=f;tip.style.display='none';const h=f.h,t=TIER[h.tier];
   const scan=`https://basescan.org/token/${cur.contract||''}?a=${h.addr}`;
-  const chips=[h.label?`<span>${h.label}</span>`:'',h.isContract?`<span>contract</span>`:'',(!REAL)?`<span>${h.first}d on-chain</span><span>${h.tx} txs</span>`:''].join('');
+  const chips=[h.entity&&h.entity!==h.label?`<span style="color:var(--teal)">${h.entity}</span>`:'',h.label?`<span>${h.label}</span>`:'',h.entityType?`<span style="color:var(--gold)">${h.entityType}</span>`:'',h.isContract?`<span>contract</span>`:'',(!REAL)?`<span>${h.first}d on-chain</span><span>${h.tx} txs</span>`:''].join('');
   card.innerHTML=`<button class="x" id="cx">✕</button><div class="tier" style="color:${t.c}"><i style="background:${t.c}"></i>${t.n} wallet · rank #${h.rank}</div>
   <div class="addr">${short(h.addr)}<button id="ccopy" title="Copy address">copy</button></div>
   ${chips?`<div class="lbls">${chips}</div>`:''}
@@ -444,7 +445,7 @@ function renderChrome(){
   document.getElementById('stTop').textContent=(data.topShare*100).toFixed(1)+'%';
   document.getElementById('stWhales').textContent=L.filter(h=>h.tier==='whale').length;
   const th=t.th;document.getElementById('thSmall').textContent='< '+usd(th[0]);document.getElementById('thMed').textContent=usd(th[0])+' – '+usd(th[1]);document.getElementById('thLarge').textContent=usd(th[1])+' – '+usd(th[2]);document.getElementById('thWhale').textContent='> '+usd(th[2]);
-  document.getElementById('holdList').innerHTML=L.slice(0,7).map((h,i)=>`<button data-i="${i}"><span class="n">${h.rank}</span><span style="width:24px;height:16px"><canvas data-mini="${h.tier}" width="48" height="32" style="width:24px;height:16px"></canvas></span><span><div class="a">${short(h.addr)}</div><div class="bar2"><i style="width:${Math.min(100,h.pct/L[0].pct*100)}%"></i></div></span><span class="p mono">${h.pct.toFixed(2)}%<small>${usd(h.value)}</small></span></button>`).join('');
+  document.getElementById('holdList').innerHTML=L.slice(0,7).map((h,i)=>`<button data-i="${i}"><span class="n">${h.rank}</span><span style="width:24px;height:16px"><canvas data-mini="${h.tier}" width="48" height="32" style="width:24px;height:16px"></canvas></span><span><div class="a">${h.entity||short(h.addr)}</div><div class="bar2"><i style="width:${Math.min(100,h.pct/L[0].pct*100)}%"></i></div></span><span class="p mono">${h.pct.toFixed(2)}%<small>${usd(h.value)}</small></span></button>`).join('');
   document.querySelectorAll('#holdList button').forEach(b=>b.onclick=()=>{setView('aquarium');select(fish[+b.dataset.i])});
   drawMinis();drawDonut();renderTable();
   document.querySelectorAll('#tokpick button').forEach(b=>b.classList.toggle('on',b.dataset.sym===t.sym));
@@ -464,7 +465,7 @@ function renderRealFeed(){
     el.style.cursor='pointer';el.onclick=()=>window.open('https://basescan.org/tx/'+x.hash,'_blank');
     f.appendChild(el);
   });
-  if(!(data.recent||[]).length)f.innerHTML='<div style="color:var(--dim)">No large transfers in the last window.</div>';
+  if(!(data.recent||[]).length)f.innerHTML='<p style="color:var(--dim);margin:0">No large transfers in the last window.</p>';
 }
 function drawMinis(){document.querySelectorAll('canvas[data-mini],canvas[data-tier]').forEach(c=>{const tier=c.dataset.mini||c.dataset.tier;const r=c.getBoundingClientRect();c.width=r.width*2;c.height=r.height*2;const x=c.getContext('2d');x.scale(2,2);const saved=ctx;const s={small:5,medium:7,large:9,whale:12}[tier];ctx=x;(tier==='whale'?drawWhale:drawFish)(r.width/2,r.height/2,c.dataset.mini?s*.9:s*1.6,1,0,TIER[tier].c,0,0);ctx=saved})}
 function drawDonut(){
@@ -477,7 +478,7 @@ function drawDonut(){
   document.getElementById('distList').innerHTML=segs.map(s=>`<li><i style="background:${s[3]}"></i><span><b>${s[0]}</b> <small>${s[1]}</small></span><b class="mono">${(s[2]*100).toFixed(1)}%</b></li>`).join('');
 }
 function renderTable(){
-  document.getElementById('holdersView').innerHTML=`<table><thead><tr><th>#</th><th>Wallet</th><th>Tier</th><th>Labels</th><th class="r">Amount</th><th class="r">% supply</th><th class="r">Value</th><th class="r">Type</th></tr></thead><tbody>${data.list.map((h,i)=>`<tr data-i="${i}"><td class="mono" style="color:var(--dim)">${h.rank}</td><td class="mono">${short(h.addr)}</td><td><span class="pill" style="background:${TIER[h.tier].c}22;color:${TIER[h.tier].c}">${TIER[h.tier].n}</span></td><td style="color:var(--muted)">${h.label||'—'}</td><td class="r mono">${num(h.amount)}</td><td class="r mono">${h.pct.toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:var(--muted)">${REAL?(h.isContract?'contract':'wallet'):h.last+'h ago'}</td></tr>`).join('')}</tbody></table>`;
+  document.getElementById('holdersView').innerHTML=`<table><thead><tr><th>#</th><th>Wallet</th><th>Tier</th><th>Labels</th><th class="r">Amount</th><th class="r">% supply</th><th class="r">Value</th><th class="r">Type</th></tr></thead><tbody>${data.list.map((h,i)=>`<tr data-i="${i}"><td class="mono" style="color:var(--dim)">${h.rank}</td><td class="mono">${short(h.addr)}${h.entity?` <span style="color:var(--teal)">${h.entity}</span>`:''}</td><td><span class="pill" style="background:${TIER[h.tier].c}22;color:${TIER[h.tier].c}">${TIER[h.tier].n}</span></td><td style="color:var(--muted)">${h.label||'—'}</td><td class="r mono">${num(h.amount)}</td><td class="r mono">${h.pct.toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:var(--muted)">${REAL?(h.isContract?'contract':'wallet'):h.last+'h ago'}</td></tr>`).join('')}</tbody></table>`;
   document.querySelectorAll('#holdersView tr[data-i]').forEach(r=>r.onclick=()=>{setView('aquarium');select(fish[+r.dataset.i])});
 }
 /* token picker */
@@ -487,8 +488,33 @@ function buildPicker(){
 }
 /* views */
 function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
-  document.getElementById('tank').style.display=v==='aquarium'?'':'none';document.getElementById('holdersView').classList.toggle('show',v==='holders');
+  document.getElementById('tank').style.display=v==='aquarium'?'':'none';
+  document.getElementById('holdersView').classList.toggle('show',v==='holders');
+  document.getElementById('walletsView').classList.toggle('show',v==='wallets');
+  if(v==='wallets')renderWallets();
   if(v==='aquarium')resize()}
+async function renderWallets(){
+  const el=document.getElementById('walletsView');
+  el.innerHTML='<div style="padding:30px;color:var(--muted)">Loading wallets across all aquariums…</div>';
+  const agg=new Map();
+  for(const t of TOKENS){
+    let d;
+    try{d=REAL?await fetchToken(t.sym):null}catch(e){d=null}
+    const list=d?d.holdersTop:buildHolders(Object.assign({},t,{seed:t.seed||[...t.sym].reduce((a,c)=>a+c.charCodeAt(0),13)})).list.map(h=>({addr:h.addr,usd:h.value,label:h.label,entity:null,entityType:null}));
+    list.forEach(h=>{
+      const k=h.addr.toLowerCase();
+      if(!agg.has(k))agg.set(k,{addr:h.addr,entity:h.entity||null,label:h.label||null,type:h.entityType||null,usd:0,toks:[]});
+      const w=agg.get(k);w.usd+=h.usd||h.value||0;w.toks.push(t.sym);
+      if(h.entity)w.entity=h.entity;if(h.label&&!w.label)w.label=h.label;if(h.entityType)w.type=h.entityType;
+    });
+  }
+  const rows=[...agg.values()].sort((a,b)=>b.usd-a.usd).slice(0,150);
+  const labeled=rows.filter(r=>r.entity||r.label);
+  el.innerHTML=`<table><thead><tr><th>Wallet</th><th>Entity / label</th><th>Type</th><th>Holds</th><th class="r">Combined value (top-100 positions)</th></tr></thead><tbody>${
+    rows.map(r=>`<tr><td class="mono">${short(r.addr)}</td><td>${r.entity||r.label||'<span style="color:var(--dim)">—</span>'}</td><td>${r.type?`<span class="pill" style="background:${'#F2C14E'}22;color:var(--gold)">${r.type}</span>`:''}</td><td>${r.toks.map(sym=>{const tk=TOKENS.find(x=>x.sym===sym);return `<span class="pill" style="background:${tk?tk.color:'#888'}22;color:${tk?tk.color:'#aaa'}">${sym}</span>`}).join(' ')}</td><td class="r mono">${usd(r.usd)}</td></tr>`).join('')
+  }</tbody></table>
+  <div style="padding:12px 14px;color:var(--dim);font-size:11.5px">${labeled.length} of ${rows.length} wallets have entity labels${REAL?'':' · demo data'} · wallets appearing in multiple aquariums are merged</div>`;
+}
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{if(b.querySelector('.soon'))return toastMsg(`<b>${b.querySelector('span').textContent}</b> arrives in a later release`,'var(--dim)');closeCard();setView(b.dataset.view)});
 document.getElementById('viewAll').onclick=()=>setView('holders');
 document.getElementById('aboutBtn').onclick=()=>document.getElementById('modal').classList.add('show');
