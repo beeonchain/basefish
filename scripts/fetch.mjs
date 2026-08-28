@@ -205,12 +205,21 @@ async function enrichWalletProfile(addr) {
     const old = JSON.parse(fs.readFileSync(p, 'utf8'));
     oldHistory = old.history || []; oldPos = old.posHistory || {}; oldProf = old;
     if (old.v === 3 && Date.now() - new Date(old.updated).getTime() < WALLET_TTL_H * 36e5) {
-      // fresh profile: still run the cheap upgrade passes
-      let changed = false;
-      const before = JSON.stringify({ e: old.entity, h: (old.history||[]).length, b: old.pfB });
+      // fresh profile: still run the cheap upgrade + heal passes
+      const before = JSON.stringify({ e: old.entity, h: (old.history||[]).length, b: old.pfB, pf: !!old.portfolio, tr: (old.transfers||[]).length });
       await fixSocials(addr, old);
       await backfillPortfolioHistory(addr, old);
-      if (JSON.stringify({ e: old.entity, h: (old.history||[]).length, b: old.pfB }) !== before) fs.writeFileSync(p, JSON.stringify(old));
+      // heal: restore portfolio/transfers lost to an exhausted-budget run
+      if (!old.portfolio && profileBudget >= 5) {
+        const pf2 = parsePortfolio(await arkhamGet(`/portfolio/address/${addr}?time=${Date.now()}`));
+        if (pf2 && pf2.totalUsd > 0) old.portfolio = pf2;
+      }
+      if (!(old.transfers || []).length && profileBudget >= 5) {
+        const tr2 = await arkhamGet(`/transfers?base=${addr}&limit=40&sortDir=desc&usdGte=1`);
+        const p2 = tr2 ? parseTransfers(tr2, addr) : [];
+        if (p2.length) old.transfers = p2;
+      }
+      if (JSON.stringify({ e: old.entity, h: (old.history||[]).length, b: old.pfB, pf: !!old.portfolio, tr: (old.transfers||[]).length }) !== before) fs.writeFileSync(p, JSON.stringify(old));
       return;
     }
   } catch {}
