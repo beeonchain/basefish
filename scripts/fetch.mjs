@@ -148,12 +148,13 @@ function parseTransfers(t, self) {
   });
 }
 
-let loggedEntity = false;
+let loggedEntity = false, loggedEntityFull = false;
 async function fixSocials(addr, prof) {
   // resolve entity id + socials even for fresh profiles (runs once per address)
   const a = addr.toLowerCase();
   const lc = labelCache[a];
-  if (!lc || !lc.name || lc.idChecked) return prof;
+  if (!lc || !lc.name) return prof;
+  if (lc.idChecked && lc.slugTried) return prof;
   if (profileBudget < 3) return prof;
   lc.idChecked = true;
   const re = await arkhamGet(`/intelligence/address/${addr}/all`);
@@ -165,9 +166,15 @@ async function fixSocials(addr, prof) {
     }
     lc.id = lc.id || pi.id; lc.twitter = lc.twitter || pi.twitter; lc.website = lc.website || pi.website;
   }
-  if (lc.id && !lc.twitter && !lc.website) {
-    const ei = await arkhamGet(`/intelligence/entity/${encodeURIComponent(lc.id)}`);
-    if (ei) { const s2 = pickSocials(ei); lc.twitter = lc.twitter || s2.twitter; lc.website = lc.website || s2.website; }
+  if (!lc.twitter && !lc.website && !lc.slugTried) {
+    lc.slugTried = true;
+    const slug = lc.id || String(lc.name).toLowerCase().replace(/:.*$/, '').trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const ei = await arkhamGet(`/intelligence/entity/${encodeURIComponent(slug)}`);
+    if (ei) {
+      if (!loggedEntityFull) { loggedEntityFull = true; console.log('  [shape] entity(' + slug + '):', JSON.stringify(ei).slice(0, 600)); }
+      const s2 = pickSocials(ei); lc.twitter = lc.twitter || s2.twitter; lc.website = lc.website || s2.website;
+      lc.id = lc.id || slug;
+    }
   }
   if (prof && prof.entity && (lc.twitter || lc.website)) {
     prof.entity.twitter = prof.entity.twitter || lc.twitter;
@@ -288,6 +295,15 @@ async function j(url, tries = 3) {
 }
 
 fs.mkdirSync('data', { recursive: true });
+if (ARKHAM_KEY) {
+  const named = Object.entries(labelCache).find(([, v]) => v && v.name);
+  if (named) {
+    try {
+      const dbg = await arkhamGet(`/intelligence/address/${named[0]}/all`);
+      console.log(`[debug] /all for ${named[1].name} (${named[0].slice(0, 10)}):`, JSON.stringify(dbg).slice(0, 700));
+    } catch (e) {}
+  }
+}
 let logoCache = {};
 try { logoCache = JSON.parse(fs.readFileSync('data/logos.json', 'utf8')); } catch {}
 async function tokenLogo(t) {
