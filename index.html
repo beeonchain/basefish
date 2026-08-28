@@ -58,6 +58,7 @@
   .head{grid-column:2/4;display:flex;align-items:center;gap:16px;padding:0 20px;border-bottom:1px solid var(--line)}
   .head h2{font:900 21px/1 var(--font-pixel);margin:0;letter-spacing:.02em;white-space:nowrap;text-transform:uppercase}
   .head h2 em{font-style:normal;color:var(--teal)}
+  .head h2 .by{font-size:12px;letter-spacing:.04em;color:var(--dim);font-family:var(--font-mono);text-transform:none;font-weight:500;margin-left:2px}
   .head .sub{color:var(--muted);font-size:12px;margin-top:3px;white-space:nowrap}
   @media (max-width:1500px){.head .sub{display:none}}
   .tokpick{display:flex;gap:4px;margin-left:12px;padding:3px;border:1px solid var(--line);border-radius:0;background:var(--panel)}
@@ -247,7 +248,7 @@
   </aside>
 
   <header class="head">
-    <div><h2>Aquarium <em>Map</em></h2><div class="sub">Every wallet is a fish. Top 100, live from Base.</div></div>
+    <div><h2>Aquarium <em class="by">by Basefish</em></h2><div class="sub">Every wallet is a fish. Top 100, live from Base.</div></div>
     <div class="tokpick" id="tokpick"></div>
     <div class="stats">
       <div><small>Holders</small><b class="mono" id="stHolders">—</b></div>
@@ -321,6 +322,13 @@ const DEMO_TOKENS=[
 let TOKENS=DEMO_TOKENS;
 const TIER={small:{c:'#AFCBE8',n:'Small'},medium:{c:'#53C7F0',n:'Medium'},large:{c:'#F2C14E',n:'Large'},whale:{c:'#3B6BFF',n:'Whale'}};
 const LABELS=['','','','','Smart money','Early buyer','Airdrop farmer','Bridged from ETH','LP provider','DAO treasury','Long-term holder'];
+const TYPE_COLORS={cex:'#E5484D',exchange:'#E5484D',dex:'#E5484D',bridge:'#E5484D',fund:'#A78BFA',vc:'#A78BFA',institution:'#A78BFA','market maker':'#F2C14E',mm:'#F2C14E',individual:'#0000FF',kol:'#0000FF',influencer:'#0000FF','smart contract':'#717886',protocol:'#34A0E8',dao:'#34A0E8'};
+function typeColor(t){return TYPE_COLORS[String(t||'').toLowerCase()]||'#5B616E'}
+function typePill(t){if(!t)return'';const c=typeColor(t);return `<span class="pill" style="background:${c}18;color:${c};border:1px solid ${c}55">${t}</span>`}
+function entPill(name,t){if(!name)return'<span style="color:var(--dim)">Unknown</span>';const c=typeColor(t);return `<span class="pill" style="background:${c}18;color:${c};border:1px solid ${c}55">${name}</span>`}
+const ICON_X='<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M18.9 2H22l-6.8 7.8L23.3 22h-6.3l-4.9-6.4L6.4 22H3.3l7.3-8.3L1 2h6.5l4.4 5.9L18.9 2zm-1.1 18h1.7L7.1 3.9H5.3L17.8 20z"/></svg>';
+const ICON_WEB='<svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor" shape-rendering="crispEdges"><rect x="1" y="1" width="14" height="2"/><rect x="1" y="13" width="14" height="2"/><rect x="1" y="1" width="2" height="14"/><rect x="13" y="1" width="2" height="14"/><rect x="4" y="7" width="8" height="2"/><rect x="7" y="4" width="2" height="8"/></svg>';
+function tokLogo(sym,size){const t=TOKENS.find(x=>x.sym===sym);if(t&&t.logo)return `<img src="${t.logo}" alt="${sym}" title="${sym}" style="width:${size}px;height:${size}px;border-radius:0;vertical-align:middle;border:1px solid var(--line)" onerror="this.style.display='none'">`;return `<span class="pill" style="background:${t?t.color:'#888'}22;color:${t?t.color:'#aaa'}">${sym}</span>`}
 function rng(seed){let s=seed*9301+49297;return()=>{s=(s*9301+49297)%233280;return s/233280}}
 function hex(r,n){let o='';for(let i=0;i<n;i++)o+='0123456789abcdef'[Math.floor(r()*16)];return o}
 function short(a){return a.slice(0,6)+'…'+a.slice(-4)}
@@ -611,7 +619,8 @@ tank.addEventListener('mouseleave',()=>{hovered=null;tip.style.display='none'});
 tank.addEventListener('click',e=>{const r=tank.getBoundingClientRect();const f=hit(e.clientX-r.left,e.clientY-r.top);if(f)select(f);else if(!card.contains(e.target))closeCard()});
 function select(f){selected=f;tip.style.display='none';const h=f.h,t=TIER[h.tier];
   const scan=`https://basescan.org/token/${cur.contract||''}?a=${h.addr}`;
-  const chips=[h.entity&&h.entity!==h.label?`<span style="color:var(--teal)">${h.entity}</span>`:'',h.label?`<span>${h.label}</span>`:'',h.entityType?`<span style="color:var(--gold)">${h.entityType}</span>`:'',h.isContract?`<span>contract</span>`:'',(!REAL)?`<span>${h.first}d on-chain</span><span>${h.tx} txs</span>`:''].join('');
+  const tc=typeColor(h.entityType);
+  const chips=[h.entity&&h.entity!==h.label?`<span style="color:${tc};border-color:${tc}55">${h.entity}</span>`:'',h.label?`<span>${h.label}</span>`:'',h.entityType?`<span style="color:${tc};border-color:${tc}55">${h.entityType}</span>`:'',h.isContract?`<span>contract</span>`:'',(!REAL)?`<span>${h.first}d on-chain</span><span>${h.tx} txs</span>`:''].join('');
   card.innerHTML=`<button class="x" id="cx">✕</button><div class="tier" style="color:${t.c}"><i style="background:${t.c}"></i>${t.n} wallet · rank #${h.rank}</div>
   <div class="addr">${short(h.addr)}<button id="ccopy" title="Copy address">copy</button></div>
   ${chips?`<div class="lbls">${chips}</div>`:''}
@@ -638,7 +647,9 @@ function renderChrome(){
   document.getElementById('chipTok').textContent='$'+t.sym;
   const ti=document.getElementById('tankid');if(ti)ti.textContent=`TANK ${String(TOKENS.findIndex(x=>x.sym===t.sym)+1).padStart(2,'0')} · $${t.sym} · TOP 100`;
   document.getElementById('tkSym').textContent='$'+t.sym;document.getElementById('tkName').textContent=t.name;
-  const ic=document.getElementById('tkIc');ic.textContent=t.sym.slice(0,2);ic.style.background=t.color;
+  const ic=document.getElementById('tkIc');
+  if(t.logo){ic.innerHTML=`<img src="${t.logo}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentNode.textContent='${t.sym.slice(0,2)}'">`;ic.style.background='var(--panel2)';ic.style.overflow='hidden'}
+  else{ic.textContent=t.sym.slice(0,2);ic.style.background=t.color;}
   document.getElementById('tkPrice').textContent='$'+(t.price<0.01?t.price.toFixed(5):t.price.toFixed(3));
   const c=document.getElementById('tkChg');c.textContent=(t.chg>0?'+':'')+t.chg.toFixed(2)+'%';c.className='mono '+(t.chg>0?'up':'down');
   document.getElementById('tkMcap').textContent=usd(t.mcap);document.getElementById('tkHolders').textContent=num(t.holders);
@@ -687,7 +698,7 @@ function renderTable(){
 }
 /* token picker */
 function buildPicker(){
-  document.getElementById('tokpick').innerHTML=TOKENS.map(t=>`<button data-sym="${t.sym}"><i style="background:${t.color}"></i>${t.sym}</button>`).join('');
+  document.getElementById('tokpick').innerHTML=TOKENS.map(t=>`<button data-sym="${t.sym}">${t.logo?`<img src="${t.logo}" style="width:13px;height:13px" onerror="this.style.display='none'">`:`<i style="background:${t.color}"></i>`}${t.sym}</button>`).join('');
   document.querySelectorAll('#tokpick button').forEach(b=>b.onclick=()=>{closeCard();loadToken(TOKENS.find(t=>t.sym===b.dataset.sym));toastMsg(`Aquarium switched to <b>$${cur.sym}</b>`,'var(--muted)')});
 }
 /* views */
@@ -717,7 +728,7 @@ async function renderWallets(){
   const rows=[...agg.values()].sort((a,b)=>b.usd-a.usd).slice(0,150);
   const labeled=rows.filter(r=>r.entity||r.label);
   el.innerHTML=`<table><thead><tr><th>Wallet</th><th>Entity / label</th><th>Type</th><th>Holds</th><th class="r">Combined value (top-100 positions)</th></tr></thead><tbody>${
-    rows.map(r=>`<tr style="cursor:pointer" onclick="openProfileByAddr('${r.addr}')"><td class="mono">${short(r.addr)}</td><td>${r.entity||r.label||'<span style="color:var(--dim)">Unknown</span>'}</td><td>${r.type?`<span class="pill" style="background:${'#F2C14E'}22;color:var(--gold)">${r.type}</span>`:''}</td><td>${r.toks.map(sym=>{const tk=TOKENS.find(x=>x.sym===sym);return `<span class="pill" style="background:${tk?tk.color:'#888'}22;color:${tk?tk.color:'#aaa'}">${sym}</span>`}).join(' ')}</td><td class="r mono">${usd(r.usd)}</td></tr>`).join('')
+    rows.map(r=>`<tr style="cursor:pointer" onclick="openProfileByAddr('${r.addr}')"><td class="mono">${short(r.addr)}</td><td>${entPill(r.entity||r.label,r.type)}</td><td>${typePill(r.type)}</td><td style="white-space:nowrap">${r.toks.map(sym=>tokLogo(sym,18)).join(' ')}</td><td class="r mono">${usd(r.usd)}</td></tr>`).join('')
   }</tbody></table>
   <div style="padding:12px 14px;color:var(--dim);font-size:11.5px">${labeled.length} of ${rows.length} wallets have entity labels${REAL?'':' · demo data'} · wallets appearing in multiple aquariums are merged</div>`;
 }
@@ -785,7 +796,7 @@ async function openProfile(h){
   const ark=`https://intel.arkm.com/explorer/address/${h.addr}`;
   el.innerHTML=`<div class="whead"><div class="fishic"><canvas data-mini="${h.tier}" width="64" height="44" style="width:32px;height:22px"></canvas></div>
     <div><h3 id="wpname">${h.entity||short(h.addr)}</h3><div class="addr">${h.addr}</div>
-      <div class="lbls" style="margin-top:6px">${[h.rank?`<span style="color:${t.c}">${t.n} · rank #${h.rank} in $${cur.sym}</span>`:`<span>free swimmer · not in a tracked top 100</span>`,h.entityType?`<span style="color:var(--gold)">${h.entityType}</span>`:'',h.label&&h.label!==h.entity?`<span>${h.label}</span>`:'',h.isContract?'<span>contract</span>':''].join('')}</div></div>
+      <div class="lbls" style="margin-top:6px">${[h.rank?`<span style="color:${t.c}">${t.n} · rank #${h.rank} in $${cur.sym}</span>`:`<span>free swimmer · not in a tracked top 100</span>`,h.entityType?`<span style="color:${typeColor(h.entityType)};border-color:${typeColor(h.entityType)}55">${h.entityType}</span>`:'',h.label&&h.label!==h.entity?`<span>${h.label}</span>`:'',h.isContract?'<span>contract</span>':''].join('')}</div></div>
     <div class="val"><small>Portfolio value · all chains</small><b class="mono" id="wpval">—</b></div>
     <div class="wbtns"><button onclick="setView('aquarium')">← Aquarium</button><button id="wpcopy">Copy address</button><button id="wpshare">Share wallet</button><span id="wpsocials" style="display:contents"></span><a href="${ark}" target="_blank" rel="noopener">Arkham ↗</a><a href="${scan}" target="_blank" rel="noopener">Basescan ↗</a></div></div>
   <div class="wgrid" id="wpgrid"><div class="empty2">Loading. Trust the fish.</div></div>`;
@@ -803,8 +814,8 @@ async function openProfile(h){
   const grid=document.getElementById('wpgrid');
   if(p&&p.entity&&p.entity.name)document.getElementById('wpname').textContent=p.entity.name;
   if(p&&p.entity){const so=document.getElementById('wpsocials');const parts=[];
-    if(p.entity.website)parts.push(`<a href="${p.entity.website}" target="_blank" rel="noopener">🌐 Website</a>`);
-    if(p.entity.twitter){const tw=String(p.entity.twitter).replace(/^@/,'').replace(/^https?:\/\/(x|twitter)\.com\//,'');parts.push(`<a href="https://x.com/${tw}" target="_blank" rel="noopener">𝕏 @${tw}</a>`)}
+    if(p.entity.twitter){const tw=String(p.entity.twitter).replace(/^@/,'').replace(/^https?:\/\/(x|twitter)\.com\//,'').replace(/\/$/,'');parts.push(`<a href="https://x.com/${tw}" target="_blank" rel="noopener" title="@${tw} on X" style="display:inline-flex;align-items:center;gap:6px">${ICON_X} @${tw}</a>`)}
+    if(p.entity.website)parts.push(`<a href="${p.entity.website}" target="_blank" rel="noopener" title="${p.entity.website}" style="display:inline-flex;align-items:center;gap:6px">${ICON_WEB} ${String(p.entity.website).replace(/^https?:\/\//,'').replace(/\/$/,'').slice(0,24)}</a>`);
     if(so)so.innerHTML=parts.join('');}
   const total=p&&p.portfolio&&p.portfolio.totalUsd?p.portfolio.totalUsd:positions.reduce((s,x)=>s+x.usd,0);
   document.getElementById('wpval').textContent=usd(total);
@@ -816,7 +827,7 @@ async function openProfile(h){
   const cpmax=Math.max(1,...cplist.map(c=>c.inU+c.outU));
   grid.innerHTML=`
     <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
-      <div class="wbox"><h5>Positions in Basefish aquariums</h5>${positions.length?`<table><thead><tr><th>Token</th><th class="r">Rank</th><th class="r">Amount</th><th class="r">% supply</th><th class="r">Value</th></tr></thead><tbody>${positions.map(x=>`<tr style="cursor:pointer" onclick="jumpToken('${x.sym}')"><td><span class="pill" style="background:${x.color}22;color:${x.color}">${x.sym}</span></td><td class="r mono">#${x.rank}</td><td class="r mono">${num(x.amount)}</td><td class="r mono">${x.pct.toFixed(2)}%</td><td class="r mono">${usd(x.usd)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty2">Not in any tracked top 100. A free swimmer.</div>'}</div>
+      <div class="wbox"><h5>Positions in Basefish aquariums</h5>${positions.length?`<table><thead><tr><th>Token</th><th class="r">Rank</th><th class="r">Amount</th><th class="r">% supply</th><th class="r">Value</th></tr></thead><tbody>${positions.map(x=>`<tr style="cursor:pointer" onclick="jumpToken('${x.sym}')"><td style="white-space:nowrap">${tokLogo(x.sym,18)} <b style="vertical-align:middle">${x.sym}</b></td><td class="r mono">#${x.rank}</td><td class="r mono">${num(x.amount)}</td><td class="r mono">${x.pct.toFixed(2)}%</td><td class="r mono">${usd(x.usd)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty2">Not in any tracked top 100. A free swimmer.</div>'}</div>
       <div class="wbox"><h5>Portfolio <small>${holdings.length?holdings.length+' assets · by Arkham':''}</small></h5>${holdings.length?`<table><thead><tr><th>Asset</th><th>Chain</th><th class="r">Holdings</th><th class="r">Value</th></tr></thead><tbody>${holdings.map(x=>`<tr><td><b>${x.sym}</b>${x.name?` <span style="color:var(--dim);font-size:11px">${x.name}</span>`:''}</td><td>${x.chain?`<span class="chainpill">${x.chain}</span>`:''}</td><td class="r mono">${num(x.amount)}</td><td class="r mono">${usd(x.usd)}</td></tr>`).join('')}</tbody></table>`:`<div class="empty2">${REAL?'Not enriched yet. The fish keeps its secrets until the next refresh.':'Needs live mode.'}</div>`}</div>
       <div class="wbox"><h5>Top counterparties <small>from recent transfers</small></h5>${cplist.length?cplist.map(c=>`<div class="cprow" ${c.addr?`style="cursor:pointer" onclick="openProfileByAddr('${c.addr}')" title="Open wallet page"`:''}><div><b style="${c.label?'color:var(--teal)':''}">${c.k}</b> <span style="color:var(--dim);font-size:11px">· ${c.n} transfer${c.n>1?'s':''}</span><div class="bar3"><i style="width:${(c.inU/cpmax*100)}%;background:var(--teal)"></i><i style="width:${(c.outU/cpmax*100)}%;background:var(--coral)"></i></div></div><b class="mono">${usd(c.inU+c.outU)}</b></div>`).join('')+'<div class="empty2" style="padding-top:8px"><span style="color:var(--teal)">■</span> received&nbsp;&nbsp;<span style="color:var(--coral)">■</span> sent</div>':'<div class="empty2">No transfer data yet. Still waters.</div>'}</div>
     </div>
@@ -825,10 +836,14 @@ async function openProfile(h){
       <div class="wbox"><h5>Transfers <small>${transfers.length} recent · by Arkham</small></h5>${transfers.length?`<div style="max-height:430px;overflow:auto"><table><thead><tr><th>Time</th><th>Dir</th><th>Counterparty</th><th>Token</th><th class="r">USD</th><th class="r">Link</th></tr></thead><tbody>${transfers.map(x=>`<tr class="txrow"><td style="color:var(--muted);white-space:nowrap">${x.ts?agoStr(x.ts)+' ago':''}</td><td><span style="color:${x.dir==='out'?'var(--coral)':'var(--teal)'}">${x.dir==='out'?'OUT':'IN'}</span></td><td onclick="openProfileByAddr('${x.cp||''}')" title="Open wallet page">${x.cpLabel?`<b style="color:var(--teal)">${x.cpLabel}</b>`:`<span class="mono">${short(x.cp||'')}</span>`}${x.chain?` <span class="chainpill">${x.chain}</span>`:''}</td><td>${x.token||''}</td><td class="r mono">${x.usd?usd(x.usd):num(x.amount)}</td><td class="r">${x.hash?`<a href="https://basescan.org/tx/${x.hash}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--dim);font-weight:700">tx ↗</a>`:''}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty2">No transfers captured yet. The fish is patient.</div>'}</div>
       <div class="empty2" style="border:0">Labels, portfolio & transfer data by <a href="${ark}" target="_blank" rel="noopener" style="color:var(--muted)">Arkham Intelligence</a>${p?` · profile updated ${agoStr(p.updated)} ago`:''}</div>
     </div>`;
+  const pf=(p&&p.history)||[];
   const pos=(p&&p.posHistory&&p.posHistory[cur.sym])||null;
-  const series=pos&&pos.length>2?pos:((p&&p.history)||[]);
+  let series,label;
+  if(pf.length>=4){series=pf;label='Portfolio value <small>all chains · history by Arkham + live snapshots</small>'}
+  else if(pos&&pos.length>2){series=pos;label=`$${cur.sym} position value <small>last 30 days · reconstructed on-chain</small>`}
+  else{series=pf;label='Balance history <small>backfills on the next refresh</small>'}
   const htitle=document.getElementById('wphtitle');
-  if(htitle)htitle.innerHTML=pos&&pos.length>2?`$${cur.sym} position value <small>last 30 days · reconstructed on-chain</small>`:`Balance history <small>snapshots each refresh · builds over time</small>`;
+  if(htitle)htitle.innerHTML=label;
   drawHistory(document.getElementById('wphist'),series);
 }
 function jumpToken(sym){const t=TOKENS.find(x=>x.sym===sym);if(t){closeCard();loadToken(t).then(()=>setView('aquarium'))}}

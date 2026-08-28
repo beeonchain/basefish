@@ -148,14 +148,70 @@ function parseTransfers(t, self) {
   });
 }
 
+let loggedEntity = false;
+async function fixSocials(addr, prof) {
+  // resolve entity id + socials even for fresh profiles (runs once per address)
+  const a = addr.toLowerCase();
+  const lc = labelCache[a];
+  if (!lc || !lc.name || lc.idChecked) return prof;
+  lc.idChecked = true;
+  const re = await arkhamGet(`/intelligence/address/${addr}/all`);
+  if (re) {
+    const pi = parseArkham(re);
+    if (!loggedEntity) { loggedEntity = true;
+      const findEnt = (o,d)=>{if(!o||typeof o!=='object'||d>3)return null;if(o.arkhamEntity)return o.arkhamEntity;for(const v of Object.values(o)){const r2=findEnt(v,d+1);if(r2)return r2}return null};
+      console.log('  [shape] arkhamEntity:', JSON.stringify(findEnt(re,0)||{}).slice(0, 400));
+    }
+    lc.id = lc.id || pi.id; lc.twitter = lc.twitter || pi.twitter; lc.website = lc.website || pi.website;
+  }
+  if (lc.id && !lc.twitter && !lc.website) {
+    const ei = await arkhamGet(`/intelligence/entity/${encodeURIComponent(lc.id)}`);
+    if (ei) { const s2 = pickSocials(ei); lc.twitter = lc.twitter || s2.twitter; lc.website = lc.website || s2.website; }
+  }
+  if (prof && prof.entity && (lc.twitter || lc.website)) {
+    prof.entity.twitter = prof.entity.twitter || lc.twitter;
+    prof.entity.website = prof.entity.website || lc.website;
+    prof.entity.id = prof.entity.id || lc.id;
+    return prof;
+  }
+  return prof;
+}
+const PF_POINTS = 10, PF_DAYS = 60;
+async function backfillPortfolioHistory(addr, prof) {
+  // real portfolio-value history from Arkham (portfolio?time= accepts historical timestamps)
+  if (!prof || prof.pfB || (prof.history || []).length >= PF_POINTS - 2 || profileBudget < PF_POINTS + 5) return prof;
+  const pts = [];
+  for (let i = PF_POINTS - 1; i >= 1; i--) {
+    const ts = Date.now() - i * (PF_DAYS / (PF_POINTS - 1)) * 864e5;
+    const pf = await arkhamGet(`/portfolio/address/${addr}?time=${Math.round(ts)}`);
+    const parsed = parsePortfolio(pf);
+    if (parsed && parsed.totalUsd > 0) pts.push({ ts: new Date(ts).toISOString(), usd: Math.round(parsed.totalUsd) });
+  }
+  if (pts.length >= 3) {
+    const merged = [...pts, ...(prof.history || [])].sort((a, b) => new Date(a.ts) - new Date(b.ts));
+    const dedup = merged.filter((x, i) => i === 0 || new Date(x.ts) - new Date(merged[i-1].ts) > 36e5);
+    prof.history = dedup.slice(-400);
+    prof.pfB = true;
+    console.log(`  pf-history backfilled ${addr.slice(0, 10)} (${pts.length} pts)`);
+  }
+  return prof;
+}
 async function enrichWalletProfile(addr) {
   fs.mkdirSync(WALLET_DIR, { recursive: true });
   const p = path.join(WALLET_DIR, addr.toLowerCase() + '.json');
-  let oldHistory = [], oldPos = {};
+  let oldHistory = [], oldPos = {}, oldProf = null;
   try {
     const old = JSON.parse(fs.readFileSync(p, 'utf8'));
-    oldHistory = old.history || []; oldPos = old.posHistory || {};
-    if (old.v === 3 && Date.now() - new Date(old.updated).getTime() < WALLET_TTL_H * 36e5) return;
+    oldHistory = old.history || []; oldPos = old.posHistory || {}; oldProf = old;
+    if (old.v === 3 && Date.now() - new Date(old.updated).getTime() < WALLET_TTL_H * 36e5) {
+      // fresh profile: still run the cheap upgrade passes
+      let changed = false;
+      const before = JSON.stringify({ e: old.entity, h: (old.history||[]).length, b: old.pfB });
+      await fixSocials(addr, old);
+      await backfillPortfolioHistory(addr, old);
+      if (JSON.stringify({ e: old.entity, h: (old.history||[]).length, b: old.pfB }) !== before) fs.writeFileSync(p, JSON.stringify(old));
+      return;
+    }
   } catch {}
   // entity comes from the label cache (filled by arkhamLookup) — no duplicate intel call
   const cached = labelCache[addr.toLowerCase()] || null;
@@ -189,14 +245,17 @@ async function enrichWalletProfile(addr) {
     const last = history[history.length - 1];
     if (!last || Date.now() - new Date(last.ts).getTime() > 6 * 36e5) history.push({ ts: new Date().toISOString(), usd: Math.round(port.totalUsd) });
   }
-  fs.writeFileSync(p, JSON.stringify({
+  let prof = ({
     v: 3, addr, updated: new Date().toISOString(),
-    posHistory: oldPos,
+    posHistory: oldPos, pfB: oldProf ? !!oldProf.pfB : false,
     entity: ent,
     portfolio: port,
     history,
     transfers: transfers ? parseTransfers(transfers, addr) : [],
-  }));
+  });
+  await fixSocials(addr, prof);
+  await backfillPortfolioHistory(addr, prof);
+  fs.writeFileSync(p, JSON.stringify(prof));
 }
 
 const BURN = new Set([
@@ -217,6 +276,19 @@ async function j(url, tries = 3) {
 }
 
 fs.mkdirSync('data', { recursive: true });
+let logoCache = {};
+try { logoCache = JSON.parse(fs.readFileSync('data/logos.json', 'utf8')); } catch {}
+async function tokenLogo(t) {
+  const hit = logoCache[t.sym];
+  if (hit && Date.now() - (hit.ts || 0) < 7 * 864e5) return hit.url;
+  if (!t.coingecko) return hit ? hit.url : null;
+  try {
+    const r = await fetch(`https://api.coingecko.com/api/v3/coins/${t.coingecko}?localization=false&tickers=false&market_data=false&community_data=false&developer_data=false&sparkline=false`);
+    if (r.ok) { const d = await r.json(); const url = (d.image && (d.image.small || d.image.large)) || null;
+      if (url) { logoCache[t.sym] = { url, ts: Date.now() }; return url; } }
+  } catch (e) {}
+  return hit ? hit.url : null;
+}
 const index = { generated_at: new Date().toISOString(), tokens: [] };
 
 // ---- 30d position-history backfill (real on-chain data via to_block) ----
@@ -366,14 +438,15 @@ for (const t of cfg.tokens) {
         .slice(0, 15);
     } catch (e) { console.log('transfers unavailable:', e.message.slice(0, 80)); }
 
+    const logo = await tokenLogo(t);
     const out = {
-      sym: t.sym, name: t.name, color: t.color, contract: t.contract,
+      sym: t.sym, name: t.name, color: t.color, contract: t.contract, logo,
       price: usd, chg, mcap, holders,
       generated_at: index.generated_at,
       holdersTop: top, recent,
     };
     fs.writeFileSync(path.join('data', `${t.sym.toLowerCase()}.json`), JSON.stringify(out));
-    index.tokens.push({ sym: t.sym, name: t.name, color: t.color, contract: t.contract, price: usd, chg, mcap, holders });
+    index.tokens.push({ sym: t.sym, name: t.name, color: t.color, contract: t.contract, logo, price: usd, chg, mcap, holders });
     console.log(`  ok: price=$${usd} mcap=$${Math.round(mcap).toLocaleString()} holders=${holders}`);
   } catch (e) {
     console.error(`  FAILED ${t.sym}:`, e.message);
@@ -388,5 +461,6 @@ for (const t of cfg.tokens) {
 
 if (!index.tokens.length) { console.error('No token data fetched at all — aborting without writing index.'); process.exit(1); }
 fs.writeFileSync(LABELS_PATH, JSON.stringify(labelCache));
+fs.writeFileSync('data/logos.json', JSON.stringify(logoCache));
 fs.writeFileSync('data/index.json', JSON.stringify(index));
 console.log(`\nWrote data/index.json with ${index.tokens.length} tokens. Label cache: ${Object.keys(labelCache).length} addresses${ARKHAM_KEY ? '' : ' (no ARKHAM_API_KEY — enrichment skipped)'}.`);
