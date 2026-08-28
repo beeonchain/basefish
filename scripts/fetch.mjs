@@ -449,12 +449,20 @@ for (const t of cfg.tokens) {
     index.tokens.push({ sym: t.sym, name: t.name, color: t.color, contract: t.contract, logo, price: usd, chg, mcap, holders });
     console.log(`  ok: price=$${usd} mcap=$${Math.round(mcap).toLocaleString()} holders=${holders}`);
   } catch (e) {
-    console.error(`  FAILED ${t.sym}:`, e.message);
-    // keep previous data file if it exists; still list token in index from old file
+    console.error(`  FAILED ${t.sym}:`, e.message.slice(0, 160));
+    // Moralis down (quota etc): keep previous data, but Arkham + logos still work
     const p = path.join('data', `${t.sym.toLowerCase()}.json`);
     if (fs.existsSync(p)) {
       const old = JSON.parse(fs.readFileSync(p, 'utf8'));
-      index.tokens.push({ sym: old.sym, name: old.name, color: old.color, contract: old.contract, price: old.price, chg: old.chg, mcap: old.mcap, holders: old.holders });
+      const logo = await tokenLogo(t);
+      if (logo && !old.logo) { old.logo = logo; fs.writeFileSync(p, JSON.stringify(old)); }
+      index.tokens.push({ sym: old.sym, name: old.name, color: old.color, contract: old.contract, logo: old.logo || logo, price: old.price, chg: old.chg, mcap: old.mcap, holders: old.holders });
+      if (ARKHAM_KEY) {
+        for (const h of (old.holdersTop || []).slice(0, WALLET_DETAIL_PER_TOKEN)) {
+          try { await enrichWalletProfile(h.addr); } catch (e2) { }
+        }
+        console.log(`  arkham-only enrichment done (profile budget left ${profileBudget})`);
+      }
     }
   }
 }
