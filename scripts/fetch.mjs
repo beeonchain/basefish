@@ -83,7 +83,7 @@ const EXCLUDE_TYPES = new Set(['cex', 'exchange', 'bridge', 'dex', 'staking', 'b
 const WALLET_DIR = 'data/wallets';
 const WALLET_DETAIL_PER_TOKEN = 25;
 const WALLET_TTL_H = 12;
-let profileBudget = 320; // total arkham profile calls per run
+let profileBudget = 600; // total arkham profile calls per run
 let loggedShapes = false;
 
 async function arkhamGet(pathname) {
@@ -154,6 +154,7 @@ async function fixSocials(addr, prof) {
   const a = addr.toLowerCase();
   const lc = labelCache[a];
   if (!lc || !lc.name || lc.idChecked) return prof;
+  if (profileBudget < 3) return prof;
   lc.idChecked = true;
   const re = await arkhamGet(`/intelligence/address/${addr}/all`);
   if (re) {
@@ -213,6 +214,7 @@ async function enrichWalletProfile(addr) {
       return;
     }
   } catch {}
+  if (profileBudget < 15) return; // not enough budget to finish properly — keep old data intact
   // entity comes from the label cache (filled by arkhamLookup) — no duplicate intel call
   const cached = labelCache[addr.toLowerCase()] || null;
   const intel = cached ? null : await arkhamGet(`/intelligence/address/${addr}/all`);
@@ -245,13 +247,14 @@ async function enrichWalletProfile(addr) {
     const last = history[history.length - 1];
     if (!last || Date.now() - new Date(last.ts).getTime() > 6 * 36e5) history.push({ ts: new Date().toISOString(), usd: Math.round(port.totalUsd) });
   }
+  const newTr = transfers ? parseTransfers(transfers, addr) : [];
   let prof = ({
     v: 3, addr, updated: new Date().toISOString(),
     posHistory: oldPos, pfB: oldProf ? !!oldProf.pfB : false,
-    entity: ent,
-    portfolio: port,
+    entity: (ent && (ent.name || ent.label)) ? ent : ((oldProf && oldProf.entity) || ent),
+    portfolio: port || (oldProf && oldProf.portfolio) || null,
     history,
-    transfers: transfers ? parseTransfers(transfers, addr) : [],
+    transfers: newTr.length ? newTr : ((oldProf && oldProf.transfers) || []),
   });
   await fixSocials(addr, prof);
   await backfillPortfolioHistory(addr, prof);
@@ -414,6 +417,7 @@ for (const t of cfg.tokens) {
     const top = filtered.slice(0, 100);
     console.log(`  scanned ${seen}, kept ${kept.length}, top ${top.length}`);
     if (ARKHAM_KEY) {
+      for (const h of top.slice(0, WALLET_DETAIL_PER_TOKEN)) { try { await fixSocials(h.addr, null); } catch (e) {} }
       for (const h of top.slice(0, WALLET_DETAIL_PER_TOKEN)) {
         try { await enrichWalletProfile(h.addr); } catch (e) { console.log('  profile err', h.addr.slice(0, 10), e.message.slice(0, 60)); }
       }
@@ -458,6 +462,7 @@ for (const t of cfg.tokens) {
       if (logo && !old.logo) { old.logo = logo; fs.writeFileSync(p, JSON.stringify(old)); }
       index.tokens.push({ sym: old.sym, name: old.name, color: old.color, contract: old.contract, logo: old.logo || logo, price: old.price, chg: old.chg, mcap: old.mcap, holders: old.holders });
       if (ARKHAM_KEY) {
+        for (const h of (old.holdersTop || []).slice(0, WALLET_DETAIL_PER_TOKEN)) { try { await fixSocials(h.addr, null); } catch (e2) {} }
         for (const h of (old.holdersTop || []).slice(0, WALLET_DETAIL_PER_TOKEN)) {
           try { await enrichWalletProfile(h.addr); } catch (e2) { }
         }

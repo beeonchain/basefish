@@ -121,6 +121,9 @@
   .bar .about:hover{color:var(--text)}
   /* ---------- right rail ---------- */
   .rail{border-left:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:12px;overflow:auto;min-height:0;max-height:100%}
+  .app.noRail{grid-template-columns:212px 1fr 0}
+  .app.noRail .rail{display:none}
+  .app.noRail .bar{display:none}
   .box{border:1px solid var(--line);border-radius:0;background:var(--panel);padding:12px}
   .box h3{font:900 11.5px var(--font-display);text-transform:uppercase;letter-spacing:.07em;margin:0 0 10px;display:flex;align-items:center;justify-content:space-between}
   .box h3 a{font:600 11px var(--font-body);color:var(--teal);cursor:pointer}
@@ -702,6 +705,7 @@ function buildPicker(){
 }
 /* views */
 function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
+  document.querySelector('.app').classList.toggle('noRail',v!=='aquarium');
   document.getElementById('tank').style.display=v==='aquarium'?'':'none';
   document.getElementById('holdersView').classList.toggle('show',v==='holders');
   document.getElementById('walletsView').classList.toggle('show',v==='wallets');
@@ -795,7 +799,7 @@ async function openProfile(h){
   const ark=`https://intel.arkm.com/explorer/address/${h.addr}`;
   el.innerHTML=`<div class="whead"><div class="fishic"><img src="assets/tank/${h.rank===1?'king':h.tier}.webp" style="width:40px;height:32px;object-fit:contain" onerror="this.style.display='none'"></div>
     <div><h3 id="wpname">${h.entity||short(h.addr)}</h3><div class="addr">${h.addr}</div>
-      <div class="lbls" style="margin-top:6px">${[h.rank?`<span style="color:${t.c}">${t.n} · rank #${h.rank} in $${cur.sym}</span>`:`<span>free swimmer · not in a tracked top 100</span>`,h.entityType?`<span style="color:${typeColor(h.entityType)};border-color:${typeColor(h.entityType)}55">${h.entityType}</span>`:'',h.label&&h.label!==h.entity?`<span>${h.label}</span>`:'',h.isContract?'<span>contract</span>':''].join('')}</div></div>
+      <div class="lbls" style="margin-top:6px">${[h.rank?`<span style="color:${t.c}">${t.n} · rank #${h.rank} in $${h.tokSym||cur.sym}</span>`:`<span>free swimmer · not in a tracked top 100</span>`,h.entityType?`<span style="color:${typeColor(h.entityType)};border-color:${typeColor(h.entityType)}55">${h.entityType}</span>`:'',h.label&&h.label!==h.entity?`<span>${h.label}</span>`:'',h.isContract?'<span>contract</span>':''].join('')}</div></div>
     <div class="val"><small>Portfolio value · all chains</small><b class="mono" id="wpval">—</b></div>
     <div class="wbtns"><button onclick="setView('aquarium')">← Aquarium</button><button id="wpcopy">Copy address</button><button id="wpshare">Share wallet</button><span id="wpsocials" style="display:contents"></span><a href="${ark}" target="_blank" rel="noopener">Arkham ↗</a><a href="${scan}" target="_blank" rel="noopener">Basescan ↗</a></div></div>
   <div class="wgrid" id="wpgrid"><div class="empty2">Loading. Trust the fish.</div></div>`;
@@ -850,7 +854,7 @@ function closeCardOnly(){card.classList.remove('show')}
 async function openProfileByAddr(addr){
   if(!/^0x[0-9a-fA-F]{40}$/.test(addr||''))return;
   let h=data&&data.list.find(x=>x.addr.toLowerCase()===addr.toLowerCase());
-  if(!h){for(const tk of TOKENS){const d=REAL?await tokData(tk.sym):null;if(!d)continue;const m=d.holdersTop.find(x=>x.addr.toLowerCase()===addr.toLowerCase());if(m){h={rank:d.holdersTop.indexOf(m)+1,addr:m.addr,pct:m.pct||0,value:m.usd||0,amount:m.amount||0,tier:'medium',label:m.label||'',entity:m.entity||null,entityType:m.entityType||null,isContract:!!m.isContract};break}}}
+  if(!h){for(const tk of TOKENS){const d=REAL?await tokData(tk.sym):null;if(!d)continue;const m=d.holdersTop.find(x=>x.addr.toLowerCase()===addr.toLowerCase());if(m){h={rank:d.holdersTop.indexOf(m)+1,addr:m.addr,pct:m.pct||0,value:m.usd||0,amount:m.amount||0,tier:'medium',label:m.label||'',entity:m.entity||null,entityType:m.entityType||null,isContract:!!m.isContract,tokSym:tk.sym};break}}}
   if(!h)h={rank:null,addr,pct:0,value:0,amount:0,tier:'small',label:'',entity:null,entityType:null,isContract:false};
   openProfile(h);
 }
