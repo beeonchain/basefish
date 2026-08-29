@@ -101,6 +101,64 @@ async function arkhamLookup(addr) {
 // entity types that should never count as a "holder fish"
 const EXCLUDE_TYPES = new Set(['cex', 'exchange', 'bridge', 'dex', 'staking', 'burn', 'locker']);
 
+// ---- Frontrun labels (wallet → X identity, KOL labels, cross-token tags) ----
+const FRONTRUN_KEY = process.env.FRONTRUN_API_KEY || '';
+const FR_PATH = 'data/frlabels.json';
+let frCache = { updated: null, wallets: {} };
+try { frCache = JSON.parse(fs.readFileSync(FR_PATH, 'utf8')); frCache.wallets = frCache.wallets || {}; } catch {}
+{ // seed records may lack per-record timestamps — stamp them with the file's updated time
+  const st = Date.parse(frCache.updated) || Date.now();
+  for (const k of Object.keys(frCache.wallets)) if (!frCache.wallets[k].ts) frCache.wallets[k].ts = st;
+}
+const FR_TTL_MATCH_D = 30, FR_TTL_MISS_D = 7, FR_BATCH = 25, FR_MAX_PER_RUN = 150; // ~150 lookups/run keeps credit burn tiny
+let frBudget = FR_MAX_PER_RUN;
+const OWN_SYMS = new Set(cfg.tokens.map(t => t.sym.toUpperCase()));
+// drop self-referential tags like "BRETT Top 100 Holder" — being on our list already says that
+const frKeepTag = (t) => { const m = String(t).match(/^(\S+) Top \d+ Holder$/i); return !(m && OWN_SYMS.has(m[1].toUpperCase())); };
+const frHasData = (r) => !!(r && (r.x || r.pl || (r.l || []).length || (r.t || []).length));
+const frFresh = (r) => r && r.ts && (Date.now() - r.ts) < (frHasData(r) ? FR_TTL_MATCH_D : FR_TTL_MISS_D) * 864e5;
+
+async function frontrunBatch(addrs) {
+  if (!FRONTRUN_KEY || !addrs.length || frBudget <= 0) return;
+  for (let i = 0; i < addrs.length; i += FR_BATCH) {
+    if (frBudget <= 0) break;
+    const chunk = addrs.slice(i, i + FR_BATCH);
+    try {
+      const r = await fetch('https://api.frontrun.pro/api/v1/pro/twitter/wallets-batch-query', {
+        method: 'POST',
+        headers: { accept: 'application/json', 'Content-Type': 'application/json', Authorization: 'Bearer ' + FRONTRUN_KEY },
+        body: JSON.stringify({ wallets: chunk.map(a => ({ chain: 'EVM', address: a })) }),
+      });
+      if (r.status === 429) { await new Promise(s => setTimeout(s, 3000)); i -= FR_BATCH; continue; }
+      if (!r.ok) { console.log('  frontrun', r.status, (await r.text()).slice(0, 100)); break; }
+      const d = await r.json();
+      for (const w of (d.data && d.data.wallets) || []) {
+        const a = String(w.address || '').toLowerCase();
+        if (!a) continue;
+        frCache.wallets[a] = {
+          x: w.twitterUsername || null, n: w.name || null, f: w.followersCount || 0,
+          pl: w.primaryLabel ? String(w.primaryLabel).slice(0, 60) : null,
+          l: (w.labels || []).map(l => (l && l.name) || l).filter(x => typeof x === 'string').slice(0, 6),
+          t: (w.tags || []).map(t => t && t.name).filter(Boolean).filter(frKeepTag).slice(0, 8),
+          ts: Date.now(),
+        };
+      }
+      frBudget -= chunk.length;
+      await new Promise(s => setTimeout(s, 1100));
+    } catch (e) { console.log('  frontrun err', e.message.slice(0, 60)); break; }
+  }
+}
+function frLabelsFor(addr) {
+  const r = frCache.wallets[(addr || '').toLowerCase()];
+  if (!frHasData(r)) return null;
+  const out = [];
+  if (r.x) out.push('@' + r.x);
+  if (r.pl && !r.pl.includes(r.x || ' ')) out.push(r.pl);
+  (r.l || []).forEach(x => out.push(x));
+  (r.t || []).forEach(x => out.push(x));
+  return { labels: [...new Set(out)].slice(0, 10), x: r.x || null };
+}
+
 // ---- Arkham wallet profile enrichment (top wallets only) ----
 const WALLET_DIR = 'data/wallets';
 const WALLET_DETAIL_PER_TOKEN = 25;
@@ -282,6 +340,9 @@ async function enrichWalletProfile(addr) {
     if (ei) { const s2 = pickSocials(ei); ent.twitter = ent.twitter || s2.twitter; ent.website = ent.website || s2.website;
       const lc = labelCache[addr.toLowerCase()]; if (lc) { lc.twitter = lc.twitter || s2.twitter; lc.website = lc.website || s2.website; } }
   }
+  // Frontrun fallback: X handle when Arkham has no socials for this wallet
+  { const fr = frCache.wallets[addr.toLowerCase()];
+    if (fr && fr.x && !ent.twitter) { ent.twitter = fr.x; if (!ent.name && fr.n) ent.label = ent.label || fr.n; } }
   const port = parsePortfolio(portfolio);
   // own balance-history: one point per refresh cycle, grows forever (capped)
   const history = oldHistory.slice(-400);
@@ -516,6 +577,17 @@ for (const t of cfg.tokens) {
     if (dropped) console.log(`  arkham-excluded ${dropped} CEX/bridge/dex wallets`);
     const top = filtered.slice(0, 100);
     console.log(`  scanned ${seen}, kept ${kept.length}, top ${top.length}`);
+    // Frontrun enrichment: X identities + KOL labels + cross-token tags (cache-first, budgeted)
+    if (FRONTRUN_KEY) {
+      const need = top.map(h => h.addr.toLowerCase()).filter(a => !frFresh(frCache.wallets[a]));
+      if (need.length) { console.log(`  frontrun lookup: ${need.length} wallets (budget ${frBudget})`); await frontrunBatch(need); }
+    }
+    for (const h of top) {
+      const fr = frLabelsFor(h.addr);
+      if (!fr) continue;
+      h.labels = [...new Set([...(h.labels || []), ...fr.labels])].slice(0, 14);
+      if (fr.x && !h.entity && !h.label) h.label = '@' + fr.x; // fish bubble shows the X handle
+    }
     if (ARKHAM_KEY) {
       for (const h of top.slice(0, WALLET_DETAIL_PER_TOKEN)) { try { await fixSocials(h.addr, null); } catch (e) {} }
       for (const h of top.slice(0, WALLET_DETAIL_PER_TOKEN)) {
@@ -575,6 +647,7 @@ for (const t of cfg.tokens) {
 
 if (!index.tokens.length) { console.error('No token data fetched at all — aborting without writing index.'); process.exit(1); }
 fs.writeFileSync(LABELS_PATH, JSON.stringify(labelCache));
+fs.writeFileSync(FR_PATH, JSON.stringify({ updated: new Date().toISOString(), wallets: frCache.wallets }));
 fs.writeFileSync('data/logos.json', JSON.stringify(logoCache));
 fs.writeFileSync('data/index.json', JSON.stringify(index));
 console.log(`\nWrote data/index.json with ${index.tokens.length} tokens. Label cache: ${Object.keys(labelCache).length} addresses${ARKHAM_KEY ? '' : ' (no ARKHAM_API_KEY — enrichment skipped)'}.`);
