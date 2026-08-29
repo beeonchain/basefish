@@ -65,6 +65,13 @@
   .tokpick button{padding:6px 10px;border-radius:0;font-weight:700;color:var(--muted);font-size:11.5px;font-family:var(--font-mono);display:flex;align-items:center;gap:6px}
   .tokpick button i{width:8px;height:8px;border-radius:0;display:inline-block}
   .tokpick button.on{background:var(--text);color:#fff}
+  /* Wallets view aggregates all 5 tokens — no single token is "selected" there */
+  .app.wview .tokpick button.on{background:transparent;color:var(--muted)}
+  .app.wview .tracked{display:none}
+  .app.wview .stats{display:none}
+  .lblmore{font-size:10px;padding:2px 7px;border-radius:0;background:var(--panel2);color:var(--teal);border:1px solid var(--line);cursor:pointer;font-weight:700;font-family:var(--font-mono)}
+  td .lbls{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+  td .lbls span{font-size:10px;padding:2px 7px;border-radius:0;background:var(--panel2);color:var(--muted);border:1px solid var(--line);white-space:nowrap}
   .stats{margin-left:auto;display:flex;border:1px solid var(--line);border-radius:0;overflow:hidden;background:var(--panel)}
   .stats div{padding:8px 16px;border-left:1px solid var(--line);white-space:nowrap}
   .stats div:first-child{border-left:0}
@@ -328,6 +335,17 @@ const TYPE_COLORS={cex:'#E5484D',exchange:'#E5484D',dex:'#E5484D',bridge:'#E5484
 function typeColor(t){return TYPE_COLORS[String(t||'').toLowerCase()]||'#5B616E'}
 function typePill(t){if(!t)return'';const c=typeColor(t);return `<span class="pill" style="background:${c}18;color:${c};border:1px solid ${c}55">${t}</span>`}
 function entPill(name,t){if(!name)return'<span style="color:var(--dim)">Unknown</span>';const c=typeColor(t);return `<span class="pill" style="background:${c}18;color:${c};border:1px solid ${c}55">${name}</span>`}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+/* every distinct label for a wallet (Arkham-style multi-label), minus the entity name itself */
+function wlabels(h){const out=[],seen=new Set();const add=s=>{if(!s)return;const k=String(s).trim();if(k&&!seen.has(k.toLowerCase())){seen.add(k.toLowerCase());out.push(k)}};(h.labels||[]).forEach(add);add(h.label);const ent=(h.entity||'').toLowerCase();return out.filter(l=>l.toLowerCase()!==ent)}
+let LBL_UID=0;
+/* type pill + up to `max` label chips + "+N" expander for the rest (like Arkham's "+51 MORE") */
+function lblChips(h,max=3){
+  const ty=h.entityType||h.type||null,tc=typeColor(ty);
+  const type=ty?`<span style="color:${tc};border-color:${tc}55">${esc(ty)}</span>`:'';
+  const ls=wlabels(h),vis=ls.slice(0,max),hid=ls.slice(max),id='lb'+(++LBL_UID);
+  const more=hid.length?`<span id="${id}" style="display:none;padding:0;border:0;background:none">${hid.map(l=>`<span>${esc(l)}</span>`).join('')}</span><button class="lblmore" title="Show all ${ls.length} labels" onclick="event.stopPropagation();document.getElementById('${id}').style.display='contents';this.remove()">+${hid.length}</button>`:'';
+  return type+vis.map(l=>`<span>${esc(l)}</span>`).join('')+more+(h.isContract?'<span>contract</span>':'')}
 const ICON_X='<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M18.9 2H22l-6.8 7.8L23.3 22h-6.3l-4.9-6.4L6.4 22H3.3l7.3-8.3L1 2h6.5l4.4 5.9L18.9 2zm-1.1 18h1.7L7.1 3.9H5.3L17.8 20z"/></svg>';
 const ICON_WEB='<svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor" shape-rendering="crispEdges"><rect x="1" y="1" width="14" height="2"/><rect x="1" y="13" width="14" height="2"/><rect x="1" y="1" width="2" height="14"/><rect x="13" y="1" width="2" height="14"/><rect x="4" y="7" width="8" height="2"/><rect x="7" y="4" width="2" height="8"/></svg>';
 function tokLogo(sym,size){const t=TOKENS.find(x=>x.sym===sym);if(t&&t.logo)return `<img src="${t.logo}" alt="${sym}" title="${sym}" style="width:${size}px;height:${size}px;border-radius:0;vertical-align:middle;border:1px solid var(--line)" onerror="this.style.display='none'">`;return `<span class="pill" style="background:${t?t.color:'#888'}22;color:${t?t.color:'#aaa'}">${sym}</span>`}
@@ -364,7 +382,7 @@ addEventListener('resize',resize);resize();
 
 function sizeFor(f){if(!(data.max>data.min))return 30;const lo=Math.log(Math.max(1e-6,data.min)),hi=Math.log(Math.max(1e-5,data.max));const n=Math.max(0,Math.min(1,(Math.log(Math.max(f.value,data.min))-lo)/(hi-lo)));return 13+Math.pow(n,1.7)*85}
 function fromReal(d){
-  const list=(d.holdersTop||[]).map((h,i)=>({rank:i+1,addr:h.addr,pct:h.pct||0,value:h.usd||0,amount:h.amount||0,tier:'small',label:h.label||'',entity:h.entity||null,entityType:h.entityType||null,isContract:!!h.isContract}));
+  const list=(d.holdersTop||[]).map((h,i)=>({rank:i+1,addr:h.addr,pct:h.pct||0,value:h.usd||0,amount:h.amount||0,tier:'small',label:h.label||'',entity:h.entity||null,entityType:h.entityType||null,labels:h.labels||[],isContract:!!h.isContract}));
   list.sort((a,b)=>b.value-a.value).forEach((h,i)=>h.rank=i+1);
   list.forEach(h=>h.tier=h.rank<=6?'whale':h.rank<=24?'large':h.rank<=60?'medium':'small');
   const at=i=>list[Math.min(i,list.length-1)].value;
@@ -599,7 +617,7 @@ function drawFishes(t){
     }
     if(f.h.tier==='whale'||f.glow>.2){
       ctx.save();ctx.globalAlpha=f.h.tier==='whale'?.9:f.glow;
-      ctx.font=`500 ${f.h.tier==='whale'?11:10}px JetBrains Mono, monospace`;const lbl=short(f.h.addr);const tw=ctx.measureText(lbl).width+14;
+      ctx.font=`500 ${f.h.tier==='whale'?11:10}px JetBrains Mono, monospace`;const lbl=(f.h.entity||f.h.label||short(f.h.addr)).slice(0,24);const tw=ctx.measureText(lbl).width+14;
       const sel=f===selected||f===hovered;
       ctx.fillStyle=sel?'#0000FF':'rgba(10,11,13,.78)';roundRect(f.x-tw/2,f.y-s*.62-22,tw,18,0);ctx.fill();if(!sel){ctx.strokeStyle='rgba(255,255,255,.25)';ctx.stroke()}
       ctx.fillStyle='#FFFFFF';ctx.textAlign='center';ctx.fillText(lbl,f.x,f.y-s*.62-9);ctx.restore();
@@ -616,13 +634,13 @@ requestAnimationFrame(loop);
 const tip=document.getElementById('tip'),card=document.getElementById('card');
 function hit(mx,my){let best=null,bd=1e9;fish.forEach(f=>{const d=Math.hypot(f.x-mx,f.y-my);const r=f.size*zoom*.6+8;if(d<r&&d<bd){bd=d;best=f}});return best}
 tank.addEventListener('mousemove',e=>{const r=tank.getBoundingClientRect();const mx=e.clientX-r.left,my=e.clientY-r.top;hovered=hit(mx,my);tank.style.cursor=hovered?'pointer':'default';
-  if(hovered&&hovered!==selected){tip.style.display='block';tip.innerHTML=`<b>${short(hovered.h.addr)}</b> · ${hovered.h.pct.toFixed(2)}% · ${usd(hovered.h.value)}`;tip.style.left=Math.min(W-220,mx+14)+'px';tip.style.top=(my-34)+'px'}else tip.style.display='none'});
+  if(hovered&&hovered!==selected){tip.style.display='block';tip.innerHTML=`<b>${esc(hovered.h.entity||hovered.h.label||short(hovered.h.addr))}</b> · ${hovered.h.pct.toFixed(2)}% · ${usd(hovered.h.value)}`;tip.style.left=Math.min(W-220,mx+14)+'px';tip.style.top=(my-34)+'px'}else tip.style.display='none'});
 tank.addEventListener('mouseleave',()=>{hovered=null;tip.style.display='none'});
 tank.addEventListener('click',e=>{const r=tank.getBoundingClientRect();const f=hit(e.clientX-r.left,e.clientY-r.top);if(f)select(f);else if(!card.contains(e.target))closeCard()});
 function select(f){selected=f;tip.style.display='none';const h=f.h,t=TIER[h.tier];
   const scan=`https://basescan.org/token/${cur.contract||''}?a=${h.addr}`;
   const tc=typeColor(h.entityType);
-  const chips=[h.entity&&h.entity!==h.label?`<span style="color:${tc};border-color:${tc}55">${h.entity}</span>`:'',h.label?`<span>${h.label}</span>`:'',h.entityType?`<span style="color:${tc};border-color:${tc}55">${h.entityType}</span>`:'',h.isContract?`<span>contract</span>`:'',(!REAL)?`<span>${h.first}d on-chain</span><span>${h.tx} txs</span>`:''].join('');
+  const chips=[h.entity?`<span style="color:${tc};border-color:${tc}55">${esc(h.entity)}</span>`:'',lblChips(h,3),(!REAL)?`<span>${h.first}d on-chain</span><span>${h.tx} txs</span>`:''].join('');
   card.innerHTML=`<button class="x" id="cx">✕</button><div class="tier" style="color:${t.c}"><i style="background:${t.c}"></i>${t.n} wallet · rank #${h.rank}</div>
   <div class="addr">${short(h.addr)}<button id="ccopy" title="Copy address">copy</button></div>
   ${chips?`<div class="lbls">${chips}</div>`:''}
@@ -695,7 +713,7 @@ function drawDonut(){
   document.getElementById('distList').innerHTML=segs.map(s=>`<li><i style="background:${s[3]}"></i><span><b>${s[0]}</b> <small>${s[1]}</small></span><b class="mono">${(s[2]*100).toFixed(1)}%</b></li>`).join('');
 }
 function renderTable(){
-  document.getElementById('holdersView').innerHTML=`<table><thead><tr><th>#</th><th>Wallet</th><th>Tier</th><th>Labels</th><th class="r">Amount</th><th class="r">% supply</th><th class="r">Value</th><th class="r">Type</th></tr></thead><tbody>${data.list.map((h,i)=>`<tr data-i="${i}"><td class="mono" style="color:var(--dim)">${h.rank}</td><td class="mono">${short(h.addr)}${h.entity?` <span style="color:var(--teal)">${h.entity}</span>`:''}</td><td><span class="pill" style="background:${TIER[h.tier].c}22;color:${TIER[h.tier].c}">${TIER[h.tier].n}</span></td><td style="color:var(--muted)">${h.label||'—'}</td><td class="r mono">${num(h.amount)}</td><td class="r mono">${h.pct.toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:var(--muted)">${REAL?(h.isContract?'contract':'wallet'):h.last+'h ago'}</td></tr>`).join('')}</tbody></table>`;
+  document.getElementById('holdersView').innerHTML=`<table><thead><tr><th>#</th><th>Wallet</th><th>Tier</th><th>Labels</th><th class="r">Amount</th><th class="r">% supply</th><th class="r">Value</th><th class="r">Type</th></tr></thead><tbody>${data.list.map((h,i)=>`<tr data-i="${i}"><td class="mono" style="color:var(--dim)">${h.rank}</td><td class="mono">${short(h.addr)}${h.entity?` <span style="color:var(--teal)">${h.entity}</span>`:''}</td><td><span class="pill" style="background:${TIER[h.tier].c}22;color:${TIER[h.tier].c}">${TIER[h.tier].n}</span></td><td><div class="lbls">${lblChips(h,2)||'<span style="border:0;background:none;padding:0;color:var(--dim)">—</span>'}</div></td><td class="r mono">${num(h.amount)}</td><td class="r mono">${h.pct.toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:var(--muted)">${REAL?(h.isContract?'contract':'wallet'):h.last+'h ago'}</td></tr>`).join('')}</tbody></table>`;
   document.querySelectorAll('#holdersView tr[data-i]').forEach(r=>r.onclick=()=>{setView('aquarium');select(fish[+r.dataset.i])});
 }
 /* token picker */
@@ -706,6 +724,7 @@ function buildPicker(){
 /* views */
 function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
   document.querySelector('.app').classList.toggle('noRail',v!=='aquarium');
+  document.querySelector('.app').classList.toggle('wview',v==='wallets');
   document.getElementById('tank').style.display=v==='aquarium'?'':'none';
   document.getElementById('holdersView').classList.toggle('show',v==='holders');
   document.getElementById('walletsView').classList.toggle('show',v==='wallets');
@@ -723,15 +742,16 @@ async function renderWallets(){
     const list=d?d.holdersTop:buildHolders(Object.assign({},t,{seed:t.seed||[...t.sym].reduce((a,c)=>a+c.charCodeAt(0),13)})).list.map(h=>({addr:h.addr,usd:h.value,label:h.label,entity:null,entityType:null}));
     list.forEach(h=>{
       const k=h.addr.toLowerCase();
-      if(!agg.has(k))agg.set(k,{addr:h.addr,entity:h.entity||null,label:h.label||null,type:h.entityType||null,usd:0,toks:[]});
+      if(!agg.has(k))agg.set(k,{addr:h.addr,entity:h.entity||null,label:h.label||null,type:h.entityType||null,labels:[],usd:0,toks:[]});
       const w=agg.get(k);w.usd+=h.usd||h.value||0;w.toks.push(t.sym);
       if(h.entity)w.entity=h.entity;if(h.label&&!w.label)w.label=h.label;if(h.entityType)w.type=h.entityType;
+      (h.labels||[]).forEach(l=>{if(!w.labels.some(x=>x.toLowerCase()===String(l).toLowerCase()))w.labels.push(l)});
     });
   }
   const rows=[...agg.values()].sort((a,b)=>b.usd-a.usd).slice(0,150);
   const labeled=rows.filter(r=>r.entity||r.label);
-  el.innerHTML=`<table><thead><tr><th>Wallet</th><th>Entity / label</th><th>Type</th><th>Holds</th><th class="r">Combined value (top-100 positions)</th></tr></thead><tbody>${
-    rows.map(r=>`<tr style="cursor:pointer" onclick="openProfileByAddr('${r.addr}')"><td class="mono">${short(r.addr)}</td><td>${entPill(r.entity||r.label,r.type)}</td><td>${typePill(r.type)}</td><td style="white-space:nowrap">${r.toks.map(sym=>tokLogo(sym,18)).join(' ')}</td><td class="r mono">${usd(r.usd)}</td></tr>`).join('')
+  el.innerHTML=`<table><thead><tr><th>Wallet</th><th>Labels</th><th>Holds</th><th class="r">Combined value (top-100 positions)</th></tr></thead><tbody>${
+    rows.map(r=>{const chips=(r.entity?entPill(r.entity,r.type):'')+lblChips(r,3);return `<tr style="cursor:pointer" onclick="openProfileByAddr('${r.addr}')"><td class="mono">${short(r.addr)}</td><td><div class="lbls">${chips||'<span style="border:0;background:none;padding:0;color:var(--dim)">Unknown</span>'}</div></td><td style="white-space:nowrap">${r.toks.map(sym=>tokLogo(sym,18)).join(' ')}</td><td class="r mono">${usd(r.usd)}</td></tr>`}).join('')
   }</tbody></table>
   <div style="padding:12px 14px;color:var(--dim);font-size:11.5px">${labeled.length} of ${rows.length} wallets have entity labels${REAL?'':' · demo data'} · wallets appearing in multiple aquariums are merged</div>`;
 }
@@ -799,7 +819,7 @@ async function openProfile(h){
   const ark=`https://intel.arkm.com/explorer/address/${h.addr}`;
   el.innerHTML=`<div class="whead"><div class="fishic"><img src="assets/tank/${h.rank===1?'king':h.tier}.webp" style="width:40px;height:32px;object-fit:contain" onerror="this.style.display='none'"></div>
     <div><h3 id="wpname">${h.entity||short(h.addr)}</h3><div class="addr">${h.addr}</div>
-      <div class="lbls" style="margin-top:6px">${[h.rank?`<span style="color:${t.c}">${t.n} · rank #${h.rank} in $${h.tokSym||cur.sym}</span>`:`<span>free swimmer · not in a tracked top 100</span>`,h.entityType?`<span style="color:${typeColor(h.entityType)};border-color:${typeColor(h.entityType)}55">${h.entityType}</span>`:'',h.label&&h.label!==h.entity?`<span>${h.label}</span>`:'',h.isContract?'<span>contract</span>':''].join('')}</div></div>
+      <div class="lbls" id="wplbls" style="margin-top:6px">${[h.rank?`<span style="color:${t.c}">${t.n} · rank #${h.rank} in $${h.tokSym||cur.sym}</span>`:`<span>free swimmer · not in a tracked top 100</span>`,lblChips(h,5)].join('')}</div></div>
     <div class="val"><small>Portfolio value · all chains</small><b class="mono" id="wpval">—</b></div>
     <div class="wbtns"><button onclick="setView('aquarium')">← Aquarium</button><button id="wpcopy">Copy address</button><button id="wpshare">Share wallet</button><span id="wpsocials" style="display:contents"></span><a href="${ark}" target="_blank" rel="noopener">Arkham ↗</a><a href="${scan}" target="_blank" rel="noopener">Basescan ↗</a></div></div>
   <div class="wgrid" id="wpgrid"><div class="empty2">Loading. Trust the fish.</div></div>`;
@@ -816,6 +836,12 @@ async function openProfile(h){
   if(!positions.length&&h.value)positions.push({sym:cur.sym,color:cur.color,usd:h.value,pct:h.pct,amount:h.amount,rank:h.rank||0});
   const grid=document.getElementById('wpgrid');
   if(p&&p.entity&&p.entity.name)document.getElementById('wpname').textContent=p.entity.name;
+  // profile JSON may carry more labels than the holders list — re-render the chip row with the union
+  if(p&&p.entity&&((p.entity.labels||[]).length||p.entity.type||p.entity.label)){
+    const m2={...h,entity:h.entity||p.entity.name,entityType:h.entityType||p.entity.type,label:h.label||p.entity.label,labels:[...(h.labels||[]),...(p.entity.labels||[])]};
+    const rk=h.rank?`<span style="color:${t.c}">${t.n} · rank #${h.rank} in $${h.tokSym||cur.sym}</span>`:`<span>free swimmer · not in a tracked top 100</span>`;
+    const ld=document.getElementById('wplbls');if(ld)ld.innerHTML=rk+lblChips(m2,5);
+  }
   if(p&&p.entity){const so=document.getElementById('wpsocials');const parts=[];
     if(p.entity.twitter){const tw=String(p.entity.twitter).replace(/^@/,'').replace(/^https?:\/\/(x|twitter)\.com\//,'').replace(/\/$/,'');parts.push(`<a href="https://x.com/${tw}" target="_blank" rel="noopener" title="@${tw} on X" style="display:inline-flex;align-items:center;gap:6px">${ICON_X} @${tw}</a>`)}
     if(p.entity.website)parts.push(`<a href="${p.entity.website}" target="_blank" rel="noopener" title="${p.entity.website}" style="display:inline-flex;align-items:center;gap:6px">${ICON_WEB} ${String(p.entity.website).replace(/^https?:\/\//,'').replace(/\/$/,'').slice(0,24)}</a>`);
@@ -854,8 +880,8 @@ function closeCardOnly(){card.classList.remove('show')}
 async function openProfileByAddr(addr){
   if(!/^0x[0-9a-fA-F]{40}$/.test(addr||''))return;
   let h=data&&data.list.find(x=>x.addr.toLowerCase()===addr.toLowerCase());
-  if(!h){for(const tk of TOKENS){const d=REAL?await tokData(tk.sym):null;if(!d)continue;const m=d.holdersTop.find(x=>x.addr.toLowerCase()===addr.toLowerCase());if(m){h={rank:d.holdersTop.indexOf(m)+1,addr:m.addr,pct:m.pct||0,value:m.usd||0,amount:m.amount||0,tier:'medium',label:m.label||'',entity:m.entity||null,entityType:m.entityType||null,isContract:!!m.isContract,tokSym:tk.sym};break}}}
-  if(!h)h={rank:null,addr,pct:0,value:0,amount:0,tier:'small',label:'',entity:null,entityType:null,isContract:false};
+  if(!h){for(const tk of TOKENS){const d=REAL?await tokData(tk.sym):null;if(!d)continue;const m=d.holdersTop.find(x=>x.addr.toLowerCase()===addr.toLowerCase());if(m){h={rank:d.holdersTop.indexOf(m)+1,addr:m.addr,pct:m.pct||0,value:m.usd||0,amount:m.amount||0,tier:'medium',label:m.label||'',entity:m.entity||null,entityType:m.entityType||null,labels:m.labels||[],isContract:!!m.isContract,tokSym:tk.sym};break}}}
+  if(!h)h={rank:null,addr,pct:0,value:0,amount:0,tier:'small',label:'',entity:null,entityType:null,labels:[],isContract:false};
   openProfile(h);
 }
 async function legacyDrawerProfile(h){
@@ -865,7 +891,7 @@ async function legacyDrawerProfile(h){
     <div class="tier" style="color:${t.c}"><i style="background:${t.c}"></i>${t.n} wallet · rank #${h.rank} · $${cur.sym}</div>
     ${h.entity?`<div class="ent">${h.entity}</div>`:''}
     <h4>${h.addr}</h4>
-    <div class="lbls">${[h.entityType?`<span style="color:var(--gold)">${h.entityType}</span>`:'',h.label&&h.label!==h.entity?`<span>${h.label}</span>`:'',h.isContract?'<span>contract</span>':''].join('')}</div></div>`;
+    <div class="lbls">${lblChips(h,4)}</div></div>`;
   d.innerHTML=head+`<div class="body"><div class="empty">Loading profile…</div></div>`;
   d.classList.add('open');
   document.getElementById('dx').onclick=()=>d.classList.remove('open');

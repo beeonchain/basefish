@@ -22,18 +22,31 @@ let arkhamBudget = ARKHAM_MAX_LOOKUPS, arkhamBase = null;
 
 function parseArkham(payload) {
   // response may be flat or keyed per-chain; walk it for arkhamEntity/arkhamLabel (+ id, socials)
-  const found = { name: null, type: null, label: null, id: null, twitter: null, website: null };
+  // collects EVERY distinct label across all chains (Arkham-style multi-label)
+  const found = { name: null, type: null, label: null, id: null, twitter: null, website: null, labels: [] };
+  const seenL = new Set();
+  const addL = (s) => {
+    if (!s) return;
+    const k = String(s).trim();
+    if (k && k.length <= 60 && !seenL.has(k.toLowerCase())) { seenL.add(k.toLowerCase()); found.labels.push(k); }
+  };
   const walk = (o, depth) => {
-    if (!o || typeof o !== 'object' || depth > 3) return;
-    if (o.arkhamEntity && !found.name) {
+    if (!o || typeof o !== 'object' || depth > 4) return;
+    if (Array.isArray(o)) { for (const v of o) walk(v, depth + 1); return; }
+    if (o.arkhamEntity) {
       const e = o.arkhamEntity;
-      found.name = e.name || null; found.type = e.type || null; found.id = e.id || null;
-      found.twitter = e.twitter || e.twitterUsername || null; found.website = e.website || e.websiteLink || null;
+      if (!found.name) {
+        found.name = e.name || null; found.type = e.type || null; found.id = e.id || null;
+        found.twitter = e.twitter || e.twitterUsername || null; found.website = e.website || e.websiteLink || null;
+      }
+      if (Array.isArray(e.populatedTags)) for (const tg of e.populatedTags) addL(tg && (tg.label || tg.name || tg.id));
     }
-    if (o.arkhamLabel && !found.label) found.label = o.arkhamLabel.name || null;
-    if (!found.name || !found.label) for (const v of Object.values(o)) walk(v, depth + 1);
+    if (o.arkhamLabel) { if (!found.label) found.label = o.arkhamLabel.name || null; addL(o.arkhamLabel.name); }
+    if (Array.isArray(o.populatedTags)) for (const tg of o.populatedTags) addL(tg && (tg.label || tg.name || tg.id));
+    for (const v of Object.values(o)) walk(v, depth + 1);
   };
   walk(payload, 0);
+  found.labels = found.labels.slice(0, 24);
   return found;
 }
 function pickSocials(payload) {
@@ -55,8 +68,11 @@ function pickSocials(payload) {
 async function arkhamLookup(addr) {
   const a = addr.toLowerCase();
   const hit = labelCache[a];
-  if (hit && (Date.now() - (hit.ts || 0)) < LABEL_TTL_DAYS * 864e5) return hit;
-  if (!ARKHAM_KEY || arkhamBudget <= 0) return hit || null;
+  if (hit && (Date.now() - (hit.ts || 0)) < LABEL_TTL_DAYS * 864e5) {
+    // labels-upgrade: older cache entries predate multi-label collection — refetch named ones once
+    const wantsLabels = hit.labels === undefined && (hit.name || hit.label) && ARKHAM_KEY && arkhamBudget > 60;
+    if (!wantsLabels) return hit;
+  } else if (!ARKHAM_KEY || arkhamBudget <= 0) return hit || null;
   const bases = arkhamBase ? [arkhamBase] : ARKHAM_BASES;
   for (const base of bases) {
     for (const path of [`/intelligence/address/${addr}/all`, `/intelligence/address/${addr}`]) {
@@ -66,7 +82,12 @@ async function arkhamLookup(addr) {
         if (!r.ok) continue;
         arkhamBase = base; arkhamBudget--;
         const info = parseArkham(await r.json());
-        const rec = { name: info.name, type: info.type, label: info.label, id: info.id, twitter: info.twitter, website: info.website, ts: Date.now() };
+        const rec = { ...(hit || {}),
+          name: info.name || (hit && hit.name) || null, type: info.type || (hit && hit.type) || null,
+          label: info.label || (hit && hit.label) || null, id: info.id || (hit && hit.id) || null,
+          twitter: info.twitter || (hit && hit.twitter) || null, website: info.website || (hit && hit.website) || null,
+          labels: (info.labels && info.labels.length) ? info.labels : ((hit && hit.labels) || []),
+          ts: Date.now() };
         labelCache[a] = rec;
         await new Promise(s => setTimeout(s, 250)); // be polite
         return rec;
@@ -166,6 +187,7 @@ async function fixSocials(addr, prof) {
       console.log('  [shape] arkhamEntity:', JSON.stringify(findEnt(re,0)||{}).slice(0, 400));
     }
     lc.id = lc.id || pi.id; lc.twitter = lc.twitter || pi.twitter; lc.website = lc.website || pi.website;
+    if (pi.labels && pi.labels.length) lc.labels = pi.labels;
   }
   if (!lc.twitter && !lc.website && !lc.slugTried) {
     lc.slugTried = true;
@@ -216,6 +238,9 @@ async function enrichWalletProfile(addr) {
       // fresh profile: still run the cheap upgrade + heal passes
       const before = JSON.stringify({ e: old.entity, h: (old.history||[]).length, b: old.pfB, pf: !!old.portfolio, tr: (old.transfers||[]).length });
       await fixSocials(addr, old);
+      // copy multi-labels from the label cache into the profile (free)
+      { const lc2 = labelCache[addr.toLowerCase()];
+        if (lc2 && lc2.labels && lc2.labels.length && old.entity && !(old.entity.labels || []).length) old.entity.labels = lc2.labels; }
       await backfillPortfolioHistory(addr, old);
       // heal: restore portfolio/transfers lost to an exhausted-budget run
       if (!old.portfolio && profileBudget >= 5) {
@@ -244,7 +269,7 @@ async function enrichWalletProfile(addr) {
     if (portfolio) console.log('  [shape] portfolio keys:', Object.keys(portfolio).slice(0, 12).join(','));
     if (transfers) console.log('  [shape] transfers keys:', Object.keys(transfers).slice(0, 12).join(','));
   }
-  let ent = cached ? { name: cached.name, type: cached.type, label: cached.label, id: cached.id || null, twitter: cached.twitter || null, website: cached.website || null } : parseArkham(intel || {});
+  let ent = cached ? { name: cached.name, type: cached.type, label: cached.label, id: cached.id || null, twitter: cached.twitter || null, website: cached.website || null, labels: cached.labels || [] } : parseArkham(intel || {});
   // older cache entries lack the entity id — refresh intel once for named entities so socials can resolve
   if (cached && ent.name && !ent.id && !cached.idChecked) {
     const re = await arkhamGet(`/intelligence/address/${addr}/all`);
@@ -483,6 +508,7 @@ for (const t of cfg.tokens) {
         if (name) h.label = h.label ? h.label : name;
         if (info.name) h.entity = info.name;
         if (info.type) h.entityType = info.type;
+        if (info.labels && info.labels.length) h.labels = info.labels.slice(0, 12);
       }
     }
     const filtered = kept.filter(h => !(h.entityType && EXCLUDE_TYPES.has(String(h.entityType).toLowerCase())));
