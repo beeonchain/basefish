@@ -3,8 +3,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const KEY = process.env.MORALIS_API_KEY;
-if (!KEY) { console.error('MORALIS_API_KEY missing'); process.exit(1); }
+const KEY = process.env.MORALIS_API_KEY || '';
+const BQ_TOKEN = process.env.BITQUERY_TOKEN || '';
+if (!KEY && !BQ_TOKEN) { console.error('No data keys (MORALIS_API_KEY / BITQUERY_TOKEN)'); process.exit(1); }
 
 const cfg = JSON.parse(fs.readFileSync('tokens.config.json', 'utf8'));
 const M = 'https://deep-index.moralis.io/api/v2.2';
@@ -294,6 +295,44 @@ async function j(url, tries = 3) {
   throw new Error(`rate-limited ${url}`);
 }
 
+// ---- Bitquery: top holders (primary source when token present) ----
+async function bqHolders(t, limit = 220) {
+  if (!BQ_TOKEN) return null;
+  const today = new Date().toISOString().slice(0, 10);
+  const q = `query { EVM(dataset: archive, network: base) {
+    TokenHolders(date: "${today}", tokenSmartContract: "${t.contract}",
+      limit: { count: ${limit} }, orderBy: { descendingByField: "Balance_Amount" },
+      where: { Balance: { Amount: { gt: "0" } } }) {
+      Holder { Address }
+      Balance { Amount }
+    } } }`;
+  for (const url of ['https://streaming.bitquery.io/graphql', 'https://graphql.bitquery.io']) {
+    try {
+      const r = await fetch(url, { method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + BQ_TOKEN, 'X-API-KEY': BQ_TOKEN },
+        body: JSON.stringify({ query: q }) });
+      if (!r.ok) { console.log(`  bitquery ${r.status} @ ${url.split('/')[2]} :: ${(await r.text()).slice(0, 140)}`); continue; }
+      const d = await r.json();
+      if (d.errors) { console.log('  bitquery errors:', JSON.stringify(d.errors).slice(0, 200)); continue; }
+      const rows = d.data && d.data.EVM && d.data.EVM.TokenHolders;
+      if (rows && rows.length) return rows.map(x => ({ addr: x.Holder.Address, amount: Number(x.Balance.Amount) || 0 }));
+    } catch (e) { console.log('  bitquery fail:', e.message.slice(0, 80)); }
+  }
+  return null;
+}
+// ---- CoinGecko market data (price/chg/mcap/supply for all tokens in ONE call) ----
+let cgMarkets = null;
+async function cgMarketFor(t) {
+  if (cgMarkets === null) {
+    try {
+      const ids = cfg.tokens.map(x => x.coingecko).filter(Boolean).join(',');
+      const r = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}&price_change_percentage=24h`);
+      cgMarkets = r.ok ? await r.json() : [];
+    } catch (e) { cgMarkets = []; }
+  }
+  return cgMarkets.find(x => x.id === t.coingecko) || null;
+}
+
 fs.mkdirSync('data', { recursive: true });
 if (ARKHAM_KEY) {
   const named = Object.entries(labelCache).find(([, v]) => v && v.name);
@@ -382,47 +421,57 @@ for (const t of cfg.tokens) {
   const c = t.contract.toLowerCase();
   console.log(`\n== ${t.sym} ${c}`);
   try {
-    // price + 24h change
-    const price = await j(`${M}/erc20/${c}/price?chain=${cfg.chain}&include=percent_change`);
-    const usd = Number(price.usdPrice) || 0;
-    const chg = Number(price['24hrPercentChange']) || 0;
-
-    // metadata for supply
-    const meta = (await j(`${M}/erc20/metadata?chain=${cfg.chain}&addresses%5B0%5D=${c}`))[0] || {};
-    const supply = Number(meta.total_supply_formatted) || 0;
-    const mcap = usd * supply;
-
-    // holder count (best effort)
-    let holders = null;
-    try { holders = (await j(`${M}/erc20/${c}/holders?chain=${cfg.chain}`)).totalHolders ?? null; }
-    catch (e) { console.log('holders count unavailable:', e.message.slice(0, 80)); }
-
-    // top owners, paged; over-fetch so exclusions still leave 100
-    const perToken = new Set((t.exclude || []).map(a => a.toLowerCase()));
-    let cursor = '', kept = [], pages = 0, seen = 0;
-    while (pages < 3 && kept.length < 130) {
-      const q = `${M}/erc20/${c}/owners?chain=${cfg.chain}&order=DESC&limit=100${cursor ? `&cursor=${cursor}` : ''}`;
-      const page = await j(q);
-      for (const o of page.result || []) {
-        seen++;
-        const a = (o.owner_address || '').toLowerCase();
-        const label = o.owner_address_label || o.entity || '';
-        if (BURN.has(a) || a === c || perToken.has(a)) continue;
-        if (label && EXCLUDE_RX.test(label)) { console.log('  excluded:', a.slice(0, 10), label); continue; }
-        const amount = Number(o.balance_formatted) || 0;
-        kept.push({
-          addr: o.owner_address,
-          amount,
-          pct: Number(o.percentage_relative_to_total_supply) || (supply ? amount / supply * 100 : 0),
-          usd: Number(o.usd_value) || amount * usd,
-          label: label || null,
-          isContract: !!o.is_contract,
-        });
-      }
-      cursor = page.cursor || '';
-      pages++;
-      if (!cursor) break;
+    // market data: CoinGecko first (one call for all tokens), Moralis fallback
+    let usd = 0, chg = 0, supply = 0, mcap = 0;
+    const mk = await cgMarketFor(t);
+    if (mk) { usd = mk.current_price || 0; chg = mk.price_change_percentage_24h || 0; supply = mk.total_supply || 0; mcap = mk.market_cap || (usd * supply); }
+    if (!usd && KEY) {
+      const price = await j(`${M}/erc20/${c}/price?chain=${cfg.chain}&include=percent_change`);
+      usd = Number(price.usdPrice) || 0; chg = Number(price['24hrPercentChange']) || 0;
     }
+    if (!supply && KEY) {
+      try { const meta = (await j(`${M}/erc20/metadata?chain=${cfg.chain}&addresses%5B0%5D=${c}`))[0] || {}; supply = Number(meta.total_supply_formatted) || 0; if (!mcap) mcap = usd * supply; } catch (e) {}
+    }
+    if (!usd) throw new Error('no price source available');
+
+    // holder count (best effort, Moralis, cheap)
+    let holders = null;
+    if (KEY) { try { holders = (await j(`${M}/erc20/${c}/holders?chain=${cfg.chain}`)).totalHolders ?? null; } catch (e) {} }
+
+    const perToken = new Set((t.exclude || []).map(a => a.toLowerCase()));
+    const knownLabel = (a) => { const lc = labelCache[a]; return (lc && (lc.name || lc.label)) || ''; };
+    let kept = [], seen = 0;
+
+    // holders: Bitquery primary
+    const bq = await bqHolders(t);
+    if (bq) {
+      console.log(`  holders via bitquery: ${bq.length}`);
+      for (const o of bq) {
+        seen++;
+        const a = o.addr.toLowerCase();
+        if (BURN.has(a) || a === c || perToken.has(a)) continue;
+        const kl = knownLabel(a);
+        if (kl && EXCLUDE_RX.test(kl)) { console.log('  excluded:', a.slice(0, 10), kl); continue; }
+        kept.push({ addr: o.addr, amount: o.amount, pct: supply ? o.amount / supply * 100 : 0, usd: o.amount * usd, label: kl || null, isContract: false });
+      }
+    } else if (KEY) {
+      // fallback: Moralis owners (paged)
+      let cursor = '', pages = 0;
+      while (pages < 3 && kept.length < 130) {
+        const q = `${M}/erc20/${c}/owners?chain=${cfg.chain}&order=DESC&limit=100${cursor ? `&cursor=${cursor}` : ''}`;
+        const page = await j(q);
+        for (const o of page.result || []) {
+          seen++;
+          const a = (o.owner_address || '').toLowerCase();
+          const label = o.owner_address_label || o.entity || '';
+          if (BURN.has(a) || a === c || perToken.has(a)) continue;
+          if (label && EXCLUDE_RX.test(label)) { console.log('  excluded:', a.slice(0, 10), label); continue; }
+          const amount = Number(o.balance_formatted) || 0;
+          kept.push({ addr: o.owner_address, amount, pct: Number(o.percentage_relative_to_total_supply) || (supply ? amount / supply * 100 : 0), usd: Number(o.usd_value) || amount * usd, label: label || null, isContract: !!o.is_contract });
+        }
+        cursor = page.cursor || ''; pages++; if (!cursor) break;
+      }
+    } else throw new Error('no holders source available');
     kept.sort((a, b) => b.usd - a.usd);
     // Arkham enrichment for the head of the list (cache-first, budgeted)
     if (ARKHAM_KEY || Object.keys(labelCache).length) {
@@ -448,11 +497,12 @@ for (const t of cfg.tokens) {
       }
       console.log(`  wallet profiles refreshed (budget left ${profileBudget})`);
     }
-    try { await backfillPositions(t, top); } catch (e) { console.log('  backfill err:', e.message.slice(0, 90)); }
+    // Moralis 30d position backfill retired — Arkham portfolio history covers charts
 
-    // recent meaningful transfers
+    // recent meaningful transfers (Moralis, cheap; skipped without key)
     let recent = [];
     try {
+      if (!KEY) throw new Error('no moralis');
       const tr = await j(`${M}/erc20/${c}/transfers?chain=${cfg.chain}&limit=50`);
       recent = (tr.result || [])
         .map(x => ({

@@ -24,6 +24,7 @@ jobs:
         env:
           MORALIS_API_KEY: ${{ secrets.MORALIS_API_KEY }}
           ARKHAM_API_KEY: ${{ secrets.ARKHAM_API_KEY }}
+          BITQUERY_TOKEN: ${{ secrets.BITQUERY_TOKEN }}
         run: node scripts/fetch.mjs
       - name: Commit data
         run: |
