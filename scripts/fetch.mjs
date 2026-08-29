@@ -17,8 +17,26 @@ const ARKHAM_BASES = ['https://api.arkm.com', 'https://api.arkhamintelligence.co
 const LABELS_PATH = 'data/labels.json';
 let labelCache = {};
 try { labelCache = JSON.parse(fs.readFileSync(LABELS_PATH, 'utf8')); } catch {}
+{ // heal cached labels stored before the template sanitizer existed
+  for (const r of Object.values(labelCache)) if (r && Array.isArray(r.labels)) r.labels = cleanLabels(r.labels);
+}
 const LABEL_TTL_DAYS = 30, ARKHAM_MAX_LOOKUPS = 300;
 let arkhamBudget = ARKHAM_MAX_LOOKUPS, arkhamBase = null;
+
+// Arkham/Frontrun tag templates sometimes arrive with raw token JSON un-substituted,
+// e.g. `Early {"pricing_id":"based-brett","symbol":"BRETT"} Holder` → normalize to `Early BRETT Holder`
+function cleanLabel(s) {
+  let t = String(s == null ? '' : s);
+  t = t.replace(/\{[^{}]*?"symbol"\s*:\s*"([^"]+)"[^{}]*\}/g, '$1');
+  t = t.replace(/\s+/g, ' ').trim();
+  if (!t || t.includes('{') || t.includes('}')) return null; // still malformed — drop it
+  return t.slice(0, 60);
+}
+function cleanLabels(arr) {
+  const out = [], seen = new Set();
+  for (const x of arr || []) { const k = cleanLabel(x); if (k && !seen.has(k.toLowerCase())) { seen.add(k.toLowerCase()); out.push(k); } }
+  return out;
+}
 
 function parseArkham(payload) {
   // response may be flat or keyed per-chain; walk it for arkhamEntity/arkhamLabel (+ id, socials)
@@ -27,8 +45,8 @@ function parseArkham(payload) {
   const seenL = new Set();
   const addL = (s) => {
     if (!s) return;
-    const k = String(s).trim();
-    if (k && k.length <= 60 && !seenL.has(k.toLowerCase())) { seenL.add(k.toLowerCase()); found.labels.push(k); }
+    const k = cleanLabel(s);
+    if (k && !seenL.has(k.toLowerCase())) { seenL.add(k.toLowerCase()); found.labels.push(k); }
   };
   const walk = (o, depth) => {
     if (!o || typeof o !== 'object' || depth > 4) return;
@@ -137,9 +155,9 @@ async function frontrunBatch(addrs) {
         if (!a) continue;
         frCache.wallets[a] = {
           x: w.twitterUsername || null, n: w.name || null, f: w.followersCount || 0,
-          pl: w.primaryLabel ? String(w.primaryLabel).slice(0, 60) : null,
-          l: (w.labels || []).map(l => (l && l.name) || l).filter(x => typeof x === 'string').slice(0, 6),
-          t: (w.tags || []).map(t => t && t.name).filter(Boolean).filter(frKeepTag).slice(0, 8),
+          pl: w.primaryLabel ? cleanLabel(w.primaryLabel) : null,
+          l: cleanLabels((w.labels || []).map(l => (l && l.name) || l).filter(x => typeof x === 'string')).slice(0, 6),
+          t: cleanLabels((w.tags || []).map(t => t && t.name).filter(Boolean)).filter(frKeepTag).slice(0, 8),
           ts: Date.now(),
         };
       }
@@ -296,6 +314,8 @@ async function enrichWalletProfile(addr) {
       // fresh profile: still run the cheap upgrade + heal passes
       const before = JSON.stringify({ e: old.entity, h: (old.history||[]).length, b: old.pfB, pf: !!old.portfolio, tr: (old.transfers||[]).length });
       await fixSocials(addr, old);
+      // heal template-JSON labels written before the sanitizer existed
+      if (old.entity && (old.entity.labels || []).length) old.entity.labels = cleanLabels(old.entity.labels);
       // copy multi-labels from the label cache into the profile (free)
       { const lc2 = labelCache[addr.toLowerCase()];
         if (lc2 && lc2.labels && lc2.labels.length && old.entity && !(old.entity.labels || []).length) old.entity.labels = lc2.labels; }
