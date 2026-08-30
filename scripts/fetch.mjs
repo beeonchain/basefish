@@ -662,7 +662,27 @@ const ALLTOPS = {}; // sym -> holdersTop, for the cross-token schools graph
 
 // ---- Bitquery archive backfill: 30 days of historical top-100 snapshots (one-time) ----
 // Archive access confirmed via support 2026-08. Today's date 404s (not yet archived) — historical dates work.
-let BQ_EP = 'https://streaming.bitquery.io/graphql', BQ_DS = 'archive';
+let BQ_EP = 'https://streaming.bitquery.io/graphql', BQ_DS = 'archive', BQ_MODE = 'tokenholders';
+// fallback shape: compute holders from raw BalanceUpdates when the TokenHolders aggregate table is missing
+async function bqBalanceHolders(contract, date, limit = 100, ep = BQ_EP, verbose = false) {
+  const q = `query { EVM(dataset: archive, network: base) {
+    BalanceUpdates(
+      limit: {count: ${limit}}
+      orderBy: {descendingByField: "balance"}
+      where: {Currency: {SmartContract: {is: "${contract}"}}, Block: {Date: {till: "${date}"}}}
+    ) { BalanceUpdate { Address } balance: sum(of: BalanceUpdate_Amount) } } }`;
+  try {
+    const r = await fetch(ep, { method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + BQ_TOKEN, 'X-API-KEY': BQ_TOKEN },
+      body: JSON.stringify({ query: q }) });
+    if (!r.ok) { if (verbose) console.log('  bq[balupd] http', r.status, (await r.text()).slice(0, 120)); return null; }
+    const d = await r.json();
+    if (d.errors) { if (verbose) console.log('  bq[balupd] err:', JSON.stringify(d.errors).slice(0, 400)); return null; }
+    const rows = d.data && d.data.EVM && d.data.EVM.BalanceUpdates;
+    if (!rows || !rows.length) return null;
+    return rows.map(x => ({ addr: String(x.BalanceUpdate.Address).toLowerCase(), amount: Number(x.balance) || 0 })).filter(x => x.amount > 0);
+  } catch (e) { if (verbose) console.log('  bq[balupd] fail:', e.message.slice(0, 80)); return null; }
+}
 async function bqArchiveHolders(contract, date, limit = 100, ep = BQ_EP, ds = BQ_DS, verbose = false) {
   const q = `query { EVM(dataset: ${ds}, network: base) {
     TokenHolders(date: "${date}", tokenSmartContract: "${contract}",
@@ -711,6 +731,10 @@ async function bqBackfillSnapshots() {
       await new Promise(s => setTimeout(s, 800));
     }
   }
+  if (!probe) { // TokenHolders aggregate table missing server-side — try raw BalanceUpdates
+    probe = await bqBalanceHolders(cfg.tokens[0].contract, yday, 3, 'https://streaming.bitquery.io/graphql', true);
+    if (probe) { BQ_MODE = 'balupd'; console.log('bq probe OK via BalanceUpdates fallback'); }
+  }
   if (!probe) { mk.tried++; fs.writeFileSync(MK, JSON.stringify(mk)); console.log(`bq backfill probe failed (attempt ${mk.tried}/5)`); return; }
   console.log('bq ARCHIVE ACCESS CONFIRMED — backfilling 30 days of daily top-100 snapshots');
   const DAYS = 30;
@@ -721,10 +745,12 @@ async function bqBackfillSnapshots() {
     let snaps = []; try { snaps = JSON.parse(fs.readFileSync(spath, 'utf8')); } catch {}
     const have = new Set(snaps.map(s => new Date(s.ts).toISOString().slice(0, 10)));
     let added = 0;
-    for (let i = DAYS; i >= 1; i--) {
+    // BalanceUpdates aggregation is heavy — sample key dates instead of all 30 to conserve points
+    const dayList = BQ_MODE === 'balupd' ? [30, 21, 14, 10, 7, 5, 4, 3, 2, 1] : Array.from({ length: DAYS }, (_, k) => DAYS - k);
+    for (const i of dayList) {
       const date = new Date(Date.now() - i * 864e5).toISOString().slice(0, 10);
       if (have.has(date)) continue;
-      const rows = await bqArchiveHolders(t.contract, date, 100);
+      const rows = BQ_MODE === 'balupd' ? await bqBalanceHolders(t.contract, date, 110) : await bqArchiveHolders(t.contract, date, 100);
       if (!rows) { await new Promise(s => setTimeout(s, 900)); continue; }
       const price = priceNear(prices, date);
       const h = {}; rows.forEach((r2, idx) => h[r2.addr] = { r: idx + 1, u: Math.round(r2.amount * price) });
