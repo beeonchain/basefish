@@ -662,21 +662,22 @@ const ALLTOPS = {}; // sym -> holdersTop, for the cross-token schools graph
 
 // ---- Bitquery archive backfill: 30 days of historical top-100 snapshots (one-time) ----
 // Archive access confirmed via support 2026-08. Today's date 404s (not yet archived) — historical dates work.
-async function bqArchiveHolders(contract, date, limit = 100) {
-  const q = `query { EVM(dataset: archive, network: base) {
+let BQ_EP = 'https://streaming.bitquery.io/graphql', BQ_DS = 'archive';
+async function bqArchiveHolders(contract, date, limit = 100, ep = BQ_EP, ds = BQ_DS, verbose = false) {
+  const q = `query { EVM(dataset: ${ds}, network: base) {
     TokenHolders(date: "${date}", tokenSmartContract: "${contract}",
       limit: {count: ${limit}}, orderBy: {descendingByField: "Balance_Amount"},
       where: {Balance: {Amount: {gt: "0"}}}) { Holder { Address } Balance { Amount } } } }`;
   try {
-    const r = await fetch('https://streaming.bitquery.io/graphql', { method: 'POST',
+    const r = await fetch(ep, { method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + BQ_TOKEN, 'X-API-KEY': BQ_TOKEN },
       body: JSON.stringify({ query: q }) });
-    if (!r.ok) { console.log('  bq-archive http', r.status); return null; }
+    if (!r.ok) { if (verbose) console.log(`  bq[${ds}@${ep.split('/').pop()}] http`, r.status, (await r.text()).slice(0, 120)); return null; }
     const d = await r.json();
-    if (d.errors) { console.log('  bq-archive err:', JSON.stringify(d.errors).slice(0, 140)); return null; }
+    if (d.errors) { if (verbose) console.log(`  bq[${ds}@${ep.split('/').pop()}] err:`, JSON.stringify(d.errors).slice(0, 400)); return null; }
     const rows = d.data && d.data.EVM && d.data.EVM.TokenHolders;
     return rows && rows.length ? rows.map(x => ({ addr: String(x.Holder.Address).toLowerCase(), amount: Number(x.Balance.Amount) || 0 })) : null;
-  } catch (e) { console.log('  bq-archive fail:', e.message.slice(0, 80)); return null; }
+  } catch (e) { if (verbose) console.log('  bq fail:', e.message.slice(0, 80)); return null; }
 }
 async function cgDailyPrices(t, days) { // 'YYYY-MM-DD' -> usd
   try {
@@ -700,7 +701,16 @@ async function bqBackfillSnapshots() {
   let mk = { done: false, tried: 0 }; try { mk = JSON.parse(fs.readFileSync(MK, 'utf8')); } catch {}
   if (mk.done || mk.tried >= 5) return;
   const yday = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
-  const probe = await bqArchiveHolders(cfg.tokens[0].contract, yday, 3);
+  // probe every endpoint/dataset combo — support enabled archive, but the serving path may differ
+  let probe = null;
+  outer:
+  for (const ep of ['https://streaming.bitquery.io/graphql', 'https://streaming.bitquery.io/eap']) {
+    for (const ds of ['archive', 'combined']) {
+      probe = await bqArchiveHolders(cfg.tokens[0].contract, yday, 3, ep, ds, true);
+      if (probe) { BQ_EP = ep; BQ_DS = ds; mk.ep = ep; mk.ds = ds; console.log(`bq probe OK: dataset=${ds} endpoint=${ep}`); break outer; }
+      await new Promise(s => setTimeout(s, 800));
+    }
+  }
   if (!probe) { mk.tried++; fs.writeFileSync(MK, JSON.stringify(mk)); console.log(`bq backfill probe failed (attempt ${mk.tried}/5)`); return; }
   console.log('bq ARCHIVE ACCESS CONFIRMED — backfilling 30 days of daily top-100 snapshots');
   const DAYS = 30;
