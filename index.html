@@ -425,7 +425,7 @@ const BANDS={small:[0.10,0.36],medium:[0.30,0.56],large:[0.50,0.74],whale:[0.62,
 function addrHash(a){let h1=7,h2=13;const s=String(a).toLowerCase();for(let i=0;i<s.length;i++){h1=(h1*31+s.charCodeAt(i))>>>0;h2=(h2*131+s.charCodeAt(i))>>>0}return[h1/4294967295,h2/4294967295]}
 function homeOf(f){const b=BANDS[f.h.tier]||BANDS.small;return{x:W*(0.08+f.hx*0.84),y:H*(b[0]+f.hy*(b[1]-b[0])),b}}
 function fromReal(d){
-  const list=(d.holdersTop||[]).map((h,i)=>({rank:i+1,addr:h.addr,pct:h.pct||0,value:h.usd||0,amount:h.amount||0,tier:'small',label:h.label||'',entity:h.entity||null,entityType:h.entityType||null,labels:h.labels||[],isContract:!!h.isContract,rankChange:h.rankChange??null,usdChange:h.usdChange??null,basename:h.basename||null,contractKind:h.contractKind||null}));
+  const list=(d.holdersTop||[]).map((h,i)=>({rank:i+1,addr:h.addr,pct:h.pct||0,value:h.usd||0,amount:h.amount||0,tier:'small',label:h.label||'',entity:h.entity||null,entityType:h.entityType||null,labels:h.labels||[],isContract:!!h.isContract,rankChange:h.rankChange??null,usdChange:h.usdChange??null,basename:h.basename||null,contractKind:h.contractKind||null,funding:h.funding||null,school:h.school||null}));
   list.sort((a,b)=>b.value-a.value).forEach((h,i)=>h.rank=i+1);
   list.forEach(h=>h.tier=h.rank<=6?'whale':h.rank<=24?'large':h.rank<=60?'medium':'small');
   const at=i=>list[Math.min(i,list.length-1)].value;
@@ -663,9 +663,9 @@ function drawOneFish(f,t){
     ctx.restore();
   }
 }
-function fishLabel(f,t){
+function fishLabel(f,t,force){
   const s=f.size*zoom;
-  ctx.save();ctx.globalAlpha=f.h.rank<=6?.92:Math.max(f.glow,f===selected?1:0);
+  ctx.save();ctx.globalAlpha=force?1:(f.h.rank<=6?.92:Math.max(f.glow,f===selected?1:0));
   ctx.font=`500 ${f.h.tier==='whale'?11:10}px JetBrains Mono, monospace`;const lbl=(f.h.entity||f.h.label||short(f.h.addr)).slice(0,24);const tw=ctx.measureText(lbl).width+14;
   const sel=f===selected||f===hovered;
   const ly=Math.max(4,f.y-s*.62-22); // never clipped above the tank
@@ -680,6 +680,18 @@ function drawFishes(t){
   order.forEach(f=>{if(f!==selected&&(f.h.rank<=6||f.glow>.2))fishLabel(f,t)});
   if(selected){ // dim the tank so the selected fish reads clearly
     ctx.save();ctx.fillStyle='rgba(3,9,22,.55)';ctx.fillRect(0,0,W,H);ctx.restore();
+    // school members surface with the selected fish, connected by dashed lines
+    const sc=selected.h.school?schoolOf(selected.h.school):null;
+    if(sc){
+      const mem=new Set(sc.members.map(m=>m.addr));
+      const mates=fish.filter(f=>f!==selected&&mem.has(f.h.addr.toLowerCase()));
+      if(mates.length){
+        ctx.save();ctx.strokeStyle='rgba(120,150,255,.75)';ctx.setLineDash([6,5]);ctx.lineWidth=1.5;
+        mates.forEach(f=>{ctx.beginPath();ctx.moveTo(selected.x,selected.y);ctx.lineTo(f.x,f.y);ctx.stroke()});
+        ctx.restore();
+        mates.forEach(f=>{drawOneFish(f,t);fishLabel(f,t,true)});
+      }
+    }
     drawOneFish(selected,t);fishLabel(selected,t);
   }
   ctx.save();ctx.strokeStyle='rgba(180,230,255,.35)';ctx.fillStyle='rgba(180,230,255,.08)';bubbles.forEach(b=>{ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,6.28);ctx.fill();ctx.stroke()});ctx.restore();
@@ -702,6 +714,8 @@ function select(f){selected=f;tip.style.display='none';const h=f.h,t=TIER[h.tier
   card.innerHTML=`<button class="x" id="cx">✕</button><div class="tier" style="color:${t.c}"><i style="background:${t.c}"></i>${t.n} wallet · rank #${h.rank}</div>
   <div class="addr">${short(h.addr)}<button id="ccopy" title="Copy address">copy</button></div>
   ${chips?`<div class="lbls">${chips}</div>`:''}
+  ${(()=>{const sc=h.school?schoolOf(h.school):null;if(!sc)return'';const pt=sc.perToken[cur.sym];const inTank=pt?pt.members:1;
+    return `<div style="border:1px solid rgba(120,150,255,.5);background:rgba(77,107,255,.08);padding:6px 9px;margin-bottom:8px;font-size:11px"><b style="color:#4D6BFF">SCHOOL DETECTED</b> · ${sc.members.length} fish appear connected${pt&&inTank>1?` · ${pt.pct}% of $${cur.sym} combined`:''}</div>`})()}
   <div class="row"><span>Token held</span><b>$${cur.sym}</b></div>
   <div class="row"><span>Amount</span><b class="mono">${num(h.amount)}</b></div>
   <div class="row"><span>% of supply</span><b class="mono" style="color:var(--teal)">${h.pct.toFixed(2)}%</b></div>
@@ -781,7 +795,7 @@ function drawDonut(){
   const wsh=segs[0][2]*100;
   const verdict=wsh>=50?['Highly concentrated','var(--coral)']:wsh>=30?['Moderately concentrated','var(--gold,#B8860B)']:['Well distributed','var(--teal)'];
   document.getElementById('distList').innerHTML=segs.map(s=>`<li><i style="background:${s[3]}"></i><span><b>${s[0]}</b> <small>${s[1]}</small></span><b class="mono">${(s[2]*100).toFixed(1)}%</b></li>`).join('')
-    +`<li style="border-top:1px solid var(--line);padding-top:8px;margin-top:4px"><span style="font-size:11px;color:var(--muted)">Top 6 hold ${wsh.toFixed(1)}% of top-100 supply — <b style="color:${verdict[1]}">${verdict[0].toLowerCase()}</b></span></li>`;
+    +`<li style="border-top:1px solid var(--line);padding-top:8px;margin-top:4px;display:block"><span style="font-size:11px;color:var(--muted);display:block;line-height:1.5">Top 6 hold ${wsh.toFixed(1)}% of top-100 supply — <b style="color:${verdict[1]}">${verdict[0].toLowerCase()}</b></span></li>`;
 }
 /* infrastructure heuristic: CEX deposit wallets, LP pools, proxies, routers — not people */
 const INFRA_RX=/\bdeposit\b|\bpool\b|proxy|bridge|exchange|router|locker|timelock/i;
@@ -984,6 +998,11 @@ async function pollRefresh(){
 setInterval(pollRefresh,120000);
 const profCache={};
 const tokCache={};
+/* ============ schools (connected-wallet groups, evidence-based) ============ */
+let SCHOOLS=[];
+async function loadSchools(){try{const r=await fetch('data/schools.json?t='+Date.now(),{cache:'no-store'});if(r.ok)SCHOOLS=(await r.json()).schools||[]}catch(e){}}
+if(location.protocol!=='file:')loadSchools();
+function schoolOf(id){return SCHOOLS.find(s=>s.id===id)||null}
 async function tokData(sym){if(tokCache[sym])return tokCache[sym];try{tokCache[sym]=await fetchToken(sym)}catch(e){tokCache[sym]=null}return tokCache[sym]}
 function drawHistory(cv2,pts){
   const x=cv2.getContext('2d');const W2=cv2.width=cv2.clientWidth*2,H2=cv2.height=380;x.scale(1,1);
@@ -1066,6 +1085,32 @@ async function openProfile(h){
   grid.innerHTML=`
     <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
       <div class="wbox"><h5>Positions in Basefish aquariums</h5>${positions.length?`<table><thead><tr><th>Token</th><th class="r">Rank</th><th class="r">Amount</th><th class="r">% supply</th><th class="r">Value</th></tr></thead><tbody>${positions.map(x=>`<tr style="cursor:pointer" onclick="jumpToken('${x.sym}')"><td style="white-space:nowrap">${tokLogo(x.sym,18)} <b style="vertical-align:middle">${x.sym}</b></td><td class="r mono">#${x.rank}</td><td class="r mono">${num(x.amount)}</td><td class="r mono">${x.pct.toFixed(2)}%</td><td class="r mono">${usd(x.usd)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty2">Not in any tracked top 100. A free swimmer.</div>'}</div>
+      ${(()=>{ // funding — where did this wallet's money come from?
+        const fd=h.funding;
+        if(!fd)return `<div class="wbox"><h5>Funding</h5><div class="empty2">${REAL?'Origin not traced yet — the funding pass reaches this wallet on an upcoming refresh.':'Needs live mode.'}</div></div>`;
+        const kindTxt=fd.kind==='cex'?`<b style="color:${typeColor('cex')}">${esc(fd.funderLabel||'Centralized exchange')}</b> <span style="color:var(--dim)">(CEX)</span>`
+          :fd.kind==='bridge'?`<b>${esc(fd.funderLabel||'Bridge')}</b> <span style="color:var(--dim)">(cross-chain bridge)</span>`
+          :fd.funder?`<b class="mono" style="color:var(--teal);cursor:pointer" onclick="openProfileByAddr('${fd.funder}')" title="Open funder's wallet page">${esc(fd.funderLabel||short(fd.funder))}</b> <span style="color:var(--dim)">(private wallet)</span>`
+          :'<b>Unknown</b>';
+        const age=fd.firstTs?agoStr(fd.firstTs)+' ago':null;
+        return `<div class="wbox"><h5>Funding <small>first inbound transfer · by Arkham</small></h5>
+          <div class="hrow"><span>Origin</span><span></span><span style="text-align:right">${kindTxt}</span></div>
+          ${age?`<div class="hrow"><span>First seen on-chain</span><span></span><b class="mono">${age}</b></div>`:''}
+          ${fd.kind==='private'&&fd.funder?`<div style="color:var(--dim);font-size:11px;padding-top:6px">Funded by a private wallet rather than an exchange — worth a look at the funder.</div>`:''}</div>`})()}
+      ${(()=>{ // school — connected wallets, with the evidence shown
+        const sc=h.school?schoolOf(h.school):null;
+        if(!sc)return '';
+        const me=h.addr.toLowerCase();
+        const others=sc.members.filter(m=>m.addr!==me);
+        const evLines=sc.evidence.filter(e=>e.a===me||e.b===me).slice(0,5)
+          .map(e=>{const other=e.a===me?e.b:e.a;const om=sc.members.find(m=>m.addr===other);
+            return `<div style="font-size:11px;color:var(--muted);padding:3px 0">· <b class="mono" style="color:var(--teal);cursor:pointer" onclick="openProfileByAddr('${other}')">${esc(om&&om.name?om.name.slice(0,22):short(other))}</b> — ${esc(e.detail)}</div>`}).join('');
+        const pts=Object.entries(sc.perToken).filter(([,v])=>v.members>1).map(([s,v])=>`$${s}: ${v.members} fish · ${v.pct}%`).join(' · ');
+        return `<div class="wbox" style="border-color:rgba(77,107,255,.55)"><h5 style="color:#4D6BFF">School detected <small>${sc.members.length} wallets appear connected · confidence HIGH</small></h5>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;padding:4px 0 8px">${others.map(m=>`<button onclick="openProfileByAddr('${m.addr}')" style="border:1px solid var(--line);padding:3px 8px;font-size:10.5px;cursor:pointer;color:var(--text)" class="mono">${esc(m.name?m.name.slice(0,20):short(m.addr))}</button>`).join('')}</div>
+          ${pts?`<div class="hrow"><span>Combined holdings</span><span></span><b class="mono" style="font-size:11px">${pts}</b></div>`:''}
+          <div style="padding-top:6px"><b style="font-size:10.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em">Why we think this</b>${evLines||'<div style="font-size:11px;color:var(--dim)">linked through other members of this school</div>'}</div>
+          <div style="color:var(--dim);font-size:10.5px;padding-top:8px">Based on on-chain evidence (direct transfers, shared private funding). Not proof of common ownership.</div></div>`})()}
       <div class="wbox"><h5>Portfolio <small>${holdings.length?holdings.length+' assets · by Arkham':''}</small></h5>${holdings.length?`<table><thead><tr><th>Asset</th><th>Chain</th><th class="r">Holdings</th><th class="r">Value</th></tr></thead><tbody>${holdings.map(x=>`<tr><td><b>${x.sym}</b>${x.name?` <span style="color:var(--dim);font-size:11px">${x.name}</span>`:''}</td><td>${x.chain?`<span class="chainpill">${x.chain}</span>`:''}</td><td class="r mono">${num(x.amount)}</td><td class="r mono">${usd(x.usd)}</td></tr>`).join('')}</tbody></table>`:`<div class="empty2">${REAL?'Not enriched yet. The fish keeps its secrets until the next refresh.':'Needs live mode.'}</div>`}</div>
       <div class="wbox"><h5>Top counterparties <small>from recent transfers</small></h5>${flowLine}${cplist.length?cplist.map(c=>`<div class="cprow" ${c.addr?`style="cursor:pointer" onclick="openProfileByAddr('${c.addr}')" title="Open wallet page"`:''}><div><b style="${c.label?'color:var(--teal)':''}">${c.k}</b> <span style="color:var(--dim);font-size:11px">· ${c.n} transfer${c.n>1?'s':''}</span><div class="bar3"><i style="width:${(c.inU/cpmax*100)}%;background:var(--teal)"></i><i style="width:${(c.outU/cpmax*100)}%;background:var(--coral)"></i></div></div><b class="mono">${usd(c.inU+c.outU)}</b></div>`).join('')+'<div class="empty2" style="padding-top:8px"><span style="color:var(--teal)">■</span> received&nbsp;&nbsp;<span style="color:var(--coral)">■</span> sent</div>':'<div class="empty2">No transfer data yet. Still waters.</div>'}</div>
     </div>
@@ -1092,8 +1137,8 @@ function closeCardOnly(){card.classList.remove('show')}
 async function openProfileByAddr(addr){
   if(!/^0x[0-9a-fA-F]{40}$/.test(addr||''))return;
   let h=data&&data.list.find(x=>x.addr.toLowerCase()===addr.toLowerCase());
-  if(!h){for(const tk of TOKENS){const d=REAL?await tokData(tk.sym):null;if(!d)continue;const m=d.holdersTop.find(x=>x.addr.toLowerCase()===addr.toLowerCase());if(m){h={rank:d.holdersTop.indexOf(m)+1,addr:m.addr,pct:m.pct||0,value:m.usd||0,amount:m.amount||0,tier:'medium',label:m.label||'',entity:m.entity||null,entityType:m.entityType||null,labels:m.labels||[],isContract:!!m.isContract,tokSym:tk.sym};break}}}
-  if(!h)h={rank:null,addr,pct:0,value:0,amount:0,tier:'small',label:'',entity:null,entityType:null,labels:[],isContract:false};
+  if(!h){for(const tk of TOKENS){const d=REAL?await tokData(tk.sym):null;if(!d)continue;const m=d.holdersTop.find(x=>x.addr.toLowerCase()===addr.toLowerCase());if(m){h={rank:d.holdersTop.indexOf(m)+1,addr:m.addr,pct:m.pct||0,value:m.usd||0,amount:m.amount||0,tier:'medium',label:m.label||'',entity:m.entity||null,entityType:m.entityType||null,labels:m.labels||[],isContract:!!m.isContract,funding:m.funding||null,school:m.school||null,basename:m.basename||null,tokSym:tk.sym};break}}}
+  if(!h)h={rank:null,addr,pct:0,value:0,amount:0,tier:'small',label:'',entity:null,entityType:null,labels:[],isContract:false,funding:null,school:null};
   openProfile(h);
 }
 async function legacyDrawerProfile(h){

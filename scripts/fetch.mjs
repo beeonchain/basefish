@@ -167,6 +167,49 @@ async function frontrunBatch(addrs) {
     } catch (e) { console.log('  frontrun err', e.message.slice(0, 60)); break; }
   }
 }
+// ---- Funding source: a wallet's FIRST inbound transfer (Arkham, sortDir=asc) ----
+// First funding is immutable, so cache hits are permanent. Backfills ~150 wallets/run.
+const FUND_PATH = 'data/funding.json';
+let fundCache = {}; try { fundCache = JSON.parse(fs.readFileSync(FUND_PATH, 'utf8')); } catch {}
+let fundBudget = 150;
+const CEX_RX = /coinbase|binance|kraken|okx|bybit|upbit|bithumb|\bgate\b|kucoin|mexc|bitget|htx|crypto\.com|bitpanda|bitvavo|bitstamp|gemini|robinhood|exchange|deposit/i;
+const BRIDGE_RX = /bridge|stargate|across|hop protocol|wormhole|layerzero|relay|orbiter|debridge|synapse|portal/i;
+async function fundingFor(addr) {
+  const a = addr.toLowerCase();
+  if (fundCache[a] !== undefined) return fundCache[a]; // null means checked: no usable data
+  if (!ARKHAM_KEY || fundBudget <= 0 || profileBudget <= 10) return undefined; // try again next run
+  fundBudget--;
+  const t = await arkhamGet(`/transfers?base=${addr}&limit=6&sortDir=asc`);
+  if (!t) return undefined; // transient — do not cache a failure
+  const arr = (t.transfers || t.result || (Array.isArray(t) ? t : [])) || [];
+  let first = null;
+  for (const x of arr) {
+    const to = String((x.toAddress && (x.toAddress.address || x.toAddress)) || x.to || '').toLowerCase();
+    if (to === a) { first = x; break; }
+  }
+  if (!first) { fundCache[a] = null; return null; }
+  const from = String((first.fromAddress && (first.fromAddress.address || first.fromAddress)) || first.from || '').toLowerCase();
+  const fEnt = first.fromAddress && first.fromAddress.arkhamEntity;
+  const fLbl = (fEnt && fEnt.name) || (first.fromAddress && first.fromAddress.arkhamLabel && first.fromAddress.arkhamLabel.name) || null;
+  const fType = (fEnt && fEnt.type) || null;
+  const hay = [fLbl, fType].filter(Boolean).join(' ');
+  let kind = 'private';
+  if (fType === 'cex' || CEX_RX.test(hay)) kind = 'cex';
+  else if (BRIDGE_RX.test(hay)) kind = 'bridge';
+  const rec = { funder: /^0x[0-9a-f]{40}$/.test(from) ? from : null, funderLabel: cleanLabel(fLbl), kind,
+    firstTs: first.blockTimestamp || first.timestamp || first.time || null };
+  fundCache[a] = rec;
+  return rec;
+}
+function fundingLabels(rec) {
+  if (!rec) return [];
+  const out = [];
+  if (rec.kind === 'cex') out.push(rec.funderLabel ? `${rec.funderLabel.replace(/[:·].*$/, '').trim()} funded` : 'CEX funded');
+  else if (rec.kind === 'bridge') out.push('Bridge funded');
+  if (rec.firstTs && Date.now() - new Date(rec.firstTs).getTime() < 30 * 864e5) out.push('Fresh wallet');
+  return out.filter(Boolean);
+}
+
 // ---- Base RPC (free public endpoints, rotated) ----
 const RPCS = ['https://mainnet.base.org', 'https://base-rpc.publicnode.com', 'https://base.llamarpc.com'];
 let rpcIdx = 0, rpcBudget = 400;
@@ -450,6 +493,90 @@ async function enrichWalletProfile(addr) {
   fs.writeFileSync(p, JSON.stringify(prof));
 }
 
+// ---- Schools: connected-wallet graph across every tracked top-100 ----
+// Evidence rules (deliberately conservative — overclaiming identity links is worse than missing them):
+//   HIGH: direct transfer ≥$100 between two top-100 wallets · one first-funded the other ·
+//         both first-funded by the same PRIVATE wallet (2–8 siblings; more = a service, not a person)
+//   Shared CEX/bridge/deposit funding is NOT evidence and never creates an edge.
+//   Contracts, LP pools, proxies and infra-labeled wallets are excluded from the graph entirely.
+const PIPE_INFRA_RX = /\bdeposit\b|\bpool\b|bridge|exchange|router|locker|timelock/i;
+function pipeInfra(h) {
+  if (h.contractKind === 'lp' || h.contractKind === 'proxy') return true;
+  if (['cex', 'dex', 'bridge', 'exchange', 'staking', 'locker'].includes(String(h.entityType || '').toLowerCase())) return true;
+  const hay = [h.entity, h.label, ...(h.labels || [])].filter(Boolean).join(' ').replace(/gnosis safe( proxy)?/gi, '').replace(/\S+ deployer/gi, '');
+  return PIPE_INFRA_RX.test(hay);
+}
+function buildSchools(allTops) {
+  const universe = new Map(); // lower addr -> display info
+  for (const top of Object.values(allTops)) for (const h of top || []) {
+    if (h.isContract && h.contractKind) continue;
+    if (pipeInfra(h)) continue;
+    const a = h.addr.toLowerCase();
+    if (!universe.has(a)) universe.set(a, { addr: a, name: h.entity || h.basename || h.label || null });
+  }
+  const inU = (a) => a && universe.has(a);
+  const edges = []; const seenE = new Set();
+  const addEdge = (a, b, type, detail) => {
+    if (!a || !b || a === b || !inU(a) || !inU(b)) return;
+    const k = [a, b].sort().join('|');
+    if (seenE.has(k + type)) return; seenE.add(k + type);
+    edges.push({ a, b, type, detail });
+  };
+  // funding evidence
+  const byFunder = {};
+  for (const a of universe.keys()) {
+    const f = fundCache[a];
+    if (!f || !f.funder || f.kind !== 'private') continue;
+    if (inU(f.funder)) addEdge(f.funder, a, 'funded', 'first-funded this wallet directly');
+    (byFunder[f.funder] = byFunder[f.funder] || []).push(a);
+  }
+  for (const [funder, kids] of Object.entries(byFunder)) {
+    if (inU(funder) || kids.length < 2 || kids.length > 8) continue;
+    for (let i = 0; i < kids.length; i++) for (let j = i + 1; j < kids.length; j++)
+      addEdge(kids[i], kids[j], 'co-funded', `both first-funded by the same private wallet ${funder.slice(0, 8)}…`);
+  }
+  // direct-transfer evidence from enriched wallet profiles
+  for (const a of universe.keys()) {
+    let p = null;
+    try { p = JSON.parse(fs.readFileSync(path.join(WALLET_DIR, a + '.json'), 'utf8')); } catch (e) { continue; }
+    for (const tr of (p.transfers || [])) {
+      const cp = String(tr.cp || '').toLowerCase();
+      if (inU(cp) && (tr.usd || 0) >= 100)
+        addEdge(a, cp, 'transfer', `${tr.dir === 'out' ? 'sent' : 'received'} $${Math.round(tr.usd).toLocaleString('en-US')} ${tr.dir === 'out' ? 'to' : 'from'} it directly`);
+    }
+  }
+  // connected components (union-find)
+  const parent = {};
+  const find = (x) => { while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; } return x; };
+  for (const a of universe.keys()) parent[a] = a;
+  for (const e of edges) { const ra = find(e.a), rb = find(e.b); if (ra !== rb) parent[ra] = rb; }
+  const comps = {};
+  for (const a of universe.keys()) { const r = find(a); (comps[r] = comps[r] || []).push(a); }
+  const schools = [];
+  for (const members of Object.values(comps)) {
+    if (members.length < 2 || members.length > 12) continue; // >12 members = almost certainly an artifact
+    const mset = new Set(members);
+    const ev = edges.filter(e => mset.has(e.a) && mset.has(e.b));
+    // combined share per token
+    const perToken = {};
+    for (const [sym, top] of Object.entries(allTops)) {
+      let pct = 0, n = 0;
+      for (const h of top || []) if (mset.has(h.addr.toLowerCase())) { pct += h.pct || 0; n++; }
+      if (n >= 1) perToken[sym] = { members: n, pct: +pct.toFixed(2) };
+    }
+    schools.push({
+      id: schools.length + 1,
+      members: members.map(a => ({ addr: a, name: universe.get(a).name })),
+      evidence: ev.map(e => ({ a: e.a, b: e.b, type: e.type, detail: e.detail })),
+      confidence: 'high', // every edge type we admit is high-grade evidence by construction
+      perToken,
+    });
+  }
+  schools.sort((x, y) => y.members.length - x.members.length);
+  schools.forEach((s, i) => s.id = i + 1);
+  return schools;
+}
+
 const BURN = new Set([
   '0x0000000000000000000000000000000000000000',
   '0x000000000000000000000000000000000000dead',
@@ -529,6 +656,7 @@ async function tokenLogo(t) {
   return hit ? hit.url : null;
 }
 const index = { generated_at: new Date().toISOString(), tokens: [] };
+const ALLTOPS = {}; // sym -> holdersTop, for the cross-token schools graph
 
 // ---- 30d position-history backfill (real on-chain data via to_block) ----
 const HIST_POINTS = 10, HIST_DAYS = 30, HIST_TOP = 15;
@@ -688,6 +816,16 @@ for (const t of cfg.tokens) {
         }
       } catch (e) {}
     }
+    // funding source (cached forever once resolved; ~150 lookups/run backfill)
+    for (const h of top) {
+      if (h.isContract && h.contractKind) continue; // funding of an LP/proxy is meaningless
+      try {
+        const f = await fundingFor(h.addr);
+        if (f !== undefined) h.funding = f;
+        const fl = fundingLabels(f);
+        if (fl.length) h.labels = [...new Set([...(h.labels || []), ...fl])].slice(0, 14);
+      } catch (e) {}
+    }
     // snapshot history → rank & balance change vs the snapshot closest to 24h ago
     let changeRefH = null;
     {
@@ -743,6 +881,7 @@ for (const t of cfg.tokens) {
       holdersTop: top, recent,
     };
     fs.writeFileSync(path.join('data', `${t.sym.toLowerCase()}.json`), JSON.stringify(out));
+    ALLTOPS[t.sym] = top;
     index.tokens.push({ sym: t.sym, name: t.name, color: t.color, contract: t.contract, logo, price: usd, chg, mcap, vol, holders });
     console.log(`  ok: price=$${usd} mcap=$${Math.round(mcap).toLocaleString()} holders=${holders}`);
   } catch (e) {
@@ -754,6 +893,7 @@ for (const t of cfg.tokens) {
       const logo = await tokenLogo(t);
       if (logo && !old.logo) { old.logo = logo; fs.writeFileSync(p, JSON.stringify(old)); }
       index.tokens.push({ sym: old.sym, name: old.name, color: old.color, contract: old.contract, logo: old.logo || logo, price: old.price, chg: old.chg, mcap: old.mcap, holders: old.holders });
+      ALLTOPS[old.sym] = old.holdersTop || [];
       if (ARKHAM_KEY) {
         for (const h of (old.holdersTop || []).slice(0, WALLET_DETAIL_PER_TOKEN)) { try { await fixSocials(h.addr, null); } catch (e2) {} }
         for (const h of (old.holdersTop || []).slice(0, WALLET_DETAIL_PER_TOKEN)) {
@@ -770,6 +910,29 @@ fs.writeFileSync(LABELS_PATH, JSON.stringify(labelCache));
 fs.writeFileSync(FR_PATH, JSON.stringify({ updated: new Date().toISOString(), wallets: frCache.wallets }));
 fs.writeFileSync(BN_PATH, JSON.stringify(bnCache));
 fs.writeFileSync(CT_PATH, JSON.stringify(ctCache));
+fs.writeFileSync(FUND_PATH, JSON.stringify(fundCache));
+
+// ---- schools: build the cross-token graph and annotate token files ----
+try {
+  const schools = buildSchools(ALLTOPS);
+  fs.writeFileSync('data/schools.json', JSON.stringify({ updated: new Date().toISOString(), schools }));
+  const bySchool = {};
+  schools.forEach(s => s.members.forEach(m => bySchool[m.addr] = s.id));
+  for (const sym of Object.keys(ALLTOPS)) {
+    const p = path.join('data', sym.toLowerCase() + '.json');
+    try {
+      const d = JSON.parse(fs.readFileSync(p, 'utf8'));
+      let touched = false;
+      for (const h of d.holdersTop || []) {
+        const sid = bySchool[h.addr.toLowerCase()] ?? null;
+        if ((h.school ?? null) !== sid) { h.school = sid; touched = true; }
+      }
+      if (touched) fs.writeFileSync(p, JSON.stringify(d));
+    } catch (e) {}
+  }
+  const fundDone = Object.keys(fundCache).length;
+  console.log(`Schools: ${schools.length} detected (${schools.reduce((s, x) => s + x.members.length, 0)} wallets) · funding cached for ${fundDone} wallets (budget left ${fundBudget})`);
+} catch (e) { console.log('schools build failed:', e.message.slice(0, 120)); }
 fs.writeFileSync('data/logos.json', JSON.stringify(logoCache));
 fs.writeFileSync('data/index.json', JSON.stringify(index));
 console.log(`\nWrote data/index.json with ${index.tokens.length} tokens. Label cache: ${Object.keys(labelCache).length} addresses${ARKHAM_KEY ? '' : ' (no ARKHAM_API_KEY — enrichment skipped)'}.`);
