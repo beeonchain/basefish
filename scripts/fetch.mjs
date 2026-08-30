@@ -660,6 +660,76 @@ async function tokenLogo(t) {
 const index = { generated_at: new Date().toISOString(), tokens: [] };
 const ALLTOPS = {}; // sym -> holdersTop, for the cross-token schools graph
 
+// ---- Bitquery archive backfill: 30 days of historical top-100 snapshots (one-time) ----
+// Archive access confirmed via support 2026-08. Today's date 404s (not yet archived) — historical dates work.
+async function bqArchiveHolders(contract, date, limit = 100) {
+  const q = `query { EVM(dataset: archive, network: base) {
+    TokenHolders(date: "${date}", tokenSmartContract: "${contract}",
+      limit: {count: ${limit}}, orderBy: {descendingByField: "Balance_Amount"},
+      where: {Balance: {Amount: {gt: "0"}}}) { Holder { Address } Balance { Amount } } } }`;
+  try {
+    const r = await fetch('https://streaming.bitquery.io/graphql', { method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + BQ_TOKEN, 'X-API-KEY': BQ_TOKEN },
+      body: JSON.stringify({ query: q }) });
+    if (!r.ok) { console.log('  bq-archive http', r.status); return null; }
+    const d = await r.json();
+    if (d.errors) { console.log('  bq-archive err:', JSON.stringify(d.errors).slice(0, 140)); return null; }
+    const rows = d.data && d.data.EVM && d.data.EVM.TokenHolders;
+    return rows && rows.length ? rows.map(x => ({ addr: String(x.Holder.Address).toLowerCase(), amount: Number(x.Balance.Amount) || 0 })) : null;
+  } catch (e) { console.log('  bq-archive fail:', e.message.slice(0, 80)); return null; }
+}
+async function cgDailyPrices(t, days) { // 'YYYY-MM-DD' -> usd
+  try {
+    const r = await fetch(`https://api.coingecko.com/api/v3/coins/${t.coingecko}/market_chart?vs_currency=usd&days=${days}&interval=daily`);
+    if (!r.ok) return {};
+    const d = await r.json(); const out = {};
+    for (const [ms, p] of d.prices || []) out[new Date(ms).toISOString().slice(0, 10)] = p;
+    return out;
+  } catch (e) { return {}; }
+}
+function priceNear(prices, date) {
+  if (prices[date]) return prices[date];
+  const keys = Object.keys(prices).sort();
+  let best = 0, bd = Infinity;
+  for (const k of keys) { const d = Math.abs(new Date(k) - new Date(date)); if (d < bd) { bd = d; best = prices[k]; } }
+  return best;
+}
+async function bqBackfillSnapshots() {
+  if (!BQ_TOKEN) return;
+  const MK = 'data/bq_backfill.json';
+  let mk = { done: false, tried: 0 }; try { mk = JSON.parse(fs.readFileSync(MK, 'utf8')); } catch {}
+  if (mk.done || mk.tried >= 5) return;
+  const yday = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+  const probe = await bqArchiveHolders(cfg.tokens[0].contract, yday, 3);
+  if (!probe) { mk.tried++; fs.writeFileSync(MK, JSON.stringify(mk)); console.log(`bq backfill probe failed (attempt ${mk.tried}/5)`); return; }
+  console.log('bq ARCHIVE ACCESS CONFIRMED — backfilling 30 days of daily top-100 snapshots');
+  const DAYS = 30;
+  fs.mkdirSync('data/snapshots', { recursive: true });
+  for (const t of cfg.tokens) {
+    const prices = await cgDailyPrices(t, DAYS + 2);
+    const spath = path.join('data/snapshots', t.sym.toLowerCase() + '.json');
+    let snaps = []; try { snaps = JSON.parse(fs.readFileSync(spath, 'utf8')); } catch {}
+    const have = new Set(snaps.map(s => new Date(s.ts).toISOString().slice(0, 10)));
+    let added = 0;
+    for (let i = DAYS; i >= 1; i--) {
+      const date = new Date(Date.now() - i * 864e5).toISOString().slice(0, 10);
+      if (have.has(date)) continue;
+      const rows = await bqArchiveHolders(t.contract, date, 100);
+      if (!rows) { await new Promise(s => setTimeout(s, 900)); continue; }
+      const price = priceNear(prices, date);
+      const h = {}; rows.forEach((r2, idx) => h[r2.addr] = { r: idx + 1, u: Math.round(r2.amount * price) });
+      snaps.push({ ts: new Date(date + 'T00:00:00Z').getTime(), h }); added++;
+      await new Promise(s => setTimeout(s, 900));
+    }
+    snaps.sort((a, b) => a.ts - b.ts);
+    while (snaps.length > 70) snaps.shift();
+    fs.writeFileSync(spath, JSON.stringify(snaps));
+    console.log(`  ${t.sym}: +${added} historical snapshots (total ${snaps.length})`);
+  }
+  mk.done = true; mk.completedAt = new Date().toISOString(); fs.writeFileSync(MK, JSON.stringify(mk));
+}
+await bqBackfillSnapshots();
+
 // ---- 30d position-history backfill (real on-chain data via to_block) ----
 const HIST_POINTS = 10, HIST_DAYS = 30, HIST_TOP = 15;
 let histBlocks = null; // shared dates→blocks across tokens
@@ -829,14 +899,15 @@ for (const t of cfg.tokens) {
         if (fl.length) h.labels = [...new Set([...(h.labels || []), ...fl])].slice(0, 14);
       } catch (e) {}
     }
-    // snapshot history → rank & balance change vs the snapshot closest to 24h ago
-    let changeRefH = null;
+    // snapshot history → rank & balance change vs the snapshot closest to 24h ago (+7d when history allows)
+    let changeRefH = null, changeRef7D = null;
     {
       fs.mkdirSync('data/snapshots', { recursive: true });
       const spath = path.join('data/snapshots', t.sym.toLowerCase() + '.json');
       let snaps = []; try { snaps = JSON.parse(fs.readFileSync(spath, 'utf8')); } catch {}
-      const nowTs = Date.now(), want = nowTs - 864e5;
-      const ref = snaps.length ? snaps.reduce((b, s) => Math.abs(s.ts - want) < Math.abs(b.ts - want) ? s : b) : null;
+      const nowTs = Date.now(), want = nowTs - 864e5, want7 = nowTs - 7 * 864e5;
+      const nearest = (target) => snaps.length ? snaps.reduce((b, s) => Math.abs(s.ts - target) < Math.abs(b.ts - target) ? s : b) : null;
+      const ref = nearest(want);
       if (ref) {
         changeRefH = Math.max(1, Math.round((nowTs - ref.ts) / 36e5));
         top.forEach((h, i) => {
@@ -845,8 +916,18 @@ for (const t of cfg.tokens) {
           else { h.rankChange = o.r - (i + 1); h.usdChange = Math.round(h.usd - o.u); }
         });
       }
+      const ref7 = nearest(want7);
+      // only claim a 7d window when history actually reaches back ≥5 days
+      if (ref7 && nowTs - ref7.ts > 5 * 864e5) {
+        changeRef7D = Math.max(1, Math.round((nowTs - ref7.ts) / 864e5));
+        top.forEach((h, i) => {
+          const o = ref7.h[h.addr.toLowerCase()];
+          if (!o) { h.rankChange7 = 'new'; h.usdChange7 = null; }
+          else { h.rankChange7 = o.r - (i + 1); h.usdChange7 = Math.round(h.usd - o.u); }
+        });
+      }
       snaps.push({ ts: nowTs, h: Object.fromEntries(top.map((h, i) => [h.addr.toLowerCase(), { r: i + 1, u: Math.round(h.usd) }])) });
-      while (snaps.length > 15) snaps.shift();
+      while (snaps.length > 70) snaps.shift();
       fs.writeFileSync(spath, JSON.stringify(snaps));
     }
     if (ARKHAM_KEY) {
@@ -879,7 +960,7 @@ for (const t of cfg.tokens) {
     const logo = await tokenLogo(t);
     const out = {
       sym: t.sym, name: t.name, color: t.color, contract: t.contract, logo,
-      price: usd, chg, mcap, vol, holders, changeRefH,
+      price: usd, chg, mcap, vol, holders, changeRefH, changeRef7D,
       generated_at: index.generated_at,
       holdersTop: top, recent,
     };

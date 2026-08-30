@@ -425,12 +425,12 @@ const BANDS={small:[0.10,0.36],medium:[0.30,0.56],large:[0.50,0.74],whale:[0.62,
 function addrHash(a){let h1=7,h2=13;const s=String(a).toLowerCase();for(let i=0;i<s.length;i++){h1=(h1*31+s.charCodeAt(i))>>>0;h2=(h2*131+s.charCodeAt(i))>>>0}return[h1/4294967295,h2/4294967295]}
 function homeOf(f){const b=BANDS[f.h.tier]||BANDS.small;return{x:W*(0.08+f.hx*0.84),y:H*(b[0]+f.hy*(b[1]-b[0])),b}}
 function fromReal(d){
-  const list=(d.holdersTop||[]).map((h,i)=>({rank:i+1,addr:h.addr,pct:h.pct||0,value:h.usd||0,amount:h.amount||0,tier:'small',label:h.label||'',entity:h.entity||null,entityType:h.entityType||null,labels:h.labels||[],isContract:!!h.isContract,rankChange:h.rankChange??null,usdChange:h.usdChange??null,basename:h.basename||null,contractKind:h.contractKind||null,funding:h.funding||null,school:h.school||null}));
+  const list=(d.holdersTop||[]).map((h,i)=>({rank:i+1,addr:h.addr,pct:h.pct||0,value:h.usd||0,amount:h.amount||0,tier:'small',label:h.label||'',entity:h.entity||null,entityType:h.entityType||null,labels:h.labels||[],isContract:!!h.isContract,rankChange:h.rankChange??null,usdChange:h.usdChange??null,rankChange7:h.rankChange7??null,usdChange7:h.usdChange7??null,basename:h.basename||null,contractKind:h.contractKind||null,funding:h.funding||null,school:h.school||null}));
   list.sort((a,b)=>b.value-a.value).forEach((h,i)=>h.rank=i+1);
   list.forEach(h=>h.tier=h.rank<=6?'whale':h.rank<=24?'large':h.rank<=60?'medium':'small');
   const at=i=>list[Math.min(i,list.length-1)].value;
   cur.th=[at(59),at(23),at(5)];
-  cur.price=d.price;cur.chg=d.chg;cur.mcap=d.mcap;cur.vol=d.vol||0;cur.holders=d.holders;cur.contract=d.contract;cur.changeRefH=d.changeRefH||null;
+  cur.price=d.price;cur.chg=d.chg;cur.mcap=d.mcap;cur.vol=d.vol||0;cur.holders=d.holders;cur.contract=d.contract;cur.changeRefH=d.changeRefH||null;cur.changeRef7D=d.changeRef7D||null;
   return {list,topShare:list.reduce((s,h)=>s+h.pct,0)/100,min:list[list.length-1].value,max:list[0].value,recent:d.recent||[],generated_at:d.generated_at};
 }
 async function fetchToken(sym){const r=await fetch('data/'+sym.toLowerCase()+'.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;return r.json()}
@@ -809,16 +809,18 @@ function isInfra(h){
 }
 function typeOf(h){return h.entityType?h.entityType:(isInfra(h)?'infra':(h.isContract?'contract':'wallet'))}
 let hideInfra=true,sortKey='rank',sortDir=1;
-function rankChip(h){
-  if(h.rankChange==null)return'<span style="color:var(--dim)">·</span>';
-  if(h.rankChange==='new')return'<span style="color:var(--teal);font-weight:700">NEW</span>';
-  if(h.rankChange===0)return'<span style="color:var(--dim)">–</span>';
-  return h.rankChange>0?`<span style="color:var(--teal)">↑${h.rankChange}</span>`:`<span style="color:var(--coral)">↓${-h.rankChange}</span>`;
+function rankChip(h,k='rankChange'){
+  const v=h[k];
+  if(v==null)return'<span style="color:var(--dim)">·</span>';
+  if(v==='new')return'<span style="color:var(--teal);font-weight:700">NEW</span>';
+  if(v===0)return'<span style="color:var(--dim)">–</span>';
+  return v>0?`<span style="color:var(--teal)">↑${v}</span>`:`<span style="color:var(--coral)">↓${-v}</span>`;
 }
-function usdChip(h){
-  if(h.usdChange==null)return'';
-  const a=Math.abs(h.usdChange);if(a<1)return'';
-  return `<span class="mono" style="color:${h.usdChange>0?'var(--teal)':'var(--coral)'};font-size:10.5px">${h.usdChange>0?'+':'−'}${usd(a)}</span>`;
+function usdChip(h,k='usdChange'){
+  const v=h[k];
+  if(v==null)return'';
+  const a=Math.abs(v);if(a<1)return'';
+  return `<span class="mono" style="color:${v>0?'var(--teal)':'var(--coral)'};font-size:10.5px">${v>0?'+':'−'}${usd(a)}</span>`;
 }
 function exportCSV(){
   const rows=[['rank','address','entity','label','tier','type','amount','pct_supply','value_usd','rank_change','usd_change','labels']];
@@ -829,16 +831,17 @@ function exportCSV(){
 function renderTable(){
   let rows=data.list.filter(h=>!(REAL&&hideInfra&&isInfra(h)));
   const hidden=data.list.length-rows.length;
-  const KEYS={rank:h=>h.rank,amount:h=>-h.amount,pct:h=>-h.pct,value:h=>-h.value,chg:h=>-(h.usdChange??-Infinity)};
+  const KEYS={rank:h=>h.rank,amount:h=>-h.amount,pct:h=>-h.pct,value:h=>-h.value,chg:h=>-(h.usdChange??-Infinity),chg7:h=>-(h.usdChange7??-Infinity)};
   rows=[...rows].sort((a,b)=>(KEYS[sortKey](a)-KEYS[sortKey](b))*sortDir);
   const refH=cur.changeRefH?`Δ ${cur.changeRefH}h`:'Δ';
+  const has7=!!cur.changeRef7D;const ref7=has7?`Δ ${cur.changeRef7D}d`:'';
   const sTh=(k,lbl,right)=>`<th ${right?'class="r"':''} data-sort="${k}" style="cursor:pointer" title="Sort">${lbl}${sortKey===k?(sortDir>0?' ▾':' ▴'):''}</th>`;
   document.getElementById('holdersView').innerHTML=`
   ${REAL?`<div style="padding:10px 14px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center;font-size:11.5px;color:var(--muted);flex-wrap:wrap">
     <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="infraTog" ${hideInfra?'checked':''}> Hide contracts &amp; exchange deposits</label>
     ${hidden?`<span style="color:var(--dim)">${hidden} infrastructure wallet${hidden>1?'s':''} hidden · ranks unchanged</span>`:''}
     <button id="csvBtn" style="margin-left:auto;border:1px solid var(--line);padding:3px 10px;color:var(--muted);cursor:pointer;font-size:10.5px;font-family:var(--font-mono)">EXPORT CSV</button></div>`:''}
-  <table><thead><tr>${sTh('rank','#')}<th>Wallet</th><th>Tier</th><th>Labels</th>${sTh('chg',refH,1)}${sTh('amount','Amount',1)}${sTh('pct','% supply',1)}${sTh('value','Value',1)}<th class="r">Type</th></tr></thead><tbody>${rows.map(h=>`<tr data-i="${h.rank-1}"><td class="mono" style="color:var(--dim);white-space:nowrap">${h.rank} ${rankChip(h)}</td><td class="mono">${short(h.addr)}${(h.entity||h.basename)?` <span style="color:var(--teal)">${esc(h.entity||h.basename)}</span>`:''}</td><td><span class="pill" style="background:${TIER[h.tier].c}22;color:${TIER[h.tier].c}">${TIER[h.tier].n}</span></td><td><div class="lbls">${lblChips(h,2)||'<span style="border:0;background:none;padding:0;color:var(--dim)">—</span>'}</div></td><td class="r">${usdChip(h)}</td><td class="r mono">${num(h.amount)}</td><td class="r mono">${h.pct.toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:${typeOf(h)==='wallet'?'var(--muted)':typeColor(h.entityType)}">${typeOf(h)}</td></tr>`).join('')}</tbody></table>`;
+  <table><thead><tr>${sTh('rank','#')}<th>Wallet</th><th>Tier</th><th>Labels</th>${sTh('chg',refH,1)}${has7?sTh('chg7',ref7,1):''}${sTh('amount','Amount',1)}${sTh('pct','% supply',1)}${sTh('value','Value',1)}<th class="r">Type</th></tr></thead><tbody>${rows.map(h=>`<tr data-i="${h.rank-1}"><td class="mono" style="color:var(--dim);white-space:nowrap">${h.rank} ${rankChip(h)}</td><td class="mono">${short(h.addr)}${(h.entity||h.basename)?` <span style="color:var(--teal)">${esc(h.entity||h.basename)}</span>`:''}</td><td><span class="pill" style="background:${TIER[h.tier].c}22;color:${TIER[h.tier].c}">${TIER[h.tier].n}</span></td><td><div class="lbls">${lblChips(h,2)||'<span style="border:0;background:none;padding:0;color:var(--dim)">—</span>'}</div></td><td class="r">${usdChip(h)}</td>${has7?`<td class="r" style="white-space:nowrap">${rankChip(h,'rankChange7')} ${usdChip(h,'usdChange7')}</td>`:''}<td class="r mono">${num(h.amount)}</td><td class="r mono">${h.pct.toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:${typeOf(h)==='wallet'?'var(--muted)':typeColor(h.entityType)}">${typeOf(h)}</td></tr>`).join('')}</tbody></table>`;
   document.querySelectorAll('#holdersView tr[data-i]').forEach(r=>r.onclick=()=>{setView('aquarium');select(fish[+r.dataset.i])});
   document.querySelectorAll('#holdersView th[data-sort]').forEach(th=>th.onclick=()=>{const k=th.dataset.sort;if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=1}renderTable()});
   const tog=document.getElementById('infraTog');if(tog)tog.onchange=()=>{hideInfra=tog.checked;renderTable()};
