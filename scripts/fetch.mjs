@@ -509,7 +509,9 @@ function pipeInfra(h) {
 function buildSchools(allTops) {
   const universe = new Map(); // lower addr -> display info
   for (const top of Object.values(allTops)) for (const h of top || []) {
-    if (h.isContract && h.contractKind) continue;
+    // contracts can't be "same owner" school members — protocol treasuries/stakers cluster trivially.
+    // Exception: Gnosis Safes are people's vaults.
+    if (h.isContract && !/gnosis safe/i.test([h.entity, h.label, ...(h.labels || [])].filter(Boolean).join(' '))) continue;
     if (pipeInfra(h)) continue;
     const a = h.addr.toLowerCase();
     if (!universe.has(a)) universe.set(a, { addr: a, name: h.entity || h.basename || h.label || null });
@@ -818,7 +820,8 @@ for (const t of cfg.tokens) {
     }
     // funding source (cached forever once resolved; ~150 lookups/run backfill)
     for (const h of top) {
-      if (h.isContract && h.contractKind) continue; // funding of an LP/proxy is meaningless
+      // funding of protocol contracts/LPs is meaningless — trace EOAs and Safes only
+      if (h.isContract && !/gnosis safe/i.test([h.entity, h.label, ...(h.labels || [])].filter(Boolean).join(' '))) continue;
       try {
         const f = await fundingFor(h.addr);
         if (f !== undefined) h.funding = f;
