@@ -240,7 +240,7 @@ function parseTransfers(t, self) {
     const out = String(from).toLowerCase() === self.toLowerCase();
     return { ts: x.blockTimestamp || x.timestamp || x.time || null, dir: out ? 'out' : 'in',
       cp: out ? to : from, cpLabel: out ? toLbl : fromLbl,
-      token: x.tokenSymbol || (x.token && x.token.symbol) || x.symbol || null,
+      token: x.tokenSymbol || (x.token && x.token.symbol) || x.symbol || x.tokenName || (x.token && x.token.name) || x.asset || (x.type === 'external' || x.tokenAddress == null ? 'ETH' : null),
       amount: num2(x.unitValue ?? x.amount ?? x.value), usd: num2(x.historicalUSD ?? x.usd ?? x.usdValue),
       hash: x.transactionHash || x.txHash || x.hash || null, chain: x.chain || null };
   });
@@ -528,9 +528,9 @@ for (const t of cfg.tokens) {
   console.log(`\n== ${t.sym} ${c}`);
   try {
     // market data: CoinGecko first (one call for all tokens), Moralis fallback
-    let usd = 0, chg = 0, supply = 0, mcap = 0;
+    let usd = 0, chg = 0, supply = 0, mcap = 0, vol = 0;
     const mk = await cgMarketFor(t);
-    if (mk) { usd = mk.current_price || 0; chg = mk.price_change_percentage_24h || 0; supply = mk.total_supply || 0; mcap = mk.market_cap || (usd * supply); }
+    if (mk) { usd = mk.current_price || 0; chg = mk.price_change_percentage_24h || 0; supply = mk.total_supply || 0; mcap = mk.market_cap || (usd * supply); vol = mk.total_volume || 0; }
     if (!usd && KEY) {
       const price = await j(`${M}/erc20/${c}/price?chain=${cfg.chain}&include=percent_change`);
       usd = Number(price.usdPrice) || 0; chg = Number(price['24hrPercentChange']) || 0;
@@ -638,12 +638,12 @@ for (const t of cfg.tokens) {
     const logo = await tokenLogo(t);
     const out = {
       sym: t.sym, name: t.name, color: t.color, contract: t.contract, logo,
-      price: usd, chg, mcap, holders,
+      price: usd, chg, mcap, vol, holders,
       generated_at: index.generated_at,
       holdersTop: top, recent,
     };
     fs.writeFileSync(path.join('data', `${t.sym.toLowerCase()}.json`), JSON.stringify(out));
-    index.tokens.push({ sym: t.sym, name: t.name, color: t.color, contract: t.contract, logo, price: usd, chg, mcap, holders });
+    index.tokens.push({ sym: t.sym, name: t.name, color: t.color, contract: t.contract, logo, price: usd, chg, mcap, vol, holders });
     console.log(`  ok: price=$${usd} mcap=$${Math.round(mcap).toLocaleString()} holders=${holders}`);
   } catch (e) {
     console.error(`  FAILED ${t.sym}:`, e.message.slice(0, 160));
