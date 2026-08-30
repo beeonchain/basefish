@@ -61,6 +61,15 @@
   .head h2 .by{font-size:12px;letter-spacing:.04em;color:var(--dim);font-family:var(--font-mono);text-transform:none;font-weight:500;margin-left:2px}
   .head .sub{color:var(--muted);font-size:12px;margin-top:3px;white-space:nowrap}
   @media (max-width:1500px){.head .sub{display:none}}
+  .hsearch{position:relative;margin-left:8px}
+  .hsearch input{width:190px;border:1px solid var(--line);background:var(--panel);padding:7px 10px;font:500 11px var(--font-mono);color:var(--text);outline:none}
+  .hsearch input:focus{border-color:var(--teal)}
+  #hqDrop{position:absolute;top:100%;left:0;right:0;z-index:30;background:var(--panel);border:1px solid var(--line2);display:none;max-height:300px;overflow:auto}
+  #hqDrop button{display:block;width:100%;text-align:left;padding:8px 10px;font-size:11px;border-bottom:1px solid var(--line);cursor:pointer;color:var(--text)}
+  #hqDrop button:hover{background:var(--panel2)}
+  #hqDrop small{color:var(--dim)}
+  @media (max-width:1350px){.hsearch input{width:120px}}
+  @media (prefers-reduced-motion:reduce){.tank .glass{display:none}}
   .tokpick{display:flex;gap:4px;margin-left:12px;padding:3px;border:1px solid var(--line);border-radius:0;background:var(--panel)}
   .tokpick button{padding:6px 10px;border-radius:0;font-weight:700;color:var(--muted);font-size:11.5px;font-family:var(--font-mono);display:flex;align-items:center;gap:6px}
   .tokpick button i{width:8px;height:8px;border-radius:0;display:inline-block}
@@ -235,6 +244,24 @@
   .modal p{color:var(--muted);margin:0 0 10px;font-size:13px}
   @media (prefers-reduced-motion:reduce){.live i{animation:none}.toast div,.card.show{animation:none}}
   @media (max-width:1100px){.app{grid-template-columns:64px 1fr 280px}.brand h1,.brand small,.nav button span,.tracked,.disclaimer{display:none}.nav button{justify-content:center}}
+  /* basic mobile pass — must come after the 1100px query so it wins */
+  @media (max-width:760px){
+    html,body{overflow-x:hidden}
+    .app{grid-template-columns:1fr;grid-template-rows:auto auto minmax(70vh,auto) auto;height:auto;min-height:100vh}
+    .side{grid-row:auto;grid-column:1}
+    .head{grid-column:1}
+    .main{grid-column:1}
+    .foot{grid-column:1;flex-wrap:wrap;height:auto;padding:8px 14px}
+    aside.side{flex-direction:row;align-items:center;overflow-x:auto;padding:8px 10px;border-right:0;border-bottom:1px solid var(--line)}
+    .nav{flex-direction:row;margin:0;display:flex}
+    .tracked,.disclaimer,.brand h1,.brand small,.stats,.rail,.bar{display:none}
+    .head{flex-wrap:wrap;height:auto;row-gap:8px;padding:10px}
+    .head>*{min-width:0}
+    .tokpick{overflow-x:auto;max-width:100%;margin-left:0}
+    .hsearch{flex:1}.hsearch input{width:100%}
+    .tank{height:56vh}
+    .wp .wgrid{grid-template-columns:1fr}
+  }
 </style>
 
 <div class="app">
@@ -246,7 +273,7 @@
       <button data-view="wallets"><svg viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="2"/><rect x="2" y="12" width="12" height="2"/><rect x="2" y="6" width="2" height="6"/><rect x="12" y="6" width="2" height="6"/><rect x="9" y="8" width="3" height="2"/></svg><span>Wallets</span></button>
       <button data-view="flows"><svg viewBox="0 0 16 16"><rect x="2" y="4" width="8" height="2"/><rect x="10" y="2" width="2" height="2"/><rect x="12" y="4" width="2" height="2"/><rect x="10" y="6" width="2" height="2"/><rect x="6" y="10" width="8" height="2"/><rect x="4" y="8" width="2" height="2"/><rect x="2" y="10" width="2" height="2"/><rect x="4" y="12" width="2" height="2"/></svg><span>Flows</span><em class="soon">SOON</em></button>
       <button data-view="alerts"><svg viewBox="0 0 16 16"><rect x="6" y="2" width="4" height="2"/><rect x="5" y="4" width="6" height="2"/><rect x="4" y="6" width="8" height="4"/><rect x="3" y="10" width="10" height="2"/><rect x="7" y="13" width="2" height="2"/></svg><span>Alerts</span><em class="soon">SOON</em></button>
-      <button data-view="watch"><svg viewBox="0 0 16 16"><rect x="7" y="2" width="2" height="3"/><rect x="2" y="7" width="3" height="2"/><rect x="11" y="7" width="3" height="2"/><rect x="6" y="5" width="4" height="2"/><rect x="5" y="7" width="6" height="2"/><rect x="6" y="9" width="4" height="2"/><rect x="4" y="11" width="2" height="2"/><rect x="10" y="11" width="2" height="2"/><rect x="7" y="9" width="2" height="3"/></svg><span>Watchlist</span><em class="soon">SOON</em></button>
+      <button data-view="watch"><svg viewBox="0 0 16 16"><rect x="7" y="2" width="2" height="3"/><rect x="2" y="7" width="3" height="2"/><rect x="11" y="7" width="3" height="2"/><rect x="6" y="5" width="4" height="2"/><rect x="5" y="7" width="6" height="2"/><rect x="6" y="9" width="4" height="2"/><rect x="4" y="11" width="2" height="2"/><rect x="10" y="11" width="2" height="2"/><rect x="7" y="9" width="2" height="3"/></svg><span>Watchlist</span></button>
     </nav>
     <div class="tracked">
       <div class="lbl">Tracked token</div>
@@ -271,6 +298,7 @@
       <div><small>Whales</small><b class="mono" id="stWhales">—</b></div>
       <div><small>Updated</small><b class="live"><i></i><span id="stUpd">just now</span></b></div>
     </div>
+    <div class="hsearch"><input id="hq" placeholder="0x address · token · name" autocomplete="off" spellcheck="false"><div id="hqDrop"></div></div>
     <button class="share" id="shareBtn">Share aquarium ↗</button>
   </header>
 
@@ -289,6 +317,7 @@
     </div>
     <div class="view" id="holdersView"></div>
     <div class="view" id="walletsView"></div>
+    <div class="view" id="watchView"></div>
     <div class="wp" id="walletPage"></div>
     <div class="bar">
       <div class="t">Fish size = wallet size<small>Bigger fish hold more. That's it. · tiers relative to this tank</small></div>
@@ -318,10 +347,11 @@
 
 <div class="drawer" id="drawer"></div>
 <div class="modal" id="modal"><div class="in">
-  <h4>About the map</h4>
-  <p>Every fish is one of the top 100 wallets holding this token. Size = USD value, tiers relative to this tank. A $20K wallet is a whale in a small pond. Facts.</p>
-  <p>Exchange hot wallets, pools, bridges and burn addresses are filtered out. The biggest fish is always a real holder. We checked.</p>
-  <p>Holders 101+ swim in the background schools. Click any fish for its wallet page. Hover for its cut of supply.</p>
+  <h4>About the map · methodology</h4>
+  <p>Every fish is one of the top 100 wallets holding this token. Size = USD value of the position <b>in this token</b> (not total net worth), tiers relative to this tank. Depth mirrors size: whales swim deep, small fish stay shallow. Positions are stable — the same wallet holds the same spot every visit.</p>
+  <p><b>Data.</b> Holder balances via Moralis, prices & volume via CoinGecko, wallet intelligence (labels, portfolios, transfers) via Arkham, X identities & trader tags via Frontrun, names via Basenames. Snapshots refresh roughly every 2 hours — the chip in the tank shows the exact capture time, and turns red if a refresh failed.</p>
+  <p><b>What's filtered.</b> Burn addresses, exchange hot wallets, bridges and known pools are excluded from the top 100 upstream. Remaining contracts and exchange-deposit wallets are hidden by default in the tables (toggle to show); ranks never renumber. The header holder count comes from Moralis and can differ slightly from Basescan.</p>
+  <p><b>Change columns</b> compare against the snapshot closest to 24h old — the header of that column states the actual window. Holders 101+ swim in the background schools; they're ambience, not data.</p>
   <p style="color:var(--dim);font-size:12px">NFA. It's a fish.</p>
   <button class="share" id="modalClose" style="margin-top:6px">Trust the fish</button>
 </div></div>
@@ -385,6 +415,7 @@ function buildHolders(t){
 let cur=DEMO_TOKENS[0], data, fish=[], schools=[], bubbles=[], selected=null, hovered=null, zoom=1, view='aquarium';
 const cv=document.getElementById('cv'), tank=document.getElementById('tank');let ctx=cv.getContext('2d');
 let W=0,H=0,DPR=1;
+const AMP=matchMedia('(prefers-reduced-motion: reduce)').matches?0:1; // 0 = static tank
 function resize(){DPR=Math.min(2,devicePixelRatio||1);const r=tank.getBoundingClientRect();W=r.width;H=r.height;cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);}
 addEventListener('resize',resize);resize();
 
@@ -394,12 +425,12 @@ const BANDS={small:[0.10,0.36],medium:[0.30,0.56],large:[0.50,0.74],whale:[0.62,
 function addrHash(a){let h1=7,h2=13;const s=String(a).toLowerCase();for(let i=0;i<s.length;i++){h1=(h1*31+s.charCodeAt(i))>>>0;h2=(h2*131+s.charCodeAt(i))>>>0}return[h1/4294967295,h2/4294967295]}
 function homeOf(f){const b=BANDS[f.h.tier]||BANDS.small;return{x:W*(0.08+f.hx*0.84),y:H*(b[0]+f.hy*(b[1]-b[0])),b}}
 function fromReal(d){
-  const list=(d.holdersTop||[]).map((h,i)=>({rank:i+1,addr:h.addr,pct:h.pct||0,value:h.usd||0,amount:h.amount||0,tier:'small',label:h.label||'',entity:h.entity||null,entityType:h.entityType||null,labels:h.labels||[],isContract:!!h.isContract}));
+  const list=(d.holdersTop||[]).map((h,i)=>({rank:i+1,addr:h.addr,pct:h.pct||0,value:h.usd||0,amount:h.amount||0,tier:'small',label:h.label||'',entity:h.entity||null,entityType:h.entityType||null,labels:h.labels||[],isContract:!!h.isContract,rankChange:h.rankChange??null,usdChange:h.usdChange??null,basename:h.basename||null,contractKind:h.contractKind||null}));
   list.sort((a,b)=>b.value-a.value).forEach((h,i)=>h.rank=i+1);
   list.forEach(h=>h.tier=h.rank<=6?'whale':h.rank<=24?'large':h.rank<=60?'medium':'small');
   const at=i=>list[Math.min(i,list.length-1)].value;
   cur.th=[at(59),at(23),at(5)];
-  cur.price=d.price;cur.chg=d.chg;cur.mcap=d.mcap;cur.vol=d.vol||0;cur.holders=d.holders;cur.contract=d.contract;
+  cur.price=d.price;cur.chg=d.chg;cur.mcap=d.mcap;cur.vol=d.vol||0;cur.holders=d.holders;cur.contract=d.contract;cur.changeRefH=d.changeRefH||null;
   return {list,topShare:list.reduce((s,h)=>s+h.pct,0)/100,min:list[list.length-1].value,max:list[0].value,recent:d.recent||[],generated_at:d.generated_at};
 }
 async function fetchToken(sym){const r=await fetch('data/'+sym.toLowerCase()+'.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;return r.json()}
@@ -588,7 +619,7 @@ function drawBg(t){
 }
 function drawSchools(t){
   schools.forEach(s=>{
-    s.x+=s.dir*s.sp*DT*zoom;s.y+=Math.sin(t*.5+s.ph)*.15;
+    s.x+=s.dir*s.sp*DT*zoom*AMP;s.y+=Math.sin(t*.5+s.ph)*.15*AMP;
     if(s.x>W+80)s.dir=-1;if(s.x<-80)s.dir=1;
     s.m.forEach(m=>{const x=s.x+m.ox+Math.sin(t*2+m.ph)*4,y=s.y+m.oy+Math.cos(t*1.7+m.ph)*3;
       if(sprReady&&SPR.minnow){const w2=13*zoom,h2=w2*SPR.minnow.h/SPR.minnow.w;ctx.save();ctx.translate(x,y);ctx.scale(s.dir,1);ctx.globalAlpha=.45;ctx.drawImage(SPR.minnow.img,-w2/2,-h2/2,w2,h2);ctx.restore()}
@@ -600,25 +631,25 @@ function step(dt,t){
     f.size+=(f.tsize-f.size)*Math.min(1,dt*2);
     const hov=f===hovered||f===selected;
     f.glow+=((hov?1:0)-f.glow)*Math.min(1,dt*8);
-    const sp=f.speed*(hov?.35:1);
+    const sp=f.speed*(hov?.35:1)*AMP;
     const hm=homeOf(f),patrol=W*0.15;
-    f.x+=f.dir*sp*dt;f.y+=Math.sin(t*.8+f.phase)*.25+(f.ty-f.y)*dt*.3;
-    if(Math.random()<dt*.05)f.ty=hm.y+(Math.random()-.5)*H*0.08;
+    f.x+=f.dir*sp*dt;f.y+=Math.sin(t*.8+f.phase)*.25*AMP+(f.ty-f.y)*dt*.3;
+    if(AMP&&Math.random()<dt*.05)f.ty=hm.y+(Math.random()-.5)*H*0.08;
     const m=f.size*zoom*1.05+8;
     if(f.x>Math.min(W-m,hm.x+patrol))f.dir=-1;if(f.x<Math.max(m,hm.x-patrol))f.dir=1;
     f.y=Math.max(Math.max(f.size*zoom*.5+30,H*hm.b[0]),Math.min(Math.min(H-70,H*hm.b[1]+f.size*zoom*.3),f.y));
     if(f.pulse>0)f.pulse-=dt;
   });
   bubbles=bubbles.filter(b=>b.y>-10);bubbles.forEach(b=>{b.y-=b.v*dt;b.x+=Math.sin(b.y*.05+b.p)*.4});
-  if(Math.random()<dt*2.2)bubbles.push({x:Math.random()*W,y:H-20,v:22+Math.random()*30,r:1+Math.random()*2.6,p:Math.random()*6});
-  if(envVault&&Math.random()<dt*.7)bubbles.push({x:envVault.x+(Math.random()-.5)*14,y:envVault.y,v:26+Math.random()*22,r:1.2+Math.random()*2,p:Math.random()*6});
+  if(AMP&&Math.random()<dt*2.2)bubbles.push({x:Math.random()*W,y:H-20,v:22+Math.random()*30,r:1+Math.random()*2.6,p:Math.random()*6});
+  if(AMP&&envVault&&Math.random()<dt*.7)bubbles.push({x:envVault.x+(Math.random()-.5)*14,y:envVault.y,v:26+Math.random()*22,r:1.2+Math.random()*2,p:Math.random()*6});
 }
 function drawOneFish(f,t){
   const s=f.size*zoom;
   const sp=sprFor(f.h);
   if(sp){
     const W2=s*2.25,H2=W2*sp.h/sp.w;
-    ctx.save();ctx.translate(f.x,f.y);ctx.scale(f.dir,1);ctx.rotate(Math.sin(t*1.5+f.phase)*0.055);
+    ctx.save();ctx.translate(f.x,f.y);ctx.scale(f.dir,1);ctx.rotate(Math.sin(t*1.5+f.phase)*0.055*AMP);
     ctx.drawImage(sp.img,-W2/2,-H2/2,W2,H2);ctx.restore();
   }else{
     drawFish(f.x,f.y,s,f.dir,t,TIER[f.h.tier].c,0,f.phase);
@@ -747,27 +778,57 @@ function drawDonut(){
   const segs=[['Whales','top 6',shr('whale'),TIER.whale.c],['Large','7–24',shr('large'),TIER.large.c],['Medium','25–60',shr('medium'),TIER.medium.c],['Small','61–100',shr('small'),TIER.small.c]];
   let a=-Math.PI/2;segs.forEach(s=>{x.beginPath();x.arc(110,110,92,a,a+s[2]*6.283);x.arc(110,110,62,a+s[2]*6.283,a,true);x.closePath();x.fillStyle=s[3];x.fill();a+=s[2]*6.283});
   x.fillStyle='#0A0B0D';x.textAlign='center';x.font='900 24px Inter Tight, sans-serif';x.fillText((data.topShare*100).toFixed(1)+'%',110,108);x.font='500 12px Inter Tight, sans-serif';x.fillStyle='#5B616E';x.fillText('of supply in top 100',110,128);
-  document.getElementById('distList').innerHTML=segs.map(s=>`<li><i style="background:${s[3]}"></i><span><b>${s[0]}</b> <small>${s[1]}</small></span><b class="mono">${(s[2]*100).toFixed(1)}%</b></li>`).join('');
+  const wsh=segs[0][2]*100;
+  const verdict=wsh>=50?['Highly concentrated','var(--coral)']:wsh>=30?['Moderately concentrated','var(--gold,#B8860B)']:['Well distributed','var(--teal)'];
+  document.getElementById('distList').innerHTML=segs.map(s=>`<li><i style="background:${s[3]}"></i><span><b>${s[0]}</b> <small>${s[1]}</small></span><b class="mono">${(s[2]*100).toFixed(1)}%</b></li>`).join('')
+    +`<li style="border-top:1px solid var(--line);padding-top:8px;margin-top:4px"><span style="font-size:11px;color:var(--muted)">Top 6 hold ${wsh.toFixed(1)}% of top-100 supply — <b style="color:${verdict[1]}">${verdict[0].toLowerCase()}</b></span></li>`;
 }
 /* infrastructure heuristic: CEX deposit wallets, LP pools, proxies, routers — not people */
 const INFRA_RX=/\bdeposit\b|\bpool\b|proxy|bridge|exchange|router|locker|timelock/i;
 function isInfra(h){
   const t=String(h.entityType||h.type||'').toLowerCase();
   if(['cex','dex','bridge','exchange','staking','locker'].includes(t))return true;
-  return INFRA_RX.test([h.entity,h.label,...(h.labels||[])].filter(Boolean).join(' '));
+  // Gnosis Safes are people's vaults, not infrastructure — don't let "proxy" catch them
+  // "X Pool Deployer" tags describe history, not what the wallet IS
+  const hay=[h.entity,h.label,...(h.labels||[])].filter(Boolean).join(' ').replace(/gnosis safe( proxy)?/gi,'').replace(/\S+ deployer/gi,'');
+  return INFRA_RX.test(hay);
 }
 function typeOf(h){return h.entityType?h.entityType:(isInfra(h)?'infra':(h.isContract?'contract':'wallet'))}
-let hideInfra=true;
+let hideInfra=true,sortKey='rank',sortDir=1;
+function rankChip(h){
+  if(h.rankChange==null)return'<span style="color:var(--dim)">·</span>';
+  if(h.rankChange==='new')return'<span style="color:var(--teal);font-weight:700">NEW</span>';
+  if(h.rankChange===0)return'<span style="color:var(--dim)">–</span>';
+  return h.rankChange>0?`<span style="color:var(--teal)">↑${h.rankChange}</span>`:`<span style="color:var(--coral)">↓${-h.rankChange}</span>`;
+}
+function usdChip(h){
+  if(h.usdChange==null)return'';
+  const a=Math.abs(h.usdChange);if(a<1)return'';
+  return `<span class="mono" style="color:${h.usdChange>0?'var(--teal)':'var(--coral)'};font-size:10.5px">${h.usdChange>0?'+':'−'}${usd(a)}</span>`;
+}
+function exportCSV(){
+  const rows=[['rank','address','entity','label','tier','type','amount','pct_supply','value_usd','rank_change','usd_change','labels']];
+  data.list.forEach(h=>rows.push([h.rank,h.addr,h.entity||'',h.label||'',h.tier,typeOf(h),h.amount,h.pct,Math.round(h.value),h.rankChange??'',h.usdChange??'',(h.labels||[]).join('; ')]));
+  const csv=rows.map(r=>r.map(c=>/[",\n]/.test(String(c))?'"'+String(c).replace(/"/g,'""')+'"':c).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`basefish_${cur.sym.toLowerCase()}_top100.csv`;a.click();
+}
 function renderTable(){
-  const rows=data.list.filter(h=>!(REAL&&hideInfra&&isInfra(h)));
+  let rows=data.list.filter(h=>!(REAL&&hideInfra&&isInfra(h)));
   const hidden=data.list.length-rows.length;
+  const KEYS={rank:h=>h.rank,amount:h=>-h.amount,pct:h=>-h.pct,value:h=>-h.value,chg:h=>-(h.usdChange??-Infinity)};
+  rows=[...rows].sort((a,b)=>(KEYS[sortKey](a)-KEYS[sortKey](b))*sortDir);
+  const refH=cur.changeRefH?`Δ ${cur.changeRefH}h`:'Δ';
+  const sTh=(k,lbl,right)=>`<th ${right?'class="r"':''} data-sort="${k}" style="cursor:pointer" title="Sort">${lbl}${sortKey===k?(sortDir>0?' ▾':' ▴'):''}</th>`;
   document.getElementById('holdersView').innerHTML=`
-  ${REAL?`<div style="padding:10px 14px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center;font-size:11.5px;color:var(--muted)">
+  ${REAL?`<div style="padding:10px 14px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center;font-size:11.5px;color:var(--muted);flex-wrap:wrap">
     <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="infraTog" ${hideInfra?'checked':''}> Hide contracts &amp; exchange deposits</label>
-    ${hidden?`<span style="color:var(--dim)">${hidden} infrastructure wallet${hidden>1?'s':''} hidden · ranks unchanged</span>`:''}</div>`:''}
-  <table><thead><tr><th>#</th><th>Wallet</th><th>Tier</th><th>Labels</th><th class="r">Amount</th><th class="r">% supply</th><th class="r">Value</th><th class="r">Type</th></tr></thead><tbody>${rows.map(h=>`<tr data-i="${h.rank-1}"><td class="mono" style="color:var(--dim)">${h.rank}</td><td class="mono">${short(h.addr)}${h.entity?` <span style="color:var(--teal)">${esc(h.entity)}</span>`:''}</td><td><span class="pill" style="background:${TIER[h.tier].c}22;color:${TIER[h.tier].c}">${TIER[h.tier].n}</span></td><td><div class="lbls">${lblChips(h,2)||'<span style="border:0;background:none;padding:0;color:var(--dim)">—</span>'}</div></td><td class="r mono">${num(h.amount)}</td><td class="r mono">${h.pct.toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:${typeOf(h)==='wallet'?'var(--muted)':typeColor(h.entityType)}">${typeOf(h)}</td></tr>`).join('')}</tbody></table>`;
+    ${hidden?`<span style="color:var(--dim)">${hidden} infrastructure wallet${hidden>1?'s':''} hidden · ranks unchanged</span>`:''}
+    <button id="csvBtn" style="margin-left:auto;border:1px solid var(--line);padding:3px 10px;color:var(--muted);cursor:pointer;font-size:10.5px;font-family:var(--font-mono)">EXPORT CSV</button></div>`:''}
+  <table><thead><tr>${sTh('rank','#')}<th>Wallet</th><th>Tier</th><th>Labels</th>${sTh('chg',refH,1)}${sTh('amount','Amount',1)}${sTh('pct','% supply',1)}${sTh('value','Value',1)}<th class="r">Type</th></tr></thead><tbody>${rows.map(h=>`<tr data-i="${h.rank-1}"><td class="mono" style="color:var(--dim);white-space:nowrap">${h.rank} ${rankChip(h)}</td><td class="mono">${short(h.addr)}${(h.entity||h.basename)?` <span style="color:var(--teal)">${esc(h.entity||h.basename)}</span>`:''}</td><td><span class="pill" style="background:${TIER[h.tier].c}22;color:${TIER[h.tier].c}">${TIER[h.tier].n}</span></td><td><div class="lbls">${lblChips(h,2)||'<span style="border:0;background:none;padding:0;color:var(--dim)">—</span>'}</div></td><td class="r">${usdChip(h)}</td><td class="r mono">${num(h.amount)}</td><td class="r mono">${h.pct.toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:${typeOf(h)==='wallet'?'var(--muted)':typeColor(h.entityType)}">${typeOf(h)}</td></tr>`).join('')}</tbody></table>`;
   document.querySelectorAll('#holdersView tr[data-i]').forEach(r=>r.onclick=()=>{setView('aquarium');select(fish[+r.dataset.i])});
+  document.querySelectorAll('#holdersView th[data-sort]').forEach(th=>th.onclick=()=>{const k=th.dataset.sort;if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=1}renderTable()});
   const tog=document.getElementById('infraTog');if(tog)tog.onchange=()=>{hideInfra=tog.checked;renderTable()};
+  const cb=document.getElementById('csvBtn');if(cb)cb.onclick=exportCSV;
 }
 /* token picker */
 function buildPicker(){
@@ -777,13 +838,15 @@ function buildPicker(){
 /* views */
 function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
   document.querySelector('.app').classList.toggle('noRail',v!=='aquarium');
-  document.querySelector('.app').classList.toggle('wview',v==='wallets');
+  document.querySelector('.app').classList.toggle('wview',v==='wallets'||v==='watch');
   document.getElementById('tank').style.display=v==='aquarium'?'':'none';
   document.getElementById('holdersView').classList.toggle('show',v==='holders');
   document.getElementById('walletsView').classList.toggle('show',v==='wallets');
+  document.getElementById('watchView').classList.toggle('show',v==='watch');
   document.getElementById('walletPage').classList.toggle('show',v==='wallet');
   if(v!=='wallet'&&location.hash.startsWith('#w='))history.replaceState(null,'',location.pathname+location.search);
   if(v==='wallets')renderWallets();
+  if(v==='watch')renderWatch();
   if(v==='aquarium')resize()}
 async function renderWallets(){
   const el=document.getElementById('walletsView');
@@ -815,6 +878,65 @@ async function renderWallets(){
   <div style="padding:12px 14px;color:var(--dim);font-size:11.5px">wallets appearing in multiple aquariums are merged · combined value counts top-100 positions only${REAL?'':' · demo data'}</div>`;
   const tw=document.getElementById('infraTogW');if(tw)tw.onchange=()=>{hideInfra=tw.checked;renderWallets()};
 }
+/* ============ watchlist (browser-local) ============ */
+const WATCH={
+  get(){try{return JSON.parse(localStorage.bf_watch||'[]')}catch(e){return[]}},
+  set(a){try{localStorage.bf_watch=JSON.stringify(a.slice(0,50))}catch(e){}},
+  has(a){return this.get().includes(a.toLowerCase())},
+  toggle(a){a=a.toLowerCase();const w=this.get();const i=w.indexOf(a);i>=0?w.splice(i,1):w.push(a);this.set(w);return i<0}
+};
+async function renderWatch(){
+  const el=document.getElementById('watchView');
+  const w=WATCH.get();
+  if(!w.length){el.innerHTML='<div style="padding:40px;color:var(--muted);max-width:520px"><h3 style="font-family:var(--font-display);margin-bottom:10px">Nothing on the watchlist yet</h3><p style="font-size:13px;line-height:1.6">Open any wallet page and hit <b>☆ Watch</b>. Watched fish live here with their current positions. Stored in this browser only.</p></div>';return}
+  el.innerHTML='<div style="padding:30px;color:var(--muted)">Checking on your fish…</div>';
+  const rows=[];
+  for(const a of w){
+    let best=null,toks=[];
+    for(const tk of TOKENS){const d=REAL?await tokData(tk.sym):null;if(!d)continue;
+      const i=(d.holdersTop||[]).findIndex(x=>x.addr.toLowerCase()===a);
+      if(i>=0){const m=d.holdersTop[i];toks.push({sym:tk.sym,rank:i+1,usd:m.usd,rankChange:m.rankChange,usdChange:m.usdChange});if(!best)best=m}}
+    rows.push({addr:a,best,toks,usd:toks.reduce((s,x)=>s+x.usd,0)});
+  }
+  rows.sort((a,b)=>b.usd-a.usd);
+  el.innerHTML=`<table><thead><tr><th>Wallet</th><th>Labels</th><th>Positions</th><th class="r">Top-100 value</th><th class="r"></th></tr></thead><tbody>${
+    rows.map(r=>{const h=r.best||{};const chips=(h.entity?entPill(h.entity,h.entityType):'')+lblChips(h,2);
+    return `<tr style="cursor:pointer" onclick="openProfileByAddr('${r.addr}')"><td class="mono">${short(r.addr)}${h.basename?` <span style="color:var(--teal)">${esc(h.basename)}</span>`:''}</td><td><div class="lbls">${chips||'<span style="border:0;background:none;padding:0;color:var(--dim)">Unknown</span>'}</div></td><td>${r.toks.length?r.toks.map(x=>`<span style="margin-right:8px;white-space:nowrap">${tokLogo(x.sym,15)} <small>#${x.rank} ${x.rankChange==='new'?'<b style=color:var(--teal)>NEW</b>':x.rankChange>0?'<b style=color:var(--teal)>↑'+x.rankChange+'</b>':x.rankChange<0?'<b style=color:var(--coral)>↓'+(-x.rankChange)+'</b>':''}</small></span>`).join(''):'<span style="color:var(--dim)">not in any top 100 right now</span>'}</td><td class="r mono">${usd(r.usd)}</td><td class="r"><button onclick="event.stopPropagation();WATCH.toggle('${r.addr}');renderWatch()" title="Remove" style="color:var(--coral);cursor:pointer;border:1px solid var(--line);padding:2px 8px;font-size:10px">✕</button></td></tr>`}).join('')
+  }</tbody></table>
+  <div style="padding:12px 14px;color:var(--dim);font-size:11.5px">${rows.length} watched · stored in this browser · alerts land here in a future version</div>`;
+}
+/* ============ universal search ============ */
+async function searchAll(q){
+  q=q.trim();const ql=q.toLowerCase();const out=[];
+  if(/^0x[0-9a-f]{40}$/i.test(q)){
+    const tok=TOKENS.find(t=>(t.contract||'').toLowerCase()===ql);
+    if(tok)return[{type:'token',sym:tok.sym,label:'$'+tok.sym+' — open aquarium'}];
+    return[{type:'wallet',addr:q,label:short(q)+' — open wallet page'}];
+  }
+  if(ql.length<2)return out;
+  const seen=new Set();
+  for(const tk of TOKENS){
+    if(tk.sym.toLowerCase().includes(ql)||tk.name.toLowerCase().includes(ql))out.push({type:'token',sym:tk.sym,label:'$'+tk.sym+' — '+tk.name});
+    const d=REAL?await tokData(tk.sym):null;if(!d)continue;
+    for(const h of d.holdersTop||[]){
+      const a=h.addr.toLowerCase();if(seen.has(a))continue;
+      const hay=[h.entity,h.label,h.basename,...(h.labels||[])].filter(Boolean).join(' ').toLowerCase();
+      if(hay.includes(ql)||a.startsWith(ql)){seen.add(a);out.push({type:'wallet',addr:h.addr,label:short(h.addr)+(h.entity||h.label?' — '+esc((h.entity||h.label).slice(0,30)):''),sub:'$'+tk.sym+' top 100'})}
+      if(out.length>=9)return out;
+    }
+  }
+  return out.slice(0,9);
+}
+{const hq=document.getElementById('hq'),drop=document.getElementById('hqDrop');let tmr=null;
+ const go=r=>{drop.style.display='none';hq.value='';if(r.type==='token')jumpToken(r.sym);else openProfileByAddr(r.addr)};
+ hq.oninput=()=>{clearTimeout(tmr);tmr=setTimeout(async()=>{const rs=await searchAll(hq.value);
+   if(!rs.length){drop.style.display=hq.value.trim().length>1?'block':'none';drop.innerHTML='<button disabled style="color:var(--dim)">no match in tracked top-100s</button>';return}
+   drop.innerHTML=rs.map((r,i)=>`<button data-i="${i}">${r.label}${r.sub?` <small>· ${r.sub}</small>`:''}</button>`).join('');
+   drop.style.display='block';
+   drop.querySelectorAll('button[data-i]').forEach(b=>b.onclick=()=>go(rs[+b.dataset.i]));
+ },220)};
+ hq.onkeydown=e=>{if(e.key==='Enter'){searchAll(hq.value).then(rs=>{if(rs.length)go(rs[0])})}if(e.key==='Escape'){drop.style.display='none';hq.blur()}};
+ document.addEventListener('click',e=>{if(!e.target.closest('.hsearch'))drop.style.display='none'});}
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{if(b.querySelector('.soon'))return toastMsg(`<b>${b.querySelector('span').textContent}</b> isn't ready. The prophecy says soon.`,'var(--dim)');closeCard();setView(b.dataset.view)});
 document.getElementById('viewAll').onclick=()=>setView('holders');
 document.getElementById('aboutBtn').onclick=()=>document.getElementById('modal').classList.add('show');
@@ -892,11 +1014,14 @@ async function openProfile(h){
     <div><h3 id="wpname">${h.entity||short(h.addr)}</h3><div class="addr">${h.addr}</div>
       <div class="lbls" id="wplbls" style="margin-top:6px">${[h.rank?`<span style="color:${t.c}">${t.n} · rank #${h.rank} in $${h.tokSym||cur.sym}</span>`:`<span>free swimmer · not in a tracked top 100</span>`,lblChips(h,5)].join('')}</div></div>
     <div class="val"><small id="wpvlabel">Tracked positions · Base</small><b class="mono" id="wpval">—</b></div>
-    <div class="wbtns"><button onclick="setView('aquarium')">← Aquarium</button><button id="wpcopy">Copy address</button><button id="wpshare">Share wallet</button><span id="wpsocials" style="display:contents"></span><a href="${ark}" target="_blank" rel="noopener">Arkham ↗</a><a href="${scan}" target="_blank" rel="noopener">Basescan ↗</a></div></div>
+    <div class="wbtns"><button onclick="setView('aquarium')">← Aquarium</button><button id="wpcopy">Copy address</button><button id="wpshare">Share wallet</button><button id="wpwatch"></button><span id="wpsocials" style="display:contents"></span><a href="${ark}" target="_blank" rel="noopener">Arkham ↗</a><a href="${scan}" target="_blank" rel="noopener">Basescan ↗</a></div></div>
   <div class="wgrid" id="wpgrid"><div class="empty2">Loading. Trust the fish.</div></div>`;
   drawMinis();
   document.getElementById('wpcopy').onclick=e=>{navigator.clipboard&&navigator.clipboard.writeText(h.addr);e.target.textContent='copied';setTimeout(()=>e.target.textContent='Copy address',1200)};
   document.getElementById('wpshare').onclick=()=>{const u=location.origin+location.pathname+'?token='+cur.sym.toLowerCase()+'%23w='+h.addr;navigator.clipboard&&navigator.clipboard.writeText(location.href);toastMsg('Wallet link copied','var(--teal)')};
+  const wb=document.getElementById('wpwatch');
+  const wSync=()=>{const on=WATCH.has(h.addr);wb.textContent=on?'★ Watching':'☆ Watch';wb.style.color=on?'var(--teal)':''};
+  wSync();wb.onclick=()=>{const added=WATCH.toggle(h.addr);toastMsg(added?'Added to watchlist':'Removed from watchlist',added?'var(--teal)':'var(--dim)');wSync()};
   let p=profCache[h.addr];
   if(!p&&REAL){try{const r=await fetch('data/wallets/'+h.addr.toLowerCase()+'.json?t='+Date.now(),{cache:'no-store'});if(r.ok)p=profCache[h.addr]=await r.json()}catch(e){}}
   // positions across our aquariums

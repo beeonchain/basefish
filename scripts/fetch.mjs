@@ -2,6 +2,7 @@
 // Runs in GitHub Actions on a schedule. Requires MORALIS_API_KEY env var.
 import fs from 'node:fs';
 import path from 'node:path';
+import { namehash } from './keccak.mjs';
 
 const KEY = process.env.MORALIS_API_KEY || '';
 const BQ_TOKEN = process.env.BITQUERY_TOKEN || '';
@@ -166,6 +167,71 @@ async function frontrunBatch(addrs) {
     } catch (e) { console.log('  frontrun err', e.message.slice(0, 60)); break; }
   }
 }
+// ---- Base RPC (free public endpoints, rotated) ----
+const RPCS = ['https://mainnet.base.org', 'https://base-rpc.publicnode.com', 'https://base.llamarpc.com'];
+let rpcIdx = 0, rpcBudget = 400;
+async function rpc(method, params) {
+  if (rpcBudget <= 0) return null;
+  for (let tries = 0; tries < RPCS.length; tries++) {
+    const url = RPCS[(rpcIdx + tries) % RPCS.length];
+    try {
+      const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }) });
+      if (!r.ok) continue;
+      const d = await r.json();
+      if (d.error) return null; // call-level error (e.g. revert) — a real answer, don't rotate
+      rpcIdx = (rpcIdx + tries) % RPCS.length; rpcBudget--;
+      return d.result;
+    } catch (e) { /* rotate */ }
+  }
+  rpcBudget -= 5; // all endpoints down — back off
+  return null;
+}
+const hexToStr = (h) => { // ABI-decoded string return
+  try {
+    if (!h || h === '0x' || h.length < 130) return null;
+    const len = parseInt(h.slice(66, 130), 16);
+    if (!len || len > 100) return null;
+    let s = ''; for (let i = 0; i < len; i++) s += String.fromCharCode(parseInt(h.substr(130 + i * 2, 2), 16));
+    return /^[\x20-\x7e]+$/.test(s) ? s : null;
+  } catch (e) { return null; }
+};
+
+// ---- Basename reverse resolution (verified: L2Resolver.name(namehash(addr.80002105.reverse))) ----
+const L2_RESOLVER = '0xC6d566A56A1aFf6508b41f6c90ff131615583BCD';
+const BN_PATH = 'data/basenames.json';
+let bnCache = {}; try { bnCache = JSON.parse(fs.readFileSync(BN_PATH, 'utf8')); } catch {}
+const BN_TTL_D = 7;
+async function basenameFor(addr) {
+  const a = addr.toLowerCase();
+  const hit = bnCache[a];
+  if (hit && Date.now() - hit.ts < BN_TTL_D * 864e5) return hit.n;
+  const node = namehash(a.slice(2) + '.80002105.reverse');
+  const res = await rpc('eth_call', [{ to: L2_RESOLVER, data: '0x691f3431' + node.slice(2) }, 'latest']);
+  const n = hexToStr(res);
+  bnCache[a] = { n: n || null, ts: Date.now() };
+  return n;
+}
+
+// ---- contract classification: LP pool / proxy for unlabeled contracts ----
+const CT_PATH = 'data/contracts.json';
+let ctCache = {}; try { ctCache = JSON.parse(fs.readFileSync(CT_PATH, 'utf8')); } catch {}
+const EIP1967 = '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc';
+async function contractKind(addr) {
+  const a = addr.toLowerCase();
+  if (ctCache[a]) return ctCache[a].k;
+  // token0() → it's an AMM pair/pool
+  const t0 = await rpc('eth_call', [{ to: a, data: '0x0dfe1681' }, 'latest']);
+  let k = null;
+  if (t0 && t0.length === 66 && /^0x0{24}[0-9a-f]{40}$/.test(t0) && !/^0x0+$/.test(t0)) k = 'lp';
+  else {
+    const impl = await rpc('eth_getStorageAt', [a, EIP1967, 'latest']);
+    if (impl && !/^0x0+$/.test(impl)) k = 'proxy';
+  }
+  ctCache[a] = { k, ts: Date.now() };
+  return k;
+}
+
 function frLabelsFor(addr) {
   const r = frCache.wallets[(addr || '').toLowerCase()];
   if (!frHasData(r)) return null;
@@ -608,6 +674,40 @@ for (const t of cfg.tokens) {
       h.labels = [...new Set([...(h.labels || []), ...fr.labels])].slice(0, 14);
       if (fr.x && !h.entity && !h.label) h.label = '@' + fr.x; // fish bubble shows the X handle
     }
+    // Basenames (EOAs) + LP/proxy classification (unlabeled contracts) — budgeted public RPC, cached
+    for (const h of top) {
+      if (rpcBudget <= 0) break;
+      try {
+        if (h.isContract && !h.entityType && !h.entity) {
+          const k = await contractKind(h.addr);
+          if (k === 'lp') { h.contractKind = 'lp'; if (!h.label) h.label = 'LP Pool'; h.labels = [...new Set([...(h.labels || []), 'LP Pool'])]; }
+          else if (k === 'proxy') { h.contractKind = 'proxy'; h.labels = [...new Set([...(h.labels || []), 'Proxy contract'])]; }
+        } else if (!h.isContract) {
+          const bn = await basenameFor(h.addr);
+          if (bn) { h.basename = bn; if (!h.entity && !h.label) h.label = bn; h.labels = [...new Set([bn, ...(h.labels || [])])].slice(0, 14); }
+        }
+      } catch (e) {}
+    }
+    // snapshot history → rank & balance change vs the snapshot closest to 24h ago
+    let changeRefH = null;
+    {
+      fs.mkdirSync('data/snapshots', { recursive: true });
+      const spath = path.join('data/snapshots', t.sym.toLowerCase() + '.json');
+      let snaps = []; try { snaps = JSON.parse(fs.readFileSync(spath, 'utf8')); } catch {}
+      const nowTs = Date.now(), want = nowTs - 864e5;
+      const ref = snaps.length ? snaps.reduce((b, s) => Math.abs(s.ts - want) < Math.abs(b.ts - want) ? s : b) : null;
+      if (ref) {
+        changeRefH = Math.max(1, Math.round((nowTs - ref.ts) / 36e5));
+        top.forEach((h, i) => {
+          const o = ref.h[h.addr.toLowerCase()];
+          if (!o) { h.rankChange = 'new'; h.usdChange = null; }
+          else { h.rankChange = o.r - (i + 1); h.usdChange = Math.round(h.usd - o.u); }
+        });
+      }
+      snaps.push({ ts: nowTs, h: Object.fromEntries(top.map((h, i) => [h.addr.toLowerCase(), { r: i + 1, u: Math.round(h.usd) }])) });
+      while (snaps.length > 15) snaps.shift();
+      fs.writeFileSync(spath, JSON.stringify(snaps));
+    }
     if (ARKHAM_KEY) {
       for (const h of top.slice(0, WALLET_DETAIL_PER_TOKEN)) { try { await fixSocials(h.addr, null); } catch (e) {} }
       for (const h of top.slice(0, WALLET_DETAIL_PER_TOKEN)) {
@@ -638,7 +738,7 @@ for (const t of cfg.tokens) {
     const logo = await tokenLogo(t);
     const out = {
       sym: t.sym, name: t.name, color: t.color, contract: t.contract, logo,
-      price: usd, chg, mcap, vol, holders,
+      price: usd, chg, mcap, vol, holders, changeRefH,
       generated_at: index.generated_at,
       holdersTop: top, recent,
     };
@@ -668,6 +768,8 @@ for (const t of cfg.tokens) {
 if (!index.tokens.length) { console.error('No token data fetched at all — aborting without writing index.'); process.exit(1); }
 fs.writeFileSync(LABELS_PATH, JSON.stringify(labelCache));
 fs.writeFileSync(FR_PATH, JSON.stringify({ updated: new Date().toISOString(), wallets: frCache.wallets }));
+fs.writeFileSync(BN_PATH, JSON.stringify(bnCache));
+fs.writeFileSync(CT_PATH, JSON.stringify(ctCache));
 fs.writeFileSync('data/logos.json', JSON.stringify(logoCache));
 fs.writeFileSync('data/index.json', JSON.stringify(index));
 console.log(`\nWrote data/index.json with ${index.tokens.length} tokens. Label cache: ${Object.keys(labelCache).length} addresses${ARKHAM_KEY ? '' : ' (no ARKHAM_API_KEY — enrichment skipped)'}.`);
