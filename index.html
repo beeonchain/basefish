@@ -117,6 +117,9 @@
   /* wallet card */
   .card{position:absolute;z-index:5;width:290px;background:var(--panel);border:1px solid var(--text);border-radius:0;padding:14px;display:none;backdrop-filter:blur(10px);}
   .card.show{display:block;animation:rise .25s ease-out}
+  .card{cursor:grab;touch-action:none}
+  .card.dragging{cursor:grabbing;animation:none;opacity:.96}
+  .card button,.card a,.card input{cursor:pointer}
   .card .tier{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;display:flex;align-items:center;gap:6px}
   .card .tier i{width:8px;height:8px;border-radius:0}
   .card .addr{font:600 16px var(--font-mono);margin:4px 0 10px;display:flex;align-items:center;gap:8px}
@@ -732,11 +735,27 @@ function loop(now){DT=Math.min(.05,(now-last)/1000);last=now;T+=DT;if(view==='aq
 requestAnimationFrame(loop);
 /* ============ interaction ============ */
 const tip=document.getElementById('tip'),card=document.getElementById('card');
+/* the card is draggable — grab any non-interactive part and move it off the cluster */
+(()=>{let dx=0,dy=0,dragging=false;
+  card.addEventListener('pointerdown',e=>{
+    if(e.target.closest('button,a,input,select'))return;
+    dragging=true;dx=e.clientX-card.offsetLeft;dy=e.clientY-card.offsetTop;
+    card.classList.add('dragging');card.setPointerCapture(e.pointerId);e.preventDefault();
+  });
+  card.addEventListener('pointermove',e=>{
+    if(!dragging)return;
+    const x=Math.max(4,Math.min(W-card.offsetWidth-4,e.clientX-dx));
+    const y=Math.max(4,Math.min(H-60,e.clientY-dy));
+    card.style.left=x+'px';card.style.top=y+'px';
+  });
+  const end=e=>{if(!dragging)return;dragging=false;card.classList.remove('dragging');try{card.releasePointerCapture(e.pointerId)}catch(err){}};
+  card.addEventListener('pointerup',end);card.addEventListener('pointercancel',end);
+})();
 function hit(mx,my){let best=null,bd=1e9;fish.forEach(f=>{const d=Math.hypot(f.x-mx,f.y-my);const r=f.size*zoom*.6+8;if(d<r&&d<bd){bd=d;best=f}});return best}
 tank.addEventListener('mousemove',e=>{const r=tank.getBoundingClientRect();const mx=e.clientX-r.left,my=e.clientY-r.top;hovered=hit(mx,my);tank.style.cursor=hovered?'pointer':'default';
   if(hovered&&hovered!==selected){tip.style.display='block';tip.innerHTML=`<b>${esc(hovered.h.entity||hovered.h.label||short(hovered.h.addr))}</b> · ${hovered.h.pct.toFixed(2)}% · ${usd(hovered.h.value)}`;tip.style.left=Math.min(W-220,mx+14)+'px';tip.style.top=(my-34)+'px'}else tip.style.display='none'});
 tank.addEventListener('mouseleave',()=>{hovered=null;tip.style.display='none'});
-tank.addEventListener('click',e=>{const r=tank.getBoundingClientRect();const f=hit(e.clientX-r.left,e.clientY-r.top);if(f)select(f);else if(!card.contains(e.target))closeCard()});
+tank.addEventListener('click',e=>{if(card.contains(e.target))return;const r=tank.getBoundingClientRect();const f=hit(e.clientX-r.left,e.clientY-r.top);if(f)select(f);else closeCard()});
 function select(f){selected=f;tip.style.display='none';const h=f.h,t=TIER[h.tier];
   const scan=`https://basescan.org/token/${cur.contract||''}?a=${h.addr}`;
   const tc=typeColor(h.entityType);
