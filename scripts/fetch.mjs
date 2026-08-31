@@ -725,10 +725,27 @@ async function bqHoldersAt(contract, date, limit = 110, verbose = false) {
     return rows.map(x => ({ addr: String(x.Holder.Address).toLowerCase(), amount: Number(x.Balance.Amount) || 0 })).filter(x => x.amount > 0);
   } catch (e) { if (verbose) console.log('  bq[holders] fail:', e.message.slice(0, 80)); return null; }
 }
+function histExcluded(a, t) { // same exclusion the live pipeline applies, from cache only
+  const c2 = t.contract.toLowerCase();
+  if (BURN.has(a) || a === c2) return true;
+  if ((t.exclude || []).some(x => x.toLowerCase() === a)) return true;
+  const lc = labelCache[a];
+  const nm = (lc && (lc.name || lc.label)) || '';
+  if (nm && EXCLUDE_RX.test(nm)) return true;
+  if (lc && lc.type && EXCLUDE_TYPES.has(String(lc.type).toLowerCase())) return true;
+  return false;
+}
 async function histBackfillSnapshots() {
   if (!BQ_TOKEN && !ALCH_KEY) return;
   const MK = 'data/hist_backfill.json';
   let mk = { done: false, tried: 0 }; try { mk = JSON.parse(fs.readFileSync(MK, 'utf8')); } catch {}
+  if (mk.v !== 2) { // v2: historical snaps must exclude infra like the live ones — purge v1 backfill (midnight-exact ts) and redo
+    for (const t2 of cfg.tokens) {
+      const sp2 = path.join('data/snapshots', t2.sym.toLowerCase() + '.json');
+      try { const s2 = JSON.parse(fs.readFileSync(sp2, 'utf8')); fs.writeFileSync(sp2, JSON.stringify(s2.filter(s3 => s3.ts % 864e5 !== 0))); } catch (e) {}
+    }
+    mk = { v: 2, done: false, tried: 0 };
+  }
   if (mk.done || mk.tried >= 5) return;
   mk.tried++; fs.writeFileSync(MK, JSON.stringify(mk));
   const DAYS = 30;
@@ -759,7 +776,8 @@ async function histBackfillSnapshots() {
       for (const date of dates) {
         if (have.has(date)) continue;
         // primary: Bitquery Holders — the true top-N on that date, including wallets since dropped out
-        let rows = await bqHoldersAt(c, date, 110, verbose); verbose = false;
+        let rows = await bqHoldersAt(c, date, 250, verbose); verbose = false;
+        if (rows) rows = rows.filter(r3 => !histExcluded(r3.addr, t)).slice(0, 110);
         // fallback: Alchemy archive balanceOf for the current top-100 (needs ALCHEMY_API_KEY + Moralis)
         if (!rows && ALCH_KEY && KEY) {
           const bmap = await getBlockOf(); const blk = bmap[date];
@@ -990,6 +1008,66 @@ for (const t of cfg.tokens) {
       snaps = thinSnaps(snaps);
       fs.writeFileSync(spath, JSON.stringify(snaps));
     }
+    // ---- Flows: daily top-100 balance history, movers, entries/exits, observed CEX flow ----
+    let flows = null;
+    try {
+      const spathF = path.join('data/snapshots', t.sym.toLowerCase() + '.json');
+      let snapsF = []; try { snapsF = JSON.parse(fs.readFileSync(spathF, 'utf8')); } catch {}
+      if (snapsF.length >= 2) {
+        const dprices = await cgDailyPrices(t, 33);
+        const todayD = new Date().toISOString().slice(0, 10);
+        const priceAt = (ts2) => { const d2 = new Date(ts2).toISOString().slice(0, 10); return d2 === todayD ? usd : (priceNear(dprices, d2) || usd); };
+        const byDayF = new Map(); // last snapshot of each UTC day
+        for (const s of snapsF) byDayF.set(new Date(s.ts).toISOString().slice(0, 10), s);
+        const daily = [...byDayF.values()].sort((a, b) => a.ts - b.ts);
+        const totAmt = (s) => { const p2 = priceAt(s.ts) || 1; let a2 = 0; for (const k in s.h) { const o = s.h[k]; if (o.r <= 100) a2 += o.u / p2; } return a2; };
+        const series = daily.map(s => ({ ts: s.ts, amt: Math.round(totAmt(s)) }));
+        const nowS = snapsF[snapsF.length - 1], nowAmt = totAmt(nowS);
+        const nearestS = (target) => daily.reduce((b, s) => Math.abs(s.ts - target) < Math.abs(b.ts - target) ? s : b);
+        const net = (daysN) => {
+          const ref2 = nearestS(Date.now() - daysN * 864e5);
+          const span2 = (nowS.ts - ref2.ts) / 864e5;
+          if (span2 < daysN * 0.6) return null;
+          const refAmt = totAmt(ref2);
+          return { days: Math.round(span2), amt: Math.round(nowAmt - refAmt), pct: refAmt ? +((100 * (nowAmt - refAmt)) / refAmt).toFixed(2) : 0, usd: Math.round((nowAmt - refAmt) * usd) };
+        };
+        // per-wallet movers / entries / exits vs the ~7d reference
+        const ref7s = nearestS(Date.now() - 7 * 864e5);
+        let movers = [], entries = [], exits = [];
+        if ((nowS.ts - ref7s.ts) / 864e5 > 4) {
+          const refPrice = priceAt(ref7s.ts) || 1;
+          const curSet = new Set(top.map(h => h.addr.toLowerCase()));
+          for (const h of top) {
+            const o = ref7s.h[h.addr.toLowerCase()];
+            if (!o) { entries.push({ addr: h.addr, usd: Math.round(h.usd || 0) }); continue; }
+            const dAmt = (h.amount || 0) - o.u / refPrice;
+            if (Math.abs(dAmt * usd) >= 500) movers.push({ addr: h.addr, amt: Math.round(dAmt), usd: Math.round(dAmt * usd) });
+          }
+          for (const k in ref7s.h) { const o = ref7s.h[k]; if (o.r <= 100 && !curSet.has(k)) exits.push({ addr: k, usd: Math.round(o.u), amt: Math.round(o.u / refPrice) }); }
+          movers.sort((a, b) => b.usd - a.usd);
+          entries.sort((a, b) => b.usd - a.usd); exits.sort((a, b) => b.usd - a.usd);
+        }
+        // observed CEX flow (7d): cached wallet transfers with CEX-labeled counterparties (partial coverage by design)
+        let cexIn = 0, cexOut = 0, cexN = 0;
+        for (const h of top) {
+          try {
+            const pw = JSON.parse(fs.readFileSync(path.join(WALLET_DIR, h.addr.toLowerCase() + '.json'), 'utf8'));
+            for (const tr2 of (pw.transfers || [])) {
+              if (tr2.token !== t.sym) continue;
+              if (Date.now() - new Date(tr2.ts).getTime() > 7 * 864e5) continue;
+              if (!CEX_RX.test(tr2.cpLabel || '')) continue;
+              cexN++;
+              if (tr2.dir === 'in') cexIn += tr2.usd || 0; else cexOut += tr2.usd || 0;
+            }
+          } catch (e) {}
+        }
+        flows = { updated: Date.now(), series, net7: net(7), net30: net(30), refTs7: ref7s.ts,
+          moversUp: movers.filter(m => m.usd > 0).slice(0, 6),
+          moversDown: movers.filter(m => m.usd < 0).slice(-6).reverse(),
+          entries: entries.slice(0, 8), exits: exits.slice(0, 8),
+          cex7: { in: Math.round(cexIn), out: Math.round(cexOut), n: cexN } };
+      }
+    } catch (e) { console.log('  flows err', e.message.slice(0, 80)); }
     if (ARKHAM_KEY) {
       for (const h of top.slice(0, WALLET_DETAIL_PER_TOKEN)) { try { await fixSocials(h.addr, null); } catch (e) {} }
       for (const h of top.slice(0, WALLET_DETAIL_PER_TOKEN)) {
@@ -1020,7 +1098,7 @@ for (const t of cfg.tokens) {
     const logo = await tokenLogo(t);
     const out = {
       sym: t.sym, name: t.name, color: t.color, contract: t.contract, logo,
-      price: usd, chg, mcap, vol, holders, changeRefH, changeRef7D,
+      price: usd, chg, mcap, vol, holders, changeRefH, changeRef7D, flows,
       generated_at: index.generated_at,
       holdersTop: top, recent,
     };

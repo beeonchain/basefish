@@ -229,6 +229,9 @@
   .foot b{color:var(--muted);font-weight:600}
   .foot .r{margin-left:auto}
   /* ---------- holders table view ---------- */
+  .flowrow{display:flex;justify-content:space-between;gap:10px;align-items:center;width:100%;padding:7px 2px;border-bottom:1px solid var(--line);font-size:12px;text-align:left}
+  .flowrow:last-of-type{border-bottom:0}
+  .flowrow:hover span{color:var(--teal)}
   .view{display:none;flex:1;min-height:0;overflow:auto;border:1px solid var(--line);border-radius:0;background:var(--panel)}
   .view.show{display:block}
   .view table{width:100%;border-collapse:collapse}
@@ -271,7 +274,7 @@
       <button class="on" data-view="aquarium"><svg viewBox="0 0 16 16"><rect x="1" y="5" width="2" height="2"/><rect x="1" y="9" width="2" height="2"/><rect x="3" y="7" width="2" height="2"/><rect x="5" y="5" width="8" height="6"/><rect x="13" y="7" width="2" height="2"/><rect x="7" y="3" width="4" height="2"/></svg><span>Aquarium</span></button>
       <button data-view="holders"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="2" height="2"/><rect x="6" y="3" width="8" height="2"/><rect x="2" y="7" width="2" height="2"/><rect x="6" y="7" width="8" height="2"/><rect x="2" y="11" width="2" height="2"/><rect x="6" y="11" width="8" height="2"/></svg><span>Top holders</span></button>
       <button data-view="wallets"><svg viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="2"/><rect x="2" y="12" width="12" height="2"/><rect x="2" y="6" width="2" height="6"/><rect x="12" y="6" width="2" height="6"/><rect x="9" y="8" width="3" height="2"/></svg><span>Wallets</span></button>
-      <button data-view="flows"><svg viewBox="0 0 16 16"><rect x="2" y="4" width="8" height="2"/><rect x="10" y="2" width="2" height="2"/><rect x="12" y="4" width="2" height="2"/><rect x="10" y="6" width="2" height="2"/><rect x="6" y="10" width="8" height="2"/><rect x="4" y="8" width="2" height="2"/><rect x="2" y="10" width="2" height="2"/><rect x="4" y="12" width="2" height="2"/></svg><span>Flows</span><em class="soon">SOON</em></button>
+      <button data-view="flows"><svg viewBox="0 0 16 16"><rect x="2" y="4" width="8" height="2"/><rect x="10" y="2" width="2" height="2"/><rect x="12" y="4" width="2" height="2"/><rect x="10" y="6" width="2" height="2"/><rect x="6" y="10" width="8" height="2"/><rect x="4" y="8" width="2" height="2"/><rect x="2" y="10" width="2" height="2"/><rect x="4" y="12" width="2" height="2"/></svg><span>Flows</span></button>
       <button data-view="alerts"><svg viewBox="0 0 16 16"><rect x="6" y="2" width="4" height="2"/><rect x="5" y="4" width="6" height="2"/><rect x="4" y="6" width="8" height="4"/><rect x="3" y="10" width="10" height="2"/><rect x="7" y="13" width="2" height="2"/></svg><span>Alerts</span><em class="soon">SOON</em></button>
       <button data-view="watch"><svg viewBox="0 0 16 16"><rect x="7" y="2" width="2" height="3"/><rect x="2" y="7" width="3" height="2"/><rect x="11" y="7" width="3" height="2"/><rect x="6" y="5" width="4" height="2"/><rect x="5" y="7" width="6" height="2"/><rect x="6" y="9" width="4" height="2"/><rect x="4" y="11" width="2" height="2"/><rect x="10" y="11" width="2" height="2"/><rect x="7" y="9" width="2" height="3"/></svg><span>Watchlist</span></button>
     </nav>
@@ -318,6 +321,7 @@
     <div class="view" id="holdersView"></div>
     <div class="view" id="walletsView"></div>
     <div class="view" id="watchView"></div>
+    <div class="view" id="flowsView"></div>
     <div class="wp" id="walletPage"></div>
     <div class="bar">
       <div class="t">Fish size = wallet size<small>Bigger fish hold more. That's it. · tiers relative to this tank</small></div>
@@ -430,7 +434,7 @@ function fromReal(d){
   list.forEach(h=>h.tier=h.rank<=6?'whale':h.rank<=24?'large':h.rank<=60?'medium':'small');
   const at=i=>list[Math.min(i,list.length-1)].value;
   cur.th=[at(59),at(23),at(5)];
-  cur.price=d.price;cur.chg=d.chg;cur.mcap=d.mcap;cur.vol=d.vol||0;cur.holders=d.holders;cur.contract=d.contract;cur.changeRefH=d.changeRefH||null;cur.changeRef7D=d.changeRef7D||null;
+  cur.price=d.price;cur.chg=d.chg;cur.mcap=d.mcap;cur.vol=d.vol||0;cur.holders=d.holders;cur.contract=d.contract;cur.changeRefH=d.changeRefH||null;cur.changeRef7D=d.changeRef7D||null;cur.flows=d.flows||null;
   return {list,topShare:list.reduce((s,h)=>s+h.pct,0)/100,min:list[list.length-1].value,max:list[0].value,recent:d.recent||[],generated_at:d.generated_at};
 }
 async function fetchToken(sym){const r=await fetch('data/'+sym.toLowerCase()+'.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;return r.json()}
@@ -760,7 +764,7 @@ function renderChrome(){
   const th=t.th;document.getElementById('thSmall').textContent='< '+usd(th[0]);document.getElementById('thMed').textContent=usd(th[0])+' – '+usd(th[1]);document.getElementById('thLarge').textContent=usd(th[1])+' – '+usd(th[2]);document.getElementById('thWhale').textContent='> '+usd(th[2]);
   document.getElementById('holdList').innerHTML=L.slice(0,7).map((h,i)=>`<button data-i="${i}"><span class="n">${h.rank}</span><span style="width:26px;height:19px;flex:none"><img src="assets/tank/${h.rank===1?'king':h.tier}.webp" style="width:26px;height:19px;object-fit:contain" onerror="this.style.display='none'"></span><span><div class="a">${short(h.addr)}</div>${(h.entity||h.label)?`<div style="font-size:9.5px;color:var(--teal);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc((h.entity||h.label).slice(0,26))}</div>`:''}<div class="bar2"><i style="width:${Math.min(100,h.pct/L[0].pct*100)}%"></i></div></span><span class="p mono">${h.pct.toFixed(2)}%<small>${usd(h.value)}</small></span></button>`).join('');
   document.querySelectorAll('#holdList button').forEach(b=>b.onclick=()=>{setView('aquarium');select(fish[+b.dataset.i])});
-  drawMinis();drawDonut();renderTable();freshTick();
+  drawMinis();drawDonut();renderTable();freshTick();if(view==='flows')renderFlows();
   document.querySelectorAll('#tokpick button').forEach(b=>b.classList.toggle('on',b.dataset.sym===t.sym));
   const f=document.getElementById('feed');f.innerHTML='';
   if(REAL)renderRealFeed();else for(let i=0;i<5;i++)pushFeed(true);
@@ -860,10 +864,12 @@ function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>b
   document.getElementById('holdersView').classList.toggle('show',v==='holders');
   document.getElementById('walletsView').classList.toggle('show',v==='wallets');
   document.getElementById('watchView').classList.toggle('show',v==='watch');
+  document.getElementById('flowsView').classList.toggle('show',v==='flows');
   document.getElementById('walletPage').classList.toggle('show',v==='wallet');
   if(v!=='wallet'&&location.hash.startsWith('#w='))history.replaceState(null,'',location.pathname+location.search);
   if(v==='wallets')renderWallets();
   if(v==='watch')renderWatch();
+  if(v==='flows')renderFlows();
   if(v==='aquarium')resize()}
 async function renderWallets(){
   const el=document.getElementById('walletsView');
@@ -1003,6 +1009,63 @@ const profCache={};
 const tokCache={};
 /* ============ schools (connected-wallet groups, evidence-based) ============ */
 let SCHOOLS=[];
+/* ---- Flows view: where the top-100's money is moving ---- */
+function tokAmt(v,signed){const x=Math.abs(v);const s=x>=1e9?(x/1e9).toFixed(2)+'B':x>=1e6?(x/1e6).toFixed(2)+'M':x>=1e3?(x/1e3).toFixed(1)+'K':x.toFixed(0);return (signed?(v<0?'−':'+'):'')+s}
+function flowName(a){const h=data.list.find(x=>x.addr.toLowerCase()===a.toLowerCase());return h?(h.entity||h.basename||short(a)):short(a)}
+function renderFlows(){
+  const el=document.getElementById('flowsView'),F=cur.flows;
+  if(!F||!F.series||F.series.length<2){el.innerHTML=`<div style="padding:30px;color:var(--muted)">Flow history for <b>$${cur.sym}</b> is still accumulating. It builds automatically with every refresh — check back soon.</div>`;return}
+  const n7=F.net7,n30=F.net30;
+  const tile=(t2,big,sub,cls)=>`<div style="flex:1;min-width:170px;border:1px solid var(--line);padding:12px 14px;background:var(--panel)"><div style="color:var(--dim);font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;font-weight:700">${t2}</div><div class="mono ${cls||''}" style="font-size:19px;font-weight:800;margin-top:4px">${big}</div><div style="color:var(--muted);font-size:11px;margin-top:3px">${sub}</div></div>`;
+  const netTile=(n,win)=>{if(!n)return tile(`Net ${win}`,'—','not enough history yet');
+    const acc=n.amt>=0;return tile(`Net ${win} · top 100`,`${tokAmt(n.amt,true)} ${esc(cur.sym)}`,`${acc?'accumulated':'distributed'} ~${usd(Math.abs(n.usd))} (${n.pct>0?'+':''}${n.pct}%) over ${n.days}d`,acc?'up':'down')};
+  const cex=F.cex7||{in:0,out:0,n:0};
+  const cexTile=cex.n?tile('CEX flow · 7d observed',`<span class="up">${usd(cex.in)} in</span> · <span class="down">${usd(cex.out)} out</span>`,`${cex.n} labeled exchange transfer${cex.n===1?'':'s'} among top wallets`)
+    :tile('CEX flow · 7d observed','—','no labeled exchange transfers observed');
+  const moveRow=m=>`<button class="flowrow" onclick="openProfileByAddr('${m.addr}')"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(flowName(m.addr))}</span><b class="mono ${m.usd>=0?'up':'down'}">${tokAmt(m.amt,true)} <small style="color:var(--dim);font-weight:400">~${usd(Math.abs(m.usd))}</small></b></button>`;
+  const chipRow=(list,cls,then)=>list.length?list.map(m=>`<button class="flowrow" onclick="openProfileByAddr('${m.addr}')"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(flowName(m.addr))}</span><b class="mono ${cls}">${usd(m.usd)}${then?' <small style="color:var(--dim);font-weight:400">then</small>':''}</b></button>`).join(''):`<div style="padding:8px 2px;color:var(--dim);font-size:11.5px">none in this window</div>`;
+  const box=(title,inner)=>`<div style="border:1px solid var(--line);background:var(--panel);padding:12px 14px;min-width:0"><div style="font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">${title}</div>${inner}</div>`;
+  el.innerHTML=`
+  <div style="padding:16px;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><h3 style="margin:0;font-size:16px">Flows · $${esc(cur.sym)}</h3><span style="color:var(--dim);font-size:11.5px">which way the top 100 is moving · balance changes, not price</span></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">${netTile(n7,'7d')}${netTile(n30,'30d')}${tile('Top-100 turnover · 7d',`<span class="up">${(F.entries||[]).length} in</span> · <span class="down">${(F.exits||[]).length} out</span>`,'wallets entering / leaving the top 100')}${cexTile}</div>
+    ${box(`Combined top-100 holdings · ${esc(cur.sym)} (daily)`,`<canvas id="fchart" style="width:100%;height:190px;display:block"></canvas>`)}
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px">
+      ${box('Biggest accumulators · 7d',(F.moversUp&&F.moversUp.length)?F.moversUp.map(moveRow).join(''):'<div style="padding:8px 2px;color:var(--dim);font-size:11.5px">no significant adds</div>')}
+      ${box('Biggest distributors · 7d',(F.moversDown&&F.moversDown.length)?F.moversDown.map(moveRow).join(''):'<div style="padding:8px 2px;color:var(--dim);font-size:11.5px">no significant sells</div>')}
+      ${box('New in top 100 · 7d',chipRow(F.entries||[],'up'))}
+      ${box('Dropped out · 7d',chipRow(F.exits||[],'down',true))}
+    </div>
+    <div style="color:var(--dim);font-size:11px">Daily snapshots (exact on-chain balances) · $ values at the current price · CEX flow counts only transfers with a labeled exchange counterparty, so it understates the true total · not financial advice.</div>
+  </div>`;
+  drawFlowChart(document.getElementById('fchart'),F.series);
+}
+function drawFlowChart(cv2,series,hoverI){
+  if(!cv2)return;
+  const x=cv2.getContext('2d');const W2=cv2.width=cv2.clientWidth*2,H2=cv2.height=380;
+  x.clearRect(0,0,W2,H2);
+  const vs=series.map(p=>p.amt),mn=Math.min(...vs),mx=Math.max(...vs),pad=56;
+  const X=i=>pad+(W2-pad*2)*i/(series.length-1),Y=v=>H2-46-(H2-100)*((v-mn)/((mx-mn)||1));
+  x.strokeStyle='rgba(10,11,13,.08)';x.lineWidth=1;
+  for(let g=0;g<4;g++){const y=54+g*(H2-100)/3;x.beginPath();x.moveTo(pad,y);x.lineTo(W2-pad,y);x.stroke()}
+  x.beginPath();series.forEach((p,i)=>i?x.lineTo(X(i),Y(p.amt)):x.moveTo(X(0),Y(p.amt)));
+  x.strokeStyle='#0000FF';x.lineWidth=3;x.stroke();
+  x.lineTo(X(series.length-1),H2-46);x.lineTo(X(0),H2-46);x.closePath();x.fillStyle='rgba(0,0,255,.06)';x.fill();
+  const li=hoverI==null?series.length-1:hoverI,lp=series[li];
+  x.fillStyle='#0000FF';x.beginPath();x.arc(X(li),Y(lp.amt),6,0,6.28);x.fill();
+  if(hoverI!=null){x.strokeStyle='rgba(10,11,13,.25)';x.lineWidth=1;x.beginPath();x.moveTo(X(li),44);x.lineTo(X(li),H2-46);x.stroke()}
+  x.fillStyle='#5B616E';x.font='20px Roboto Mono';x.textAlign='left';
+  x.fillText(tokAmt(mx),pad,40);x.fillText(tokAmt(mn),pad,H2-56);
+  x.textAlign='right';x.fillStyle='#0A0B0D';x.font='700 21px Roboto Mono';
+  x.fillText(`${tokAmt(lp.amt)} ${cur.sym} · ${new Date(lp.ts).toLocaleDateString()}`,W2-pad,40);
+  x.textAlign='left';x.fillStyle='#717886';x.font='18px Inter Tight';
+  x.fillText(new Date(series[0].ts).toLocaleDateString(),pad,H2-16);
+  x.textAlign='right';x.fillText(new Date(series[series.length-1].ts).toLocaleDateString(),W2-pad,H2-16);
+  cv2.onmousemove=e=>{const r2=cv2.getBoundingClientRect();const fx=(e.clientX-r2.left)/r2.width*W2;
+    let bi=0,bd=1e18;series.forEach((p,i)=>{const d2=Math.abs(X(i)-fx);if(d2<bd){bd=d2;bi=i}});
+    if(bi!==hoverI)drawFlowChart(cv2,series,bi)};
+  cv2.onmouseleave=()=>drawFlowChart(cv2,series);
+}
 async function loadSchools(){try{const r=await fetch('data/schools.json?t='+Date.now(),{cache:'no-store'});if(r.ok)SCHOOLS=(await r.json()).schools||[]}catch(e){}}
 if(location.protocol!=='file:')loadSchools();
 function schoolOf(id){return SCHOOLS.find(s=>s.id===id)||null}
