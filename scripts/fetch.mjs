@@ -18,6 +18,9 @@ const ARKHAM_BASES = ['https://api.arkm.com', 'https://api.arkhamintelligence.co
 const LABELS_PATH = 'data/labels.json';
 let labelCache = {};
 try { labelCache = JSON.parse(fs.readFileSync(LABELS_PATH, 'utf8')); } catch {}
+const EXCL_PATH = 'data/excluded.json'; // wallets the live pipeline excluded (CEX/pool/bridge) — used to filter historical snapshots too
+let exclCache = {};
+try { exclCache = JSON.parse(fs.readFileSync(EXCL_PATH, 'utf8')); } catch {}
 { // heal cached labels stored before the template sanitizer existed
   for (const r of Object.values(labelCache)) if (r && Array.isArray(r.labels)) r.labels = cleanLabels(r.labels);
 }
@@ -727,6 +730,7 @@ async function bqHoldersAt(contract, date, limit = 110, verbose = false) {
 }
 function histExcluded(a, t) { // same exclusion the live pipeline applies, from cache only
   const c2 = t.contract.toLowerCase();
+  if (exclCache[a]) return true;
   if (BURN.has(a) || a === c2) return true;
   if ((t.exclude || []).some(x => x.toLowerCase() === a)) return true;
   const lc = labelCache[a];
@@ -737,6 +741,21 @@ function histExcluded(a, t) { // same exclusion the live pipeline applies, from 
 }
 async function histBackfillSnapshots() {
   if (!BQ_TOKEN && !ALCH_KEY) return;
+  // scrub: remove any wallet the live pipeline has ever excluded from every stored snapshot, re-rank
+  for (const t2 of cfg.tokens) {
+    const sp2 = path.join('data/snapshots', t2.sym.toLowerCase() + '.json');
+    try {
+      const s2 = JSON.parse(fs.readFileSync(sp2, 'utf8'));
+      let changed = 0;
+      for (const snap of s2) {
+        const bad = Object.keys(snap.h).filter(a2 => histExcluded(a2, t2));
+        if (!bad.length) continue;
+        bad.forEach(a2 => delete snap.h[a2]); changed += bad.length;
+        Object.entries(snap.h).sort((x, y) => y[1].u - x[1].u).forEach(([a2, o2], i2) => o2.r = i2 + 1);
+      }
+      if (changed) { fs.writeFileSync(sp2, JSON.stringify(s2)); console.log(`  ${t2.sym}: scrubbed ${changed} infra entries from stored snapshots`); }
+    } catch (e) {}
+  }
   const MK = 'data/hist_backfill.json';
   let mk = { done: false, tried: 0 }; try { mk = JSON.parse(fs.readFileSync(MK, 'utf8')); } catch {}
   if (mk.v !== 2) { // v2: historical snaps must exclude infra like the live ones — purge v1 backfill (midnight-exact ts) and redo
@@ -901,7 +920,7 @@ for (const t of cfg.tokens) {
         const a = o.addr.toLowerCase();
         if (BURN.has(a) || a === c || perToken.has(a)) continue;
         const kl = knownLabel(a);
-        if (kl && EXCLUDE_RX.test(kl)) { console.log('  excluded:', a.slice(0, 10), kl); continue; }
+        if (kl && EXCLUDE_RX.test(kl)) { exclCache[a] = kl; console.log('  excluded:', a.slice(0, 10), kl); continue; }
         kept.push({ addr: o.addr, amount: o.amount, pct: supply ? o.amount / supply * 100 : 0, usd: o.amount * usd, label: kl || null, isContract: false });
       }
     } else if (KEY) {
@@ -915,7 +934,7 @@ for (const t of cfg.tokens) {
           const a = (o.owner_address || '').toLowerCase();
           const label = o.owner_address_label || o.entity || '';
           if (BURN.has(a) || a === c || perToken.has(a)) continue;
-          if (label && EXCLUDE_RX.test(label)) { console.log('  excluded:', a.slice(0, 10), label); continue; }
+          if (label && EXCLUDE_RX.test(label)) { exclCache[a] = label; console.log('  excluded:', a.slice(0, 10), label); continue; }
           const amount = Number(o.balance_formatted) || 0;
           kept.push({ addr: o.owner_address, amount, pct: Number(o.percentage_relative_to_total_supply) || (supply ? amount / supply * 100 : 0), usd: Number(o.usd_value) || amount * usd, label: label || null, isContract: !!o.is_contract });
         }
@@ -936,7 +955,11 @@ for (const t of cfg.tokens) {
         if (info.labels && info.labels.length) h.labels = info.labels.slice(0, 12);
       }
     }
-    const filtered = kept.filter(h => !(h.entityType && EXCLUDE_TYPES.has(String(h.entityType).toLowerCase())));
+    const filtered = kept.filter(h => {
+      const drop = h.entityType && EXCLUDE_TYPES.has(String(h.entityType).toLowerCase());
+      if (drop) exclCache[h.addr.toLowerCase()] = h.entity || h.label || h.entityType;
+      return !drop;
+    });
     const dropped = kept.length - filtered.length;
     if (dropped) console.log(`  arkham-excluded ${dropped} CEX/bridge/dex wallets`);
     const top = filtered.slice(0, 100);
@@ -1129,6 +1152,7 @@ for (const t of cfg.tokens) {
 
 if (!index.tokens.length) { console.error('No token data fetched at all — aborting without writing index.'); process.exit(1); }
 fs.writeFileSync(LABELS_PATH, JSON.stringify(labelCache));
+fs.writeFileSync(EXCL_PATH, JSON.stringify(exclCache));
 fs.writeFileSync(FR_PATH, JSON.stringify({ updated: new Date().toISOString(), wallets: frCache.wallets }));
 fs.writeFileSync(BN_PATH, JSON.stringify(bnCache));
 fs.writeFileSync(CT_PATH, JSON.stringify(ctCache));
