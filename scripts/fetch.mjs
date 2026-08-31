@@ -702,58 +702,93 @@ function priceNear(prices, date) {
   for (const k of keys) { const d = Math.abs(new Date(k) - new Date(date)); if (d < bd) { bd = d; best = prices[k]; } }
   return best;
 }
-async function alchBackfillSnapshots() {
-  if (!ALCH_KEY || !KEY) return; // needs ALCHEMY_API_KEY (archive reads) + Moralis (dateToBlock)
-  const MK = 'data/alch_backfill.json';
+// Bitquery Holders cube (per support 2026-08-31: use Holders, not TokenHolders). Data verified exact
+// vs on-chain balanceOf via Alchemy archive (506,351,804.5775 match to the wei for BRETT #1 @ Aug 4).
+// The cube contains underflowed ~2^256 garbage rows that sort to the top — the lt cap filters them
+// (largest real supply among our tokens is ~4.2e11, cap 1e15 is safely above every real balance).
+async function bqHoldersAt(contract, date, limit = 110, verbose = false) {
+  if (!BQ_TOKEN) return null;
+  const q = `query { EVM(dataset: archive, network: base) {
+    Holders( date: "${date}"
+      where:{ Currency:{ SmartContract:{ is:"${contract}" } } Balance:{ Amount:{ gt:"0", lt:"1000000000000000" } } }
+      limit: {count: ${limit}} orderBy: {descending: Balance_Amount}
+    ) { Holder { Address } Balance { Amount } } } }`;
+  try {
+    const r = await fetch('https://streaming.bitquery.io/graphql', { method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + BQ_TOKEN, 'X-API-KEY': BQ_TOKEN },
+      body: JSON.stringify({ query: q }) });
+    if (!r.ok) { if (verbose) console.log('  bq[holders] http', r.status, (await r.text()).slice(0, 120)); return null; }
+    const d = await r.json();
+    if (d.errors) { if (verbose) console.log('  bq[holders] err:', JSON.stringify(d.errors).slice(0, 300)); return null; }
+    const rows = d.data && d.data.EVM && d.data.EVM.Holders;
+    if (!rows || !rows.length) return null;
+    return rows.map(x => ({ addr: String(x.Holder.Address).toLowerCase(), amount: Number(x.Balance.Amount) || 0 })).filter(x => x.amount > 0);
+  } catch (e) { if (verbose) console.log('  bq[holders] fail:', e.message.slice(0, 80)); return null; }
+}
+async function histBackfillSnapshots() {
+  if (!BQ_TOKEN && !ALCH_KEY) return;
+  const MK = 'data/hist_backfill.json';
   let mk = { done: false, tried: 0 }; try { mk = JSON.parse(fs.readFileSync(MK, 'utf8')); } catch {}
   if (mk.done || mk.tried >= 5) return;
   mk.tried++; fs.writeFileSync(MK, JSON.stringify(mk));
   const DAYS = 30;
-  // shared date -> block mapping via Moralis dateToBlock (midnight UTC each day)
-  const days2 = [];
-  for (let i2 = DAYS; i2 >= 1; i2--) {
-    const date = new Date(Date.now() - i2 * 864e5).toISOString().slice(0, 10);
-    try {
-      const r = await j(`${M}/dateToBlock?chain=${cfg.chain}&date=${encodeURIComponent(date + 'T00:00:00Z')}`);
-      if (r && r.block) days2.push({ date, block: '0x' + Number(r.block).toString(16) });
-    } catch (e) { console.log('  dateToBlock failed', date, e.message.slice(0, 60)); }
-  }
-  if (days2.length < 5) { console.log('alch backfill: not enough date->block mappings'); return; }
+  const dates = []; for (let i2 = DAYS; i2 >= 1; i2--) dates.push(new Date(Date.now() - i2 * 864e5).toISOString().slice(0, 10));
+  // Alchemy fallback needs date->block via Moralis; resolve lazily only if used
+  let blockOf = null;
+  const getBlockOf = async () => {
+    if (blockOf) return blockOf;
+    blockOf = {};
+    for (const date of dates) {
+      try {
+        const r = await j(`${M}/dateToBlock?chain=${cfg.chain}&date=${encodeURIComponent(date + 'T00:00:00Z')}`);
+        if (r && r.block) blockOf[date] = '0x' + Number(r.block).toString(16);
+      } catch (e) {}
+    }
+    return blockOf;
+  };
   fs.mkdirSync('data/snapshots', { recursive: true });
   let okTokens = 0;
   for (const t of cfg.tokens) {
     try {
       const c = t.contract.toLowerCase();
-      let prev = null; try { prev = JSON.parse(fs.readFileSync(path.join('data', t.sym.toLowerCase() + '.json'), 'utf8')); } catch {}
-      const wallets = ((prev && prev.holdersTop) || []).map(h => h.addr.toLowerCase());
-      if (wallets.length < 20) { console.log(`  ${t.sym}: no holder list yet, skipping`); continue; }
-      const dec0 = await alchBatch([{ to: c, data: '0x313ce567', block: 'latest' }]); // decimals()
-      const dec = dec0[0] ? parseInt(dec0[0], 16) : 18;
       const prices = await cgDailyPrices(t, DAYS + 2);
       const spath = path.join('data/snapshots', t.sym.toLowerCase() + '.json');
       let snaps = []; try { snaps = JSON.parse(fs.readFileSync(spath, 'utf8')); } catch {}
       const have = new Set(snaps.map(s => new Date(s.ts).toISOString().slice(0, 10)));
-      let added = 0;
-      for (const dd of days2) {
-        if (have.has(dd.date)) continue;
-        const res = await alchBatch(wallets.map(a => ({ to: c, data: '0x70a08231' + '0'.repeat(24) + a.slice(2), block: dd.block })));
-        const price = priceNear(prices, dd.date);
-        const rows = wallets.map((a, i3) => ({ addr: a, amount: res[i3] ? Number(BigInt(res[i3])) / Math.pow(10, dec) : 0 }))
-          .filter(x => x.amount > 0).sort((a, b) => b.amount - a.amount);
-        if (!rows.length) continue;
-        const h = {}; rows.forEach((r2, idx) => h[r2.addr] = { r: idx + 1, u: Math.round(r2.amount * price) });
-        snaps.push({ ts: new Date(dd.date + 'T00:00:00Z').getTime(), h }); added++;
-        await new Promise(s => setTimeout(s, 250));
+      let added = 0, verbose = true;
+      for (const date of dates) {
+        if (have.has(date)) continue;
+        // primary: Bitquery Holders — the true top-N on that date, including wallets since dropped out
+        let rows = await bqHoldersAt(c, date, 110, verbose); verbose = false;
+        // fallback: Alchemy archive balanceOf for the current top-100 (needs ALCHEMY_API_KEY + Moralis)
+        if (!rows && ALCH_KEY && KEY) {
+          const bmap = await getBlockOf(); const blk = bmap[date];
+          let prev = null; try { prev = JSON.parse(fs.readFileSync(path.join('data', t.sym.toLowerCase() + '.json'), 'utf8')); } catch {}
+          const wallets = ((prev && prev.holdersTop) || []).map(h => h.addr.toLowerCase());
+          if (blk && wallets.length >= 20) {
+            const dec0 = await alchBatch([{ to: c, data: '0x313ce567', block: 'latest' }]);
+            const dec = dec0[0] ? parseInt(dec0[0], 16) : 18;
+            const res = await alchBatch(wallets.map(a => ({ to: c, data: '0x70a08231' + '0'.repeat(24) + a.slice(2), block: blk })));
+            rows = wallets.map((a, i3) => ({ addr: a, amount: res[i3] ? Number(BigInt(res[i3])) / Math.pow(10, dec) : 0 }))
+              .filter(x => x.amount > 0).sort((a, b) => b.amount - a.amount);
+          }
+        }
+        if (!rows || !rows.length) { await new Promise(s => setTimeout(s, 700)); continue; }
+        const price = priceNear(prices, date);
+        const h = {}; rows.slice(0, 110).forEach((r2, idx) => h[r2.addr] = { r: idx + 1, u: Math.round(r2.amount * price) });
+        snaps.push({ ts: new Date(date + 'T00:00:00Z').getTime(), h }); added++;
+        await new Promise(s => setTimeout(s, 700));
       }
       snaps = thinSnaps(snaps);
       fs.writeFileSync(spath, JSON.stringify(snaps));
-      console.log(`  ${t.sym}: +${added} historical snapshots (total ${snaps.length}, decimals ${dec})`);
-      okTokens++;
-    } catch (e) { console.log(`  ${t.sym}: alch backfill err`, e.message.slice(0, 100)); }
+      const spanD = snaps.length ? ((snaps[snaps.length - 1].ts - snaps[0].ts) / 864e5).toFixed(1) : 0;
+      console.log(`  ${t.sym}: +${added} historical snapshots (total ${snaps.length}, span ${spanD}d)`);
+      if (added || snaps.length >= DAYS) okTokens++;
+    } catch (e) { console.log(`  ${t.sym}: hist backfill err`, e.message.slice(0, 100)); }
   }
-  if (okTokens === cfg.tokens.length) { mk.done = true; mk.completedAt = new Date().toISOString(); fs.writeFileSync(MK, JSON.stringify(mk)); console.log('alch backfill COMPLETE'); }
+  if (okTokens === cfg.tokens.length) { mk.done = true; mk.completedAt = new Date().toISOString(); fs.writeFileSync(MK, JSON.stringify(mk)); console.log('history backfill COMPLETE'); }
 }
-await alchBackfillSnapshots();
+await histBackfillSnapshots();
 
 // ---- 30d position-history backfill (real on-chain data via to_block) ----
 const HIST_POINTS = 10, HIST_DAYS = 30, HIST_TOP = 15;
