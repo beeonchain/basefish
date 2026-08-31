@@ -686,37 +686,43 @@ function drawFishes(t){
   if(sprReady)drawEnv(t,false);
   // labels render above every sprite: persistent for the top 6, on hover for the rest
   order.forEach(f=>{if(f!==selected&&(f.h.rank<=6||f.glow>.2))fishLabel(f,t)});
-  if(selected){ // dim the tank so the selected fish reads clearly
-    ctx.save();ctx.fillStyle='rgba(3,9,22,.55)';ctx.fillRect(0,0,W,H);ctx.restore();
-    // school members surface with the selected fish, connected by dashed lines
-    const sc=selected.h.school?schoolOf(selected.h.school):null;
-    if(sc){
-      const mem=new Set(sc.members.map(m=>m.addr));
-      const mates=fish.filter(f=>f!==selected&&mem.has(f.h.addr.toLowerCase()));
-      if(mates.length){
-        ctx.save();ctx.strokeStyle='rgba(120,150,255,.75)';ctx.setLineDash([6,5]);ctx.lineWidth=1.5;
-        mates.forEach(f=>{ctx.beginPath();ctx.moveTo(selected.x,selected.y);ctx.lineTo(f.x,f.y);ctx.stroke()});
-        ctx.restore();
-        mates.forEach(f=>{drawOneFish(f,t);fishLabel(f,t,true)});
-      }
-    }
-    drawOneFish(selected,t);fishLabel(selected,t);
-  }
-  if(showWebs&&!selected){ // schools overlay: dim the tank, color-code every linked cluster
+  if(showWebs&&!selected){ // resting overlay: dim the tank, whisper-thin webs per cluster
     ctx.save();ctx.fillStyle='rgba(3,9,22,.62)';ctx.fillRect(0,0,W,H);ctx.restore();
     const groups=new Map();
     fish.forEach(f=>{if(f.h.school){if(!groups.has(f.h.school))groups.set(f.h.school,[]);groups.get(f.h.school).push(f)}});
-    let gi=0;
-    groups.forEach(mem=>{
-      const col=`hsl(${(gi*137.508)%360} 90% 64%)`;gi++;
-      if(mem.length<2){return}
-      ctx.save();ctx.strokeStyle=col;ctx.globalAlpha=.55;ctx.setLineDash([6,5]);ctx.lineWidth=1.5;
+    groups.forEach((mem,id)=>{
+      if(mem.length<2)return;
+      const col=schoolColor(id);
+      ctx.save();ctx.strokeStyle=col;ctx.globalAlpha=.25;ctx.setLineDash([2,6]);ctx.lineWidth=.8;
+      ctx.shadowColor=col;ctx.shadowBlur=5;
       for(let i=0;i<mem.length;i++)for(let k2=i+1;k2<mem.length;k2++){ctx.beginPath();ctx.moveTo(mem[i].x,mem[i].y);ctx.lineTo(mem[k2].x,mem[k2].y);ctx.stroke()}
       ctx.restore();
       mem.forEach(f=>{drawOneFish(f,t);
-        ctx.save();ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.arc(f.x,f.y,f.size*zoom*.62+7,0,6.28);ctx.stroke();ctx.restore();
+        ctx.save();ctx.strokeStyle=col;ctx.globalAlpha=.5;ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(f.x,f.y,f.size*zoom*.62+7,0,6.28);ctx.stroke();ctx.restore();
         if(f.glow>.2||f.h.rank<=6)fishLabel(f,t)});
     });
+  }
+  if(selected){ // dim the tank so the selected fish reads clearly
+    ctx.save();ctx.fillStyle='rgba(3,9,22,.55)';ctx.fillRect(0,0,W,H);ctx.restore();
+    // clicked wallet's cluster snaps into focus: bold colored web, every member surfaced + ringed
+    const sc=selected.h.school?schoolOf(selected.h.school):null;
+    if(sc){
+      const col=schoolColor(sc.id);
+      const mem=new Set(sc.members.map(m=>m.addr));
+      const mates=fish.filter(f=>f!==selected&&mem.has(f.h.addr.toLowerCase()));
+      if(mates.length){
+        const all=[selected,...mates];
+        ctx.save();ctx.strokeStyle=col;ctx.globalAlpha=.9;ctx.setLineDash([8,4]);ctx.lineWidth=2.4;
+        ctx.shadowColor=col;ctx.shadowBlur=8;
+        for(let i=0;i<all.length;i++)for(let k2=i+1;k2<all.length;k2++){ctx.beginPath();ctx.moveTo(all[i].x,all[i].y);ctx.lineTo(all[k2].x,all[k2].y);ctx.stroke()}
+        ctx.restore();
+        mates.forEach(f=>{drawOneFish(f,t);
+          ctx.save();ctx.strokeStyle=col;ctx.lineWidth=2.2;ctx.beginPath();ctx.arc(f.x,f.y,f.size*zoom*.62+8,0,6.28);ctx.stroke();ctx.restore();
+          fishLabel(f,t,true)});
+        ctx.save();ctx.strokeStyle=col;ctx.lineWidth=3;ctx.shadowColor=col;ctx.shadowBlur=10;ctx.beginPath();ctx.arc(selected.x,selected.y,selected.size*zoom*.62+10,0,6.28);ctx.stroke();ctx.restore();
+      }
+    }
+    drawOneFish(selected,t);fishLabel(selected,t);
   }
   ctx.save();ctx.strokeStyle='rgba(180,230,255,.35)';ctx.fillStyle='rgba(180,230,255,.08)';bubbles.forEach(b=>{ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,6.28);ctx.fill();ctx.stroke()});ctx.restore();
 }
@@ -1113,7 +1119,8 @@ function drawFlowChart(cv2,series,hoverI){
     if(bi!==hoverI)drawFlowChart(cv2,series,bi)};
   cv2.onmouseleave=()=>drawFlowChart(cv2,series);
 }
-async function loadSchools(){try{const r=await fetch('data/schools.json?t='+Date.now(),{cache:'no-store'});if(r.ok)SCHOOLS=(await r.json()).schools||[]}catch(e){}}
+async function loadSchools(){try{const r=await fetch('data/schools.json?t='+Date.now(),{cache:'no-store'});if(r.ok){SCHOOLS=(await r.json()).schools||[];SCHOOLS.forEach((s,i)=>s.color=`hsl(${(i*137.508)%360} 90% 64%)`)}}catch(e){}}
+function schoolColor(id){const s=schoolOf(id);return (s&&s.color)||'rgba(120,150,255,1)'}
 if(location.protocol!=='file:')loadSchools();
 function schoolOf(id){return SCHOOLS.find(s=>s.id===id)||null}
 async function tokData(sym){if(tokCache[sym])return tokCache[sym];try{tokCache[sym]=await fetchToken(sym)}catch(e){tokCache[sym]=null}return tokCache[sym]}
