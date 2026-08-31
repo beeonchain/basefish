@@ -104,6 +104,8 @@
   .chip{position:absolute;top:12px;left:12px;display:flex;gap:6px;z-index:3}
   .chip span{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:0;background:rgba(10,11,13,.78);color:#fff;font-family:var(--font-mono);border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(6px)}
   .zoom{position:absolute;right:12px;top:12px;z-index:3;display:flex;flex-direction:column;gap:4px}
+  .webtog{position:absolute;right:52px;top:12px;z-index:3;display:flex;gap:7px;align-items:center;background:rgba(10,11,13,.78);color:#fff;border:1px solid rgba(255,255,255,.2);padding:7px 11px;font-size:10.5px;font-weight:800;letter-spacing:.5px;cursor:pointer;backdrop-filter:blur(6px)}
+  .webtog input{accent-color:var(--teal);margin:0;cursor:pointer}
   .zoom button{width:30px;height:30px;border-radius:0;background:rgba(10,11,13,.78);color:#fff;border:1px solid rgba(255,255,255,.2);font-weight:700;font-size:15px;backdrop-filter:blur(6px)}
   .zoom button:hover{background:var(--teal)}
   .toast{position:absolute;left:12px;bottom:12px;z-index:3;display:flex;flex-direction:column;gap:6px;pointer-events:none}
@@ -313,6 +315,7 @@
       <div class="tierkey"><span><i style="background:#3B6BFF"></i>whale · deep</span><span><i style="background:#F2C14E"></i>large</span><span><i style="background:#53C7F0"></i>medium</span><span><i style="background:#AFCBE8"></i>small · shallow</span></div>
       <div class="ambnote">background schools = holders 101+ · ambient, not clickable</div>
       <div class="zoom"><button id="zin" title="Zoom in">+</button><button id="zout" title="Zoom out">−</button><button id="zfit" title="Reset" style="font-size:11px">⟲</button></div>
+      <label class="webtog" title="Highlight wallet clusters our evidence links together"><input type="checkbox" id="websTog"> SHOW SCHOOLS</label>
       <div class="toast" id="toast"></div>
       <div class="tankid" id="tankid">TANK 01</div>
       <div class="tip" id="tip"></div>
@@ -417,6 +420,7 @@ function buildHolders(t){
 }
 /* ============ state ============ */
 let cur=DEMO_TOKENS[0], data, fish=[], schools=[], bubbles=[], selected=null, hovered=null, zoom=1, view='aquarium';
+let showWebs=false;
 const cv=document.getElementById('cv'), tank=document.getElementById('tank');let ctx=cv.getContext('2d');
 let W=0,H=0,DPR=1;
 const AMP=matchMedia('(prefers-reduced-motion: reduce)').matches?0:1; // 0 = static tank
@@ -698,6 +702,22 @@ function drawFishes(t){
     }
     drawOneFish(selected,t);fishLabel(selected,t);
   }
+  if(showWebs&&!selected){ // schools overlay: dim the tank, color-code every linked cluster
+    ctx.save();ctx.fillStyle='rgba(3,9,22,.62)';ctx.fillRect(0,0,W,H);ctx.restore();
+    const groups=new Map();
+    fish.forEach(f=>{if(f.h.school){if(!groups.has(f.h.school))groups.set(f.h.school,[]);groups.get(f.h.school).push(f)}});
+    let gi=0;
+    groups.forEach(mem=>{
+      const col=`hsl(${(gi*137.508)%360} 90% 64%)`;gi++;
+      if(mem.length<2){return}
+      ctx.save();ctx.strokeStyle=col;ctx.globalAlpha=.55;ctx.setLineDash([6,5]);ctx.lineWidth=1.5;
+      for(let i=0;i<mem.length;i++)for(let k2=i+1;k2<mem.length;k2++){ctx.beginPath();ctx.moveTo(mem[i].x,mem[i].y);ctx.lineTo(mem[k2].x,mem[k2].y);ctx.stroke()}
+      ctx.restore();
+      mem.forEach(f=>{drawOneFish(f,t);
+        ctx.save();ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.arc(f.x,f.y,f.size*zoom*.62+7,0,6.28);ctx.stroke();ctx.restore();
+        if(f.glow>.2||f.h.rank<=6)fishLabel(f,t)});
+    });
+  }
   ctx.save();ctx.strokeStyle='rgba(180,230,255,.35)';ctx.fillStyle='rgba(180,230,255,.08)';bubbles.forEach(b=>{ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,6.28);ctx.fill();ctx.stroke()});ctx.restore();
 }
 function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
@@ -735,6 +755,10 @@ function select(f){selected=f;tip.style.display='none';const h=f.h,t=TIER[h.tier
   document.querySelectorAll('#holdList button').forEach(b=>b.classList.toggle('sel',b.dataset.i==h.rank-1));
 }
 function closeCard(){selected=null;card.classList.remove('show');document.getElementById('drawer').classList.remove('open');document.querySelectorAll('#holdList button').forEach(b=>b.classList.remove('sel'))}
+document.getElementById('websTog').onchange=e=>{showWebs=e.target.checked;
+  if(showWebs){const n=new Set(fish.filter(f=>f.h.school).map(f=>f.h.school));
+    let vis=0;n.forEach(id=>{if(fish.filter(f=>f.h.school===id).length>1)vis++});
+    toastMsg(vis?`<b>${vis}</b> school${vis===1?'':'s'} linked in this tank — colored webs = wallets our evidence connects`:'no multi-wallet schools in this tank — try another token','var(--teal)')}};
 document.getElementById('zin').onclick=()=>zoom=Math.min(2,zoom*1.25);
 document.getElementById('zout').onclick=()=>zoom=Math.max(.6,zoom/1.25);
 document.getElementById('zfit').onclick=()=>zoom=1;
@@ -875,10 +899,18 @@ async function renderWallets(){
   const el=document.getElementById('walletsView');
   el.innerHTML='<div style="padding:30px;color:var(--muted)">Loading wallets across all aquariums…</div>';
   const agg=new Map();
+  const tokStats=[];
   for(const t of TOKENS){
     let d;
     try{d=REAL?await fetchToken(t.sym):null}catch(e){d=null}
     const list=d?d.holdersTop:buildHolders(Object.assign({},t,{seed:t.seed||[...t.sym].reduce((a,c)=>a+c.charCodeAt(0),13)})).list.map(h=>({addr:h.addr,usd:h.value,label:h.label,entity:null,entityType:null}));
+    if(d&&list.length){
+      const totV=list.reduce((s,h)=>s+(h.usd||0),0)||1;
+      const sorted=[...list].sort((a,b)=>(b.usd||0)-(a.usd||0));
+      const p=(n)=>sorted.slice(0,n).reduce((s,h)=>s+(h.pct||0),0);
+      const w6=sorted.slice(0,6).reduce((s,h)=>s+(h.usd||0),0)/totV*100;
+      tokStats.push({sym:t.sym,logo:t.logo,top10:p(10),top100:p(1000),w6,holders:d.holders,net7:d.flows&&d.flows.net7?d.flows.net7.pct:null});
+    }
     list.forEach(h=>{
       const k=h.addr.toLowerCase();
       if(!agg.has(k))agg.set(k,{addr:h.addr,entity:h.entity||null,label:h.label||null,type:h.entityType||null,labels:[],usd:0,toks:[]});
@@ -891,7 +923,22 @@ async function renderWallets(){
   const hiddenW=hideInfra?rows.filter(isInfra).length:0;
   if(hideInfra)rows=rows.filter(r=>!isInfra(r));
   const multi=rows.filter(r=>r.toks.length>1).length;
-  el.innerHTML=`<div style="padding:10px 14px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center;font-size:11.5px;color:var(--muted);flex-wrap:wrap">
+  const vColor=w=>w>=50?'var(--coral)':w>=30?'var(--gold,#B8860B)':'var(--teal)';
+  const vText=w=>w>=50?'highly concentrated':w>=30?'moderately concentrated':'well distributed';
+  const board=tokStats.length?`<div style="padding:12px 14px;border-bottom:1px solid var(--line)">
+    <div style="font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Concentration across aquariums</div>
+    <div style="overflow-x:auto"><table style="min-width:640px"><thead><tr><th>Token</th><th class="r">Top 10 hold</th><th class="r">Top 100 hold</th><th class="r" title="Share of top-100 value held by the 6 largest wallets">Whale share ⓘ</th><th>Verdict</th><th class="r" title="Net balance change of the top 100 over ~7 days">Net 7d flow</th><th class="r">Holders</th></tr></thead><tbody>${
+      [...tokStats].sort((a,b)=>b.w6-a.w6).map(s=>`<tr style="cursor:pointer" onclick="closeCard();loadToken(TOKENS.find(t=>t.sym==='${s.sym}'));setView('aquarium')">
+        <td style="white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:5px">${tokLogo(s.sym,16)}<b>$${s.sym}</b></span></td>
+        <td class="r mono">${s.top10.toFixed(1)}%</td><td class="r mono">${s.top100.toFixed(1)}%</td>
+        <td class="r mono" style="color:${vColor(s.w6)}">${s.w6.toFixed(1)}%</td>
+        <td style="color:${vColor(s.w6)};font-size:11.5px">${vText(s.w6)}</td>
+        <td class="r mono" style="color:${s.net7==null?'var(--dim)':s.net7>=0?'var(--teal)':'var(--coral)'}">${s.net7==null?'—':(s.net7>0?'+':'')+s.net7.toFixed(1)+'%'}</td>
+        <td class="r mono">${s.holders?s.holders.toLocaleString():'—'}</td></tr>`).join('')
+    }</tbody></table></div>
+    <div style="color:var(--dim);font-size:11px;margin-top:6px">% of token supply held · whale share = top-6 wallets' slice of top-100 value · click a row to open that tank</div>
+  </div>`:'';
+  el.innerHTML=`${board}<div style="padding:10px 14px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center;font-size:11.5px;color:var(--muted);flex-wrap:wrap">
     <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="infraTogW" ${hideInfra?'checked':''}> Hide contracts &amp; exchange deposits</label>
     ${hiddenW?`<span style="color:var(--dim)">${hiddenW} hidden</span>`:''}
     <span style="color:var(--dim)">· ${multi} wallet${multi===1?'':'s'} hold ${multi===1?'s':''}more than one tracked token</span></div>
