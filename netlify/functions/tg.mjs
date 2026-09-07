@@ -95,6 +95,9 @@ export default async (req) => {
   subs.chats = subs.chats || {};
   const p = subs.chats[chat] || (subs.chats[chat] = { tokens: [], events: [], watches: [] });
   let dirty = false, out = null;
+  // remember who this is (handle + name) so /users can show people, not just ids
+  const f = msg.from || {}, who = { u: f.username || '', n: [f.first_name, f.last_name].filter(Boolean).join(' ') };
+  if (JSON.stringify(p.who || {}) !== JSON.stringify(who)) { p.who = who; dirty = true; }
 
   switch ((cmd || '').toLowerCase().replace(/@\w+$/, '')) {
     case '/start': p.muted = false; dirty = true;
@@ -129,7 +132,7 @@ export default async (req) => {
       dirty = p.watches.length !== before;
       out = dirty ? 'Removed.' : 'That wallet was not on your watch list.'; break; }
     case '/list': case '/settings': out = fmtPrefs(p); break;
-    case '/id': case '/whoami': out = `Your chat id: <code>${chat}</code>${ADMINS.has(chat) ? ' (admin)' : ''}`; break;
+    case '/id': case '/whoami': out = `Your chat id: <code>${chat}</code>${who.u ? ' · @' + who.u : ''}${ADMINS.has(chat) ? ' (admin)' : ''}`; break;
     case '/broadcast': { // admin: service message to every subscriber (paused ones included)
       if (!ADMINS.has(chat)) { out = HELP; break; }
       if (!arg) { out = 'Usage: /broadcast your message (HTML ok: <b>bold</b>, <a href="...">link</a>)'; break; }
@@ -164,7 +167,8 @@ export default async (req) => {
       out = pauseLine(subs); break; }
     case '/users': {
       if (!ADMINS.has(chat)) { out = HELP; break; }
-      const rows = Object.entries(subs.chats).map(([c, x]) => `<code>${c}</code> ${ADMINS.has(c) ? '👑' : ''}${x.muted ? '⏹' : '✅'}${(x.watches || []).length ? ' 👁' + x.watches.length : ''}${isAllowed(subs, c) ? '' : ' 🔇'}`);
+      const label = (x) => x.who ? (x.who.u ? '@' + x.who.u : '') + (x.who.n ? ` ${x.who.n.replace(/</g, '&lt;')}` : '') : '';
+      const rows = Object.entries(subs.chats).map(([c, x]) => `<code>${c}</code> ${label(x) || '<i>unknown yet</i>'} ${ADMINS.has(c) ? '👑' : ''}${x.muted ? '⏹' : '✅'}${(x.watches || []).length ? ' 👁' + x.watches.length : ''}${isAllowed(subs, c) ? '' : ' 🔇'}`);
       out = `<b>Subscribers</b> (${rows.length})\n${rows.join('\n')}\n\n👑 admin · ✅ active · ⏹ self-paused · 👁 watches · 🔇 muted by global pause\n${pauseLine(subs)}`; break; }
     default: out = HELP;
   }
