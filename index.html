@@ -44,6 +44,7 @@
   .nav button:hover{background:var(--panel2);color:var(--text)}
   .nav button.on{background:var(--panel2);color:var(--teal);box-shadow:inset 3px 0 0 var(--teal)}
   .nav .soon{margin-left:auto;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);border:1px solid var(--line);padding:1px 5px;border-radius:0}
+  .nav .navbadge{margin-left:auto;font-size:9px;font-weight:800;padding:1px 6px;background:var(--coral);color:#fff;font-style:normal}
   .tracked{margin-top:auto;border:1px solid var(--line);border-radius:0;padding:12px;background:var(--panel)}
   .tracked .lbl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:700}
   .tracked .tok{display:flex;align-items:center;gap:9px;margin:8px 0 10px}
@@ -283,7 +284,7 @@
       <button data-view="holders"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="2" height="2"/><rect x="6" y="3" width="8" height="2"/><rect x="2" y="7" width="2" height="2"/><rect x="6" y="7" width="8" height="2"/><rect x="2" y="11" width="2" height="2"/><rect x="6" y="11" width="8" height="2"/></svg><span>Top holders</span></button>
       <button data-view="wallets"><svg viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="2"/><rect x="2" y="12" width="12" height="2"/><rect x="2" y="6" width="2" height="6"/><rect x="12" y="6" width="2" height="6"/><rect x="9" y="8" width="3" height="2"/></svg><span>Wallets</span></button>
       <button data-view="flows"><svg viewBox="0 0 16 16"><rect x="2" y="4" width="8" height="2"/><rect x="10" y="2" width="2" height="2"/><rect x="12" y="4" width="2" height="2"/><rect x="10" y="6" width="2" height="2"/><rect x="6" y="10" width="8" height="2"/><rect x="4" y="8" width="2" height="2"/><rect x="2" y="10" width="2" height="2"/><rect x="4" y="12" width="2" height="2"/></svg><span>Flows</span></button>
-      <button data-view="alerts"><svg viewBox="0 0 16 16"><rect x="6" y="2" width="4" height="2"/><rect x="5" y="4" width="6" height="2"/><rect x="4" y="6" width="8" height="4"/><rect x="3" y="10" width="10" height="2"/><rect x="7" y="13" width="2" height="2"/></svg><span>Alerts</span><em class="soon" id="alertBadge" style="display:none;background:var(--coral);color:#fff;border-color:var(--coral)"></em></button>
+      <button data-view="alerts"><svg viewBox="0 0 16 16"><rect x="6" y="2" width="4" height="2"/><rect x="5" y="4" width="6" height="2"/><rect x="4" y="6" width="8" height="4"/><rect x="3" y="10" width="10" height="2"/><rect x="7" y="13" width="2" height="2"/></svg><span>Alerts</span><em class="navbadge" id="alertBadge" style="display:none"></em></button>
       <button data-view="watch"><svg viewBox="0 0 16 16"><rect x="7" y="2" width="2" height="3"/><rect x="2" y="7" width="3" height="2"/><rect x="11" y="7" width="3" height="2"/><rect x="6" y="5" width="4" height="2"/><rect x="5" y="7" width="6" height="2"/><rect x="6" y="9" width="4" height="2"/><rect x="4" y="11" width="2" height="2"/><rect x="10" y="11" width="2" height="2"/><rect x="7" y="9" width="2" height="3"/></svg><span>Watchlist</span></button>
     </nav>
     <div class="tracked">
@@ -405,7 +406,7 @@ function rng(seed){let s=seed*9301+49297;return()=>{s=(s*9301+49297)%233280;retu
 function hex(r,n){let o='';for(let i=0;i<n;i++)o+='0123456789abcdef'[Math.floor(r()*16)];return o}
 function short(a){return a.slice(0,6)+'…'+a.slice(-4)}
 function usd(v){return v>=1e9?'$'+(v/1e9).toFixed(2)+'B':v>=1e6?'$'+(v/1e6).toFixed(2)+'M':v>=1e3?'$'+(v/1e3).toFixed(1)+'K':'$'+v.toFixed(0)}
-function num(v){return v.toLocaleString('en-US',{maximumFractionDigits:0})}
+function num(v){return v==null?'—':v.toLocaleString('en-US',{maximumFractionDigits:0})}
 function tierOf(u,th){return u>=th[2]?'whale':u>=th[1]?'large':u>=th[0]?'medium':'small'}
 function buildHolders(t){
   const r=rng(t.seed);const list=[];
