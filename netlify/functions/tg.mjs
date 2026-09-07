@@ -3,6 +3,7 @@
 // the data pipeline reads that file on each run and sends the actual alerts.
 // One-time setup: open  /api/tg?setup=1  once after adding TG_BOT_TOKEN + GH_DISPATCH_TOKEN in Netlify env.
 import crypto from 'node:crypto';
+import { readJson, updateJson, USERS_PATH, MAX_WATCHES as ACCT_MAX, webhookAddresses } from '../lib/store.mjs';
 
 const REPO = 'beeonchain/basefish';
 const SUBS_PATH = 'data/tg_subs.json';
@@ -45,6 +46,8 @@ Alerts arrive with each data refresh (~every 2h).
 /watch 0x… TOKEN — custom: every tx of that wallet in that token (max ${MAX_WATCHES})
 /unwatch 0x… — remove a watch
 /list — your current setup
+/link CODE — connect to your basefish.netlify.app account (code from the Alerts tab); watches then sync both ways
+/unlink — disconnect
 /help — this message`;
 
 // global pause: subs.pause = { on: true, allow: [chatId...] } — admins + allowlisted chats keep receiving
@@ -120,20 +123,59 @@ export default async (req) => {
     case '/watch': {
       const m = arg.match(/(0x[0-9a-fA-F]{40})\s+(\S{2,12})/);
       if (!m) { out = 'Usage: /watch 0xWALLET TOKEN — e.g. /watch 0x388e…c997 BRETT'; break; }
+      const entry = { w: m[1].toLowerCase(), t: m[2].toUpperCase() };
+      if (!TOKENS.includes(entry.t)) { out = `Unknown token. Tracked: ${TOKENS.join(', ')}`; break; }
+      if (p.uid) { // linked account: the account's list is the source of truth
+        let msg = null;
+        await updateJson(USERS_PATH, { users: {} }, (d) => { const u = d.users && d.users[p.uid]; if (!u) { msg = 'Your linked account no longer exists — /unlink and try again.'; return false; }
+          u.watches = u.watches || [];
+          if (u.watches.some((x) => x.w === entry.w && x.t === entry.t)) { msg = 'Already watching that.'; return false; }
+          if (u.watches.length >= ACCT_MAX) { msg = `Watch limit is ${ACCT_MAX} — remove one first.`; return false; }
+          u.watches.push({ ...entry, added: Date.now() }); }, 'users: watch via tg');
+        out = msg || `Watching <code>${entry.w.slice(0, 10)}…</code> for $${entry.t} txs — live, and it shows in your account on the site too.`;
+        if (!msg) await webhookAddresses([entry.w]);
+        break;
+      }
       p.watches = p.watches || [];
       if (p.watches.length >= MAX_WATCHES) { out = `Watch limit is ${MAX_WATCHES} — /unwatch one first.`; break; }
-      const entry = { w: m[1].toLowerCase(), t: m[2].toUpperCase() };
       if (p.watches.some((x) => x.w === entry.w && x.t === entry.t)) { out = 'Already watching that.'; break; }
       p.watches.push(entry); dirty = true;
-      out = `Watching <code>${entry.w.slice(0, 10)}…</code> for $${entry.t} txs. First check on the next refresh (~2h max).`; break; }
+      await webhookAddresses([entry.w]);
+      out = `Watching <code>${entry.w.slice(0, 10)}…</code> for $${entry.t} txs — live alerts from now on.`; break; }
     case '/unwatch': {
       const m = arg.match(/0x[0-9a-fA-F]{40}/);
       if (!m) { out = 'Usage: /unwatch 0xWALLET'; break; }
+      const w = m[0].toLowerCase();
+      if (p.uid) {
+        let removed = false;
+        await updateJson(USERS_PATH, { users: {} }, (d) => { const u = d.users && d.users[p.uid]; if (!u) return false; const n = (u.watches || []).length; u.watches = (u.watches || []).filter((x) => x.w !== w); removed = u.watches.length !== n; return removed ? undefined : false; }, 'users: unwatch via tg');
+        out = removed ? 'Removed.' : 'That wallet was not on your watch list.'; break;
+      }
       const before = (p.watches || []).length;
-      p.watches = (p.watches || []).filter((x) => x.w !== m[0].toLowerCase());
+      p.watches = (p.watches || []).filter((x) => x.w !== w);
       dirty = p.watches.length !== before;
       out = dirty ? 'Removed.' : 'That wallet was not on your watch list.'; break; }
-    case '/list': case '/settings': out = fmtPrefs(p); break;
+    case '/link': {
+      const code = arg.trim().toUpperCase();
+      if (!/^[A-Z0-9]{6}$/.test(code)) { out = 'Usage: /link CODE — get the code from the Alerts tab on basefish.netlify.app (sign in → Link Telegram).'; break; }
+      let linked = null, moved = 0;
+      await updateJson(USERS_PATH, { users: {} }, (d) => {
+        const hit = Object.entries(d.users || {}).find(([, u]) => u.link && u.link.code === code && u.link.exp > Date.now());
+        if (!hit) return false;
+        const [uid, u] = hit; u.tg = chat; u.link = null; u.watches = u.watches || [];
+        for (const w of p.watches || []) if (!u.watches.some((x) => x.w === w.w && x.t === w.t) && u.watches.length < ACCT_MAX) { u.watches.push({ ...w, added: Date.now() }); moved++; }
+        linked = { uid, label: u.label, n: u.watches.length };
+      }, 'users: link telegram');
+      if (!linked) { out = 'Code not found or expired (codes last 15 min). Generate a new one in the Alerts tab.'; break; }
+      p.uid = linked.uid; p.watches = []; p.muted = false; dirty = true;
+      out = `Linked to <b>${linked.label}</b> ✅ Your ${linked.n} watch${linked.n === 1 ? '' : 'es'}${moved ? ` (${moved} moved over from this chat)` : ''} now alert here and on the site. /list to see them.`; break; }
+    case '/unlink': {
+      if (!p.uid) { out = 'This chat is not linked to a site account.'; break; }
+      try { await updateJson(USERS_PATH, { users: {} }, (d) => { const u = d.users && d.users[p.uid]; if (!u) return false; u.tg = null; }, 'users: unlink telegram'); } catch {}
+      delete p.uid; dirty = true; out = 'Unlinked. Watches stay on your site account; this chat starts fresh.'; break; }
+    case '/list': case '/settings': {
+      if (p.uid) { try { const { data } = await readJson(USERS_PATH, { users: {} }); const u = data.users && data.users[p.uid]; if (u) { out = fmtPrefs({ ...p, watches: u.watches || [] }) + `\nlinked account: <b>${u.label}</b>`; break; } } catch {} }
+      out = fmtPrefs(p); break; }
     case '/id': case '/whoami': out = `Your chat id: <code>${chat}</code>${who.u ? ' · @' + who.u : ''}${ADMINS.has(chat) ? ' (admin)' : ''}`; break;
     case '/broadcast': { // admin: service message to every subscriber (paused ones included)
       if (!ADMINS.has(chat)) { out = HELP; break; }

@@ -1168,6 +1168,7 @@ async function renderAlerts(){
     <div style="display:flex;gap:6px;flex-wrap:wrap">${toks.map(s=>`<button onclick="alertTokFilter='${s}';renderAlerts()" style="padding:5px 10px;border:1px solid ${alertTokFilter===s?'var(--teal)':'var(--line)'};color:${alertTokFilter===s?'var(--teal)':'var(--muted)'};font-weight:700;font-size:11px">${s==='ALL'?'All tokens':'$'+s}</button>`).join('')}</div>
     ${latest.length?`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">${latest.map(a=>`<button class="flowrow" style="border:1px solid var(--line);background:var(--panel);padding:10px 12px;display:block;text-align:left" ${a.addr?`onclick="openProfileByAddr('${a.addr}')"`:''}>
         <small style="color:var(--dim);font-size:10px;letter-spacing:.4px;text-transform:uppercase">${AICON[a.kind]||'🔔'} latest · ${agoStr(a.ts)} ago</small><br><b style="font-size:12px">${esc(a.title)}</b></button>`).join('')}</div>`:''}
+    ${acctPanel()}
     ${TG_BOT?`<div style="border:1px solid var(--line);background:var(--panel2);padding:10px 14px;font-size:12px">📲 Instant alerts in Telegram → <a href="https://t.me/${TG_BOT}" target="_blank" rel="noopener" style="color:var(--teal);font-weight:800">@${TG_BOT}</a> — /start subscribes, /watch 0x… TOKEN follows any wallet live</div>`:''}
     ${section('Wallets',wallets)}
     ${section('Schools',schools)}
@@ -1182,9 +1183,60 @@ async function renderAlerts(){
     await fetchAlerts();
     const fresh=ALERTS.filter(a=>!seen.has(a.id));
     fresh.slice(0,3).forEach(a=>toastMsg(`${AICON[a.kind]||'🔔'} <b>${esc(a.title)}</b>`,a.usd>=0?'var(--teal)':'var(--coral)'));
-    if(view==='alerts'&&fresh.length)renderAlerts();else updateAlertBadge();
+    const mine=await acctRefresh();
+    if(view==='alerts'&&(fresh.length||mine))renderAlerts();else updateAlertBadge();
   },60000);
 })();
+/* ---- Accounts: sign in with wallet or Google, keep a private watch list, link Telegram ---- */
+const ACCT={token:null,user:null,cfg:null,busy:false,seenHits:null};
+try{ACCT.token=localStorage.getItem('bf_session')||null}catch{}
+const acctH=()=>ACCT.token?{'content-type':'application/json',authorization:'Bearer '+ACCT.token}:{'content-type':'application/json'};
+async function acctApi(path,body){const r=await fetch(path,{method:body?'POST':'GET',headers:acctH(),body:body?JSON.stringify(body):undefined});const j=await r.json().catch(()=>({}));if(!r.ok){if(r.status===401&&path==='/api/me'){acctSignOut(false)}throw new Error(j.error||('HTTP '+r.status))}return j}
+async function acctInit(){try{ACCT.cfg=await acctApi('/api/auth')}catch{ACCT.cfg={wallet:true,google:null}}if(ACCT.token){try{const j=await acctApi('/api/me');acctSet(j.user)}catch{}}if(view==='alerts')renderAlerts()}
+function acctSet(u){ACCT.user=u;if(u&&ACCT.seenHits===null)ACCT.seenHits=new Set((u.hits||[]).map(h=>h.id))}
+async function acctRefresh(){if(!ACCT.token||!ACCT.user)return false;try{const j=await acctApi('/api/me');const fresh=(j.user.hits||[]).filter(h=>!ACCT.seenHits.has(h.id));fresh.slice(0,3).forEach(h=>toastMsg(`👁 <b>${esc(h.title)}</b>`,h.usd>=0?'var(--teal)':'var(--coral)'));fresh.forEach(h=>ACCT.seenHits.add(h.id));ACCT.user=j.user;return fresh.length>0}catch{return false}}
+function acctSignOut(rerender=true){ACCT.token=null;ACCT.user=null;ACCT.seenHits=null;try{localStorage.removeItem('bf_session')}catch{}if(rerender)renderAlerts()}
+function acctSession(j){ACCT.token=j.token;try{localStorage.setItem('bf_session',j.token)}catch{}ACCT.seenHits=null;acctSet(j.user);toastMsg(`Signed in as <b>${esc(j.user.label)}</b>`,'var(--teal)');renderAlerts()}
+async function signInWallet(){
+  if(ACCT.busy)return;ACCT.busy=true;
+  try{
+    const eth=window.ethereum;if(!eth){toastMsg('No wallet found — install MetaMask, Coinbase Wallet or Rabby, or use Google.','var(--coral)');return}
+    const [addr]=await eth.request({method:'eth_requestAccounts'});
+    const n=await acctApi('/api/auth',{mode:'nonce',addr});
+    const sig=await eth.request({method:'personal_sign',params:[n.message,addr]});
+    acctSession(await acctApi('/api/auth',{mode:'wallet',addr,sig,nonce:n.nonce}));
+  }catch(e){toastMsg('Sign-in failed: '+esc(e.message||'rejected'),'var(--coral)')}finally{ACCT.busy=false}
+}
+function mountGoogle(){const cid=ACCT.cfg&&ACCT.cfg.google,el=document.getElementById('gsiBtn');if(!cid||!el)return;
+  const go=()=>{try{google.accounts.id.initialize({client_id:cid,callback:async(r)=>{try{acctSession(await acctApi('/api/auth',{mode:'google',credential:r.credential}))}catch(e){toastMsg('Google sign-in failed: '+esc(e.message),'var(--coral)')}}});google.accounts.id.renderButton(el,{theme:'outline',size:'medium',text:'signin_with',shape:'rectangular'})}catch{}};
+  if(window.google&&google.accounts){go();return}
+  if(!document.getElementById('gsiScript')){const sc=document.createElement('script');sc.id='gsiScript';sc.src='https://accounts.google.com/gsi/client';sc.async=true;sc.onload=go;document.head.appendChild(sc)}else setTimeout(mountGoogle,400)}
+async function acctAdd(){const w=(document.getElementById('acctW').value||'').trim(),t=document.getElementById('acctT').value;if(!/^0x[0-9a-fA-F]{40}$/.test(w)){toastMsg('Paste a full wallet address (0x…40 hex).','var(--coral)');return}
+  try{const j=await acctApi('/api/me',{op:'add',w,t});ACCT.user=j.user;toastMsg(`👁 Watching <b>${short(w.toLowerCase())}</b> for $${t}`,'var(--teal)');renderAlerts()}catch(e){toastMsg(esc(e.message),'var(--coral)')}}
+async function acctRemove(w,t){try{const j=await acctApi('/api/me',{op:'remove',w,t});ACCT.user=j.user;renderAlerts()}catch(e){toastMsg(esc(e.message),'var(--coral)')}}
+async function acctOp(op){try{const j=await acctApi('/api/me',{op});ACCT.user=j.user;renderAlerts()}catch(e){toastMsg(esc(e.message),'var(--coral)')}}
+function acctWatchPrefill(addr){setView('alerts');setTimeout(()=>{const i=document.getElementById('acctW');if(i){i.value=addr;i.scrollIntoView({block:'center'})}},50)}
+function acctPanel(){
+  const box=(inner)=>`<div style="border:1px solid var(--teal);background:var(--panel);padding:12px 14px">${inner}</div>`;
+  const head=(sub)=>`<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:8px"><b style="font-size:12px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)">👁 Your watches</b><span style="color:var(--dim);font-size:11px">${sub}</span></div>`;
+  if(!ACCT.user){
+    const g=ACCT.cfg&&ACCT.cfg.google;setTimeout(mountGoogle,0);
+    return box(head('track any wallet · private alerts here + Telegram')+`<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="font-size:12px;color:var(--muted)">Sign in to add your own wallets to track — every tx of that wallet in a token, live.</span>
+      <button onclick="signInWallet()" style="border:1px solid var(--teal);color:var(--teal);padding:7px 12px;font-weight:800;font-size:12px">🔐 Connect wallet</button>${g?'<span id="gsiBtn"></span>':''}</div>`);
+  }
+  const u=ACCT.user,opts=TOKENS.map(t=>`<option>${t.sym}</option>`).join('');
+  const rows=(u.watches||[]).map(w=>`<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:12px"><span><button onclick="openProfileByAddr('${w.w}')" class="mono" style="color:var(--teal);font-weight:700">${short(w.w)}</button> <span style="color:var(--dim)">·</span> $${esc(w.t)}</span><button onclick="acctRemove('${w.w}','${w.t}')" title="remove" style="color:var(--coral);font-weight:800;font-size:11px">✕ remove</button></div>`).join('');
+  const hits=(u.hits||[]).slice(0,12).map(h=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:12px"><span><b>${esc(h.title)}</b><br><small style="color:var(--muted)">${esc(h.sub||'')}</small></span><span style="white-space:nowrap;color:var(--dim);font-size:11px;text-align:right">${agoStr(h.ts)} ago${h.hash?` · <a href="https://basescan.org/tx/${h.hash}" target="_blank" rel="noopener" style="color:var(--dim);font-weight:700">tx ↗</a>`:''}</span></div>`).join('');
+  const tg=u.tg?`<span style="color:var(--teal);font-weight:700">📲 Telegram linked</span> <button onclick="acctOp('unlink')" style="color:var(--dim);font-size:11px">unlink</button>`
+    :u.link?`📲 Send <code class="mono" style="font-weight:800;color:var(--teal)">/link ${u.link}</code> to <a href="https://t.me/${TG_BOT}" target="_blank" rel="noopener" style="color:var(--teal);font-weight:800">@${TG_BOT}</a> (15 min) — then hits also land in Telegram`
+    :`<button onclick="acctOp('linkcode')" style="border:1px solid var(--line);padding:4px 9px;font-size:11px;font-weight:700;color:var(--teal)">📲 Link Telegram</button> <span style="color:var(--dim)">get hits in the bot too</span>`;
+  return box(head(`signed in as <b>${esc(u.label)}</b> · <button onclick="acctSignOut()" style="color:var(--dim);font-weight:700">sign out</button>`)+`
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><input id="acctW" placeholder="0x wallet address" class="mono" style="flex:1;min-width:240px;border:1px solid var(--line);padding:7px 9px;font-size:12px;background:var(--panel2)"><select id="acctT" style="border:1px solid var(--line);padding:7px;font-size:12px;background:var(--panel2)">${opts}</select><button onclick="acctAdd()" style="border:1px solid var(--teal);color:var(--teal);padding:7px 12px;font-weight:800;font-size:12px">+ Watch</button></div>
+    <div style="margin-top:8px">${rows||'<div style="padding:8px 0;color:var(--dim);font-size:12px">No watches yet — paste a wallet above. You get every transfer of that wallet in the chosen token, within seconds.</div>'}</div>
+    <div style="margin-top:10px;font-size:12px">${tg}</div>
+    ${hits?`<div style="margin-top:12px"><b style="font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)">Recent hits</b> <button onclick="acctOp('clearhits')" style="color:var(--dim);font-size:11px">clear</button>${hits}</div>`:''}`);
+}
+acctInit();
 /* ---- Flows view: where the top-100's money is moving ---- */
 function tokAmt(v,signed){const x=Math.abs(v);const s=x>=1e9?(x/1e9).toFixed(2)+'B':x>=1e6?(x/1e6).toFixed(2)+'M':x>=1e3?(x/1e3).toFixed(1)+'K':x.toFixed(0);return (signed?(v<0?'−':'+'):'')+s}
 function flowName(a){const h=data.list.find(x=>x.addr.toLowerCase()===a.toLowerCase());return h?(h.entity||h.basename||short(a)):short(a)}
@@ -1276,7 +1328,7 @@ async function openProfile(h){
     <div><h3 id="wpname">${h.entity||short(h.addr)}</h3><div class="addr">${h.addr}</div>
       <div class="lbls" id="wplbls" style="margin-top:6px">${[h.rank?`<span style="color:${t.c}">${t.n} · rank #${h.rank} in $${h.tokSym||cur.sym}</span>`:`<span>free swimmer · not in a tracked top 100</span>`,lblChips(h,5)].join('')}</div></div>
     <div class="val"><small id="wpvlabel">Tracked positions · Base</small><b class="mono" id="wpval">—</b></div>
-    <div class="wbtns"><button onclick="setView('aquarium')">← Aquarium</button><button id="wpcopy">Copy address</button><button id="wpshare">Share wallet</button><button id="wpwatch"></button><span id="wpsocials" style="display:contents"></span><a href="${ark}" target="_blank" rel="noopener">Arkham ↗</a><a href="${scan}" target="_blank" rel="noopener">Basescan ↗</a></div></div>
+    <div class="wbtns"><button onclick="setView('aquarium')">← Aquarium</button><button id="wpcopy">Copy address</button><button id="wpshare">Share wallet</button><button id="wpwatch"></button><button onclick="acctWatchPrefill('${h.addr.toLowerCase()}')" title="get an alert on every tx of this wallet">🔔 Alert me</button><span id="wpsocials" style="display:contents"></span><a href="${ark}" target="_blank" rel="noopener">Arkham ↗</a><a href="${scan}" target="_blank" rel="noopener">Basescan ↗</a></div></div>
   <div class="wgrid" id="wpgrid"><div class="empty2">Loading. Trust the fish.</div></div>`;
   drawMinis();
   document.getElementById('wpcopy').onclick=e=>{navigator.clipboard&&navigator.clipboard.writeText(h.addr);e.target.textContent='copied';setTimeout(()=>e.target.textContent='Copy address',1200)};

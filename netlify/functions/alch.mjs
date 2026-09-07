@@ -4,6 +4,7 @@
 // + appends to the site feed immediately. Snapshot-based alerts (entries/exits/schools)
 // stay with the 2h pipeline — they only exist per-ranking.
 import crypto from 'node:crypto';
+import { updateJson, USERS_PATH, MAX_HITS } from '../lib/store.mjs';
 
 const REPO = 'beeonchain/basefish';
 const SITE = 'https://basefish.netlify.app';
@@ -43,8 +44,9 @@ async function loadCtx() {
   const cex = {}; for (const [a, l] of Object.entries(excludedRaw)) if (CEX_RX.test(String(l))) cex[a] = l;
   const raw = async (p) => { try { const r = await fetch(`https://raw.githubusercontent.com/${REPO}/main/data/${p}?t=${Date.now()}`); return r.ok ? r.json() : null; } catch { return null; } };
   const subs = (await raw('tg_subs.json')) || (await g('tg_subs.json')) || { chats: {} };
+  const users = ((await raw('users.json')) || { users: {} }).users || {};
   const feed = ((await raw('alerts.json')) || (await g('alerts.json')) || {}).alerts || [];
-  ctx = { tokens, cex, subs, feed };
+  ctx = { tokens, cex, subs, users, feed };
   ctxAt = Date.now();
   return ctx;
 }
@@ -82,7 +84,8 @@ export default async (req) => {
   let body; try { body = JSON.parse(raw); } catch { return new Response('ok'); }
   const acts = (body.event && body.event.activity) || [];
   if (!acts.length) return new Response('ok');
-  const { tokens, cex, subs, feed: feedCtx } = await loadCtx();
+  const { tokens, cex, subs, users, feed: feedCtx } = await loadCtx();
+  const hits = {}; // uid -> [hit] for site accounts (private, stored on the user record)
   // global pause (admin /pauseall): only admins + allowlisted chats receive anything; feed still updates
   const admins = new Set((process.env.TG_ADMIN_CHATS || '7400046972').split(',').map((s) => s.trim()));
   const allowed = (chat) => !(subs.pause && subs.pause.on) || admins.has(chat) || (subs.pause.allow || []).includes(chat);
@@ -96,8 +99,21 @@ export default async (req) => {
     const amt = Number(a.value) || 0, usd = amt * tok.price;
     const link = `https://basescan.org/tx/${hash}`;
     // 1) custom watches — any size, straight to the owner
+    //    1a) site accounts (data/users.json): private hit list + Telegram if the account is linked
+    for (const [uid, u] of Object.entries(users)) {
+      for (const w of u.watches || []) {
+        if (w.t.toUpperCase() !== tok.sym) continue;
+        const ww = w.w.toLowerCase();
+        if (ww !== from && ww !== to) continue;
+        const k = 'u' + hash + uid; if (seen.has(k)) continue; seen.add(k);
+        const dir = ww === from ? 'sent' : 'received';
+        (hits[uid] = hits[uid] || []).push({ id: 'watch:' + hash + ':' + ww, ts: Date.now(), kind: 'watch', sym: tok.sym, addr: ww, hash, usd: dir === 'sent' ? -usd : usd, title: `Watched wallet ${short(ww)} ${dir} ${musd(usd)} of $${tok.sym}`, sub: 'your watch · live on-chain' });
+        if (u.tg && allowed(String(u.tg))) { await tg(u.tg, `👁 <b>Watched wallet ${short(ww)} ${dir} ${musd(usd)} of $${tok.sym}</b>\nlive on-chain · <a href="${link}">view tx</a>`); msgs++; }
+      }
+    }
+    //    1b) bot-only watches (chats not linked to a site account)
     for (const [chat, p] of Object.entries(subs.chats || {})) {
-      if (p.muted || !allowed(chat)) continue;
+      if (p.muted || p.uid || !allowed(chat)) continue;
       for (const w of p.watches || []) {
         if (w.t.toUpperCase() !== tok.sym) continue;
         const ww = w.w.toLowerCase();
@@ -132,6 +148,9 @@ export default async (req) => {
   }
   if (seen.size > 5000) seen.clear();
   await appendFeed(feed);
+  if (Object.keys(hits).length) { // persist private hits (best-effort)
+    try { await updateJson(USERS_PATH, { users: {} }, (d) => { for (const [uid, hs] of Object.entries(hits)) { const u = d.users && d.users[uid]; if (!u) continue; const have = new Set((u.hits || []).map((h) => h.id)); u.hits = [...hs.filter((h) => !have.has(h.id)), ...(u.hits || [])].slice(0, MAX_HITS); } }, 'users: watch hits'); } catch {}
+  }
   return new Response(JSON.stringify({ ok: true, feed: feed.length, msgs }), { headers: { 'content-type': 'application/json' } });
 };
 export const config = { path: '/api/alch' };

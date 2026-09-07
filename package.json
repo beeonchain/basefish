@@ -1,0 +1,9 @@
+{
+  "name": "basefish",
+  "private": true,
+  "type": "module",
+  "description": "Basefish — Netlify functions deps (viem for wallet sign-in verification). The site itself is static.",
+  "dependencies": {
+    "viem": "^2.21.0"
+  }
+}

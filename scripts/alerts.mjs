@@ -82,8 +82,12 @@ export async function checkWatches(arkhamGet, maxLookups = 20) {
   const state = jread(STATE, { tx: {}, school: {}, watch: {} });
   const out = []; let used = 0;
   const seen = new Set();
-  for (const [chat, prefs] of Object.entries(subs.chats || {})) {
-    for (const w of prefs.watches || []) {
+  // watch owners: bot-only chats + site accounts that linked Telegram (data/users.json, read-only here)
+  const users = jread('data/users.json', { users: {} }).users || {};
+  const owners = Object.entries(subs.chats || {}).filter(([, p]) => !p.uid).map(([chat, p]) => [chat, p.watches || []]);
+  for (const u of Object.values(users)) if (u.tg && (u.watches || []).length) owners.push([String(u.tg), u.watches]);
+  for (const [chat, watches] of owners) {
+    for (const w of watches) {
       const key = w.w.toLowerCase() + ':' + w.t.toUpperCase();
       if (seen.has(chat + key)) continue; seen.add(chat + key);
       if (used >= maxLookups) break;
