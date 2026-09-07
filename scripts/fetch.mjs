@@ -926,24 +926,45 @@ for (const t of cfg.tokens) {
         if (kl && EXCLUDE_RX.test(kl)) { exclCache[a] = kl; console.log('  excluded:', a.slice(0, 10), kl); continue; }
         kept.push({ addr: o.addr, amount: o.amount, pct: supply ? o.amount / supply * 100 : 0, usd: o.amount * usd, label: kl || null, isContract: false });
       }
-    } else if (KEY) {
-      // fallback: Moralis owners (paged)
-      let cursor = '', pages = 0;
-      while (pages < 3 && kept.length < 130) {
-        const q = `${M}/erc20/${c}/owners?chain=${cfg.chain}&order=DESC&limit=100${cursor ? `&cursor=${cursor}` : ''}`;
-        const page = await j(q);
-        for (const o of page.result || []) {
-          seen++;
-          const a = (o.owner_address || '').toLowerCase();
-          const label = o.owner_address_label || o.entity || '';
-          if (BURN.has(a) || a === c || perToken.has(a)) continue;
-          if (label && EXCLUDE_RX.test(label)) { exclCache[a] = label; console.log('  excluded:', a.slice(0, 10), label); continue; }
-          const amount = Number(o.balance_formatted) || 0;
-          kept.push({ addr: o.owner_address, amount, pct: Number(o.percentage_relative_to_total_supply) || (supply ? amount / supply * 100 : 0), usd: Number(o.usd_value) || amount * usd, label: label || null, isContract: !!o.is_contract });
+    } else {
+      let gotOwners = false;
+      if (KEY) try { // Moralis owners (paged) — primary
+        let cursor = '', pages = 0;
+        while (pages < 3 && kept.length < 130) {
+          const q = `${M}/erc20/${c}/owners?chain=${cfg.chain}&order=DESC&limit=100${cursor ? `&cursor=${cursor}` : ''}`;
+          const page = await j(q);
+          for (const o of page.result || []) {
+            seen++;
+            const a = (o.owner_address || '').toLowerCase();
+            const label = o.owner_address_label || o.entity || '';
+            if (BURN.has(a) || a === c || perToken.has(a)) continue;
+            if (label && EXCLUDE_RX.test(label)) { exclCache[a] = label; console.log('  excluded:', a.slice(0, 10), label); continue; }
+            const amount = Number(o.balance_formatted) || 0;
+            kept.push({ addr: o.owner_address, amount, pct: Number(o.percentage_relative_to_total_supply) || (supply ? amount / supply * 100 : 0), usd: Number(o.usd_value) || amount * usd, label: label || null, isContract: !!o.is_contract });
+          }
+          cursor = page.cursor || ''; pages++; if (!cursor) break;
         }
-        cursor = page.cursor || ''; pages++; if (!cursor) break;
+        gotOwners = kept.length >= 50;
+      } catch (e) { console.log('  moralis owners failed:', e.message.slice(0, 100)); }
+      if (!gotOwners && !kept.length) {
+        // fallback: Bitquery Holders cube — exact balances as of yesterday (survives a dead Moralis key)
+        const yday = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+        const rows = await bqHoldersAt(c, yday, 250, true);
+        if (rows && rows.length) {
+          console.log(`  holders via bitquery Holders cube (as of ${yday}): ${rows.length}`);
+          for (const o of rows) {
+            seen++;
+            const a = o.addr;
+            if (BURN.has(a) || a === c || perToken.has(a)) continue;
+            const kl = knownLabel(a);
+            if (kl && EXCLUDE_RX.test(kl)) { exclCache[a] = kl; continue; }
+            if (exclCache[a]) continue;
+            kept.push({ addr: o.addr, amount: o.amount, pct: supply ? o.amount / supply * 100 : 0, usd: o.amount * usd, label: kl || null, isContract: false });
+          }
+        }
       }
-    } else throw new Error('no holders source available');
+      if (!kept.length) throw new Error('no holders source available (moralis + bitquery both failed)');
+    }
     kept.sort((a, b) => b.usd - a.usd);
     // Arkham enrichment for the head of the list (cache-first, budgeted)
     if (ARKHAM_KEY || Object.keys(labelCache).length) {
