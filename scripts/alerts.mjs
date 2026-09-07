@@ -28,12 +28,15 @@ export function buildAlerts(ctx, schools, { CEX_RX, WALLET_DIR }) {
     if (!c || !c.top) continue;
     const prev = c.prev, byAddr = Object.fromEntries(c.top.map((h) => [h.addr.toLowerCase(), h]));
     if (prev) {
-      // whale moves: balance change since the previous snapshot (~2h) worth ≥ $100k
+      // whale moves: TOKEN balance change since the previous snapshot (~2h) worth ≥ $100k at the current price.
+      // (Comparing USD values conflated price swings with selling — a -20% day read as "sold $106K".)
+      const price = c.price || 0;
       for (const h of c.top) {
         const o = prev.h[h.addr.toLowerCase()];
-        if (!o) continue;
-        const d = Math.round((h.usd || 0) - o.u);
-        if (Math.abs(d) >= TH.whale) push({ kind: 'whale', sym, addr: h.addr, usd: d, title: `${nameFor(h)} ${d > 0 ? 'accumulated' : 'sold'} ${musd(d)} of $${sym}`, sub: `rank #${c.top.indexOf(h) + 1} · now holds ${musd(h.usd || 0)}` });
+        if (!o || o.a == null || !price) continue; // old snapshots without amounts: no whale claims
+        const dAmt = (Number(h.amount) || 0) - o.a;
+        const d = Math.round(dAmt * price);
+        if (Math.abs(d) >= TH.whale && Math.abs(dAmt) >= o.a * 0.002) push({ kind: 'whale', sym, addr: h.addr, usd: d, title: `${nameFor(h)} ${d > 0 ? 'accumulated' : 'sold'} ${musd(d)} of $${sym}`, sub: `rank #${c.top.indexOf(h) + 1} · now holds ${musd(h.usd || 0)}` });
       }
       // entries into the top 20 / exits from the top 10
       const prevRank = (a) => (prev.h[a] ? prev.h[a].r : Infinity);
@@ -59,8 +62,10 @@ export function buildAlerts(ctx, schools, { CEX_RX, WALLET_DIR }) {
     // school combined position swings ≥10% since the previous snapshot
     if (prev) for (const s of schools || []) {
       const mem = (s.members || []).map((m) => m.addr);
-      const cur = mem.reduce((t2, a) => t2 + ((byAddr[a] && byAddr[a].usd) || 0), 0);
-      const was = mem.reduce((t2, a) => t2 + ((prev.h[a] && prev.h[a].u) || 0), 0);
+      const price = c.price || 0;
+      if (!price || mem.some((a) => prev.h[a] && prev.h[a].a == null)) continue; // amounts required (price-neutral)
+      const cur = mem.reduce((t2, a) => t2 + ((byAddr[a] && Number(byAddr[a].amount)) || 0), 0) * price;
+      const was = mem.reduce((t2, a) => t2 + ((prev.h[a] && prev.h[a].a) || 0), 0) * price;
       if (was > 50_000 && Math.abs(cur - was) / was >= TH.schoolPct / 100) {
         const k = s.id + ':' + sym, lastPct = state.school[k] || 0, pct = Math.round(((cur - was) / was) * 100);
         if (Math.sign(pct) !== Math.sign(lastPct) || Math.abs(pct) > Math.abs(lastPct) + 5) {

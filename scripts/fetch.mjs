@@ -1051,7 +1051,8 @@ for (const t of cfg.tokens) {
           else { h.rankChange7 = o.r - (i + 1); h.usdChange7 = Math.round(h.usd - o.u); }
         });
       }
-      snaps.push({ ts: nowTs, h: Object.fromEntries(top.map((h, i) => [h.addr.toLowerCase(), { r: i + 1, u: Math.round(h.usd) }])) });
+      // a = token amount so alerts can tell real balance changes from price moves; p = price at snapshot time
+      snaps.push({ ts: nowTs, p: usd, h: Object.fromEntries(top.map((h, i) => [h.addr.toLowerCase(), { r: i + 1, u: Math.round(h.usd), a: Number(h.amount) || 0 }])) });
       snaps = thinSnaps(snaps);
       ALERTCTX[t.sym] = { prev: snaps.length > 1 ? snaps[snaps.length - 2] : null, cur: snaps[snaps.length - 1], top, price: usd };
       fs.writeFileSync(spath, JSON.stringify(snaps));
