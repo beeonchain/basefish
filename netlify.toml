@@ -1,2 +1,7 @@
 [build]
   publish = "."
+  # Only build when something OTHER than the live alert/bot state files changed.
+  # The instant-alert webhook and the Telegram bot commit those files constantly;
+  # rebuilding the site for each one burned through Netlify credits (Sep 7 incident).
+  # The site + functions read those two files straight from GitHub instead.
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':(exclude)data/alerts.json' ':(exclude)data/tg_subs.json' ':(exclude)data/alerts_state.json'"

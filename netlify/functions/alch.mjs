@@ -41,8 +41,9 @@ async function loadCtx() {
   }
   const excludedRaw = (await g('excluded.json')) || {};
   const cex = {}; for (const [a, l] of Object.entries(excludedRaw)) if (CEX_RX.test(String(l))) cex[a] = l;
-  const subs = (await g('tg_subs.json')) || { chats: {} };
-  const feed = ((await g('alerts.json')) || {}).alerts || [];
+  const raw = async (p) => { try { const r = await fetch(`https://raw.githubusercontent.com/${REPO}/main/data/${p}?t=${Date.now()}`); return r.ok ? r.json() : null; } catch { return null; } };
+  const subs = (await raw('tg_subs.json')) || (await g('tg_subs.json')) || { chats: {} };
+  const feed = ((await raw('alerts.json')) || (await g('alerts.json')) || {}).alerts || [];
   ctx = { tokens, cex, subs, feed };
   ctxAt = Date.now();
   return ctx;

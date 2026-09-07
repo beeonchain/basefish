@@ -1109,7 +1109,12 @@ let SCHOOLS=[];
 const TG_BOT='aquariumtest_bot';
 const AICON={whale:'🐋',entry:'🎣',exit:'🏃',cex:'🏦',school:'🕸',watch:'👁'};
 let ALERTS=[],alertTokFilter='ALL';
-async function fetchAlerts(){try{const r=await fetch('data/alerts.json?t='+Date.now(),{cache:'no-store'});if(r.ok){ALERTS=((await r.json()).alerts)||[]}}catch(e){}return ALERTS}
+const FEED_RAW='https://raw.githubusercontent.com/beeonchain/basefish/main/data/alerts.json';
+async function fetchAlerts(){
+  for(const u of [FEED_RAW+'?t='+Date.now(),'data/alerts.json?t='+Date.now()]){
+    try{const r=await fetch(u,{cache:'no-store'});if(r.ok){const j=await r.json();if(j&&j.alerts){ALERTS=j.alerts;break}}}catch(e){}
+  }
+  return ALERTS}
 function alertSeenTs(){try{return +localStorage.getItem('bf_alertSeen')||0}catch(e){return 0}}
 function markAlertsSeen(){try{localStorage.setItem('bf_alertSeen',String(Date.now()))}catch(e){}updateAlertBadge()}
 function updateAlertBadge(){const b=document.getElementById('alertBadge');if(!b)return;const n=ALERTS.filter(a=>a.ts>alertSeenTs()).length;b.style.display=n?'':'none';b.textContent=n>9?'9+':n}
