@@ -1232,7 +1232,7 @@ console.log(`\nWrote data/index.json with ${index.tokens.length} tokens. Label c
 try {
   const publicAlerts = buildAlerts(ALERTCTX, schoolsForAlerts, { CEX_RX, WALLET_DIR });
   const watchAlerts = ARKHAM_KEY ? await checkWatches(arkhamGet, 20) : [];
-  const fresh = writeFeed([...publicAlerts, ...watchAlerts.map(({ chat, ...a }) => a)]);
+  const fresh = await writeFeed([...publicAlerts, ...watchAlerts.map(({ chat, ...a }) => a)]);
   console.log(`alerts: ${publicAlerts.length} public (${fresh} new in feed), ${watchAlerts.length} watch hits`);
   await sendTelegram(publicAlerts, watchAlerts);
 } catch (e) { console.log('alerts err', e.message.slice(0, 120)); }

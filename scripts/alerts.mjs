@@ -113,8 +113,15 @@ export async function checkWatches(arkhamGet, maxLookups = 20) {
   return out;
 }
 
-export function writeFeed(alerts) {
-  const feed = jread(FEED, { alerts: [] });
+export async function writeFeed(alerts) {
+  // merge with the LIVE feed (instant webhook alerts may have landed since this run checked out)
+  let feed = jread(FEED, { alerts: [] });
+  try {
+    const r = await fetch('https://basefish.netlify.app/data/alerts.json?t=' + Date.now());
+    if (r.ok) { const live = await r.json(); const ids = new Set((feed.alerts || []).map((a) => a.id));
+      for (const a of live.alerts || []) if (!ids.has(a.id)) feed.alerts.push(a);
+      feed.alerts.sort((a, b) => b.ts - a.ts); }
+  } catch (e) {}
   const have = new Set((feed.alerts || []).map((a) => a.id));
   const fresh = alerts.filter((a) => !have.has(a.id));
   feed.alerts = [...fresh, ...(feed.alerts || [])].slice(0, FEED_CAP);
