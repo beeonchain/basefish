@@ -3,6 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { namehash } from './keccak.mjs';
+import { buildAlerts, checkWatches, writeFeed, sendTelegram } from './alerts.mjs';
 
 const KEY = process.env.MORALIS_API_KEY || '';
 const BQ_TOKEN = process.env.BITQUERY_TOKEN || '';
@@ -662,6 +663,8 @@ async function tokenLogo(t) {
 }
 const index = { generated_at: new Date().toISOString(), tokens: [] };
 const ALLTOPS = {}; // sym -> holdersTop, for the cross-token schools graph
+const ALERTCTX = {}; // sym -> {prev,cur,top,price} for the alert engine
+let schoolsForAlerts = [];
 
 // ---- Alchemy archive backfill: 30 days of balance history for the current top-100 (one-time) ----
 // Bitquery's Base archive tables don't exist server-side (ClickHouse UNKNOWN_TABLE, confirmed 2026-08-30
@@ -1029,6 +1032,7 @@ for (const t of cfg.tokens) {
       }
       snaps.push({ ts: nowTs, h: Object.fromEntries(top.map((h, i) => [h.addr.toLowerCase(), { r: i + 1, u: Math.round(h.usd) }])) });
       snaps = thinSnaps(snaps);
+      ALERTCTX[t.sym] = { prev: snaps.length > 1 ? snaps[snaps.length - 2] : null, cur: snaps[snaps.length - 1], top, price: usd };
       fs.writeFileSync(spath, JSON.stringify(snaps));
     }
     // ---- Flows: daily top-100 balance history, movers, entries/exits, observed CEX flow ----
@@ -1180,6 +1184,7 @@ try {
     if (swept) console.log(`stale-profile sweep: ${swept} oldest profiles refreshed (${staleList.length} were >3d old, budget left ${profileBudget})`);
   }
   const schools = buildSchools(ALLTOPS);
+  schoolsForAlerts = schools;
   fs.writeFileSync('data/schools.json', JSON.stringify({ updated: new Date().toISOString(), schools }));
   const bySchool = {};
   schools.forEach(s => s.members.forEach(m => bySchool[m.addr] = s.id));
@@ -1201,3 +1206,12 @@ try {
 fs.writeFileSync('data/logos.json', JSON.stringify(logoCache));
 fs.writeFileSync('data/index.json', JSON.stringify(index));
 console.log(`\nWrote data/index.json with ${index.tokens.length} tokens. Label cache: ${Object.keys(labelCache).length} addresses${ARKHAM_KEY ? '' : ' (no ARKHAM_API_KEY — enrichment skipped)'}.`);
+
+// ---- alerts: detect events, publish the site feed, push Telegram ----
+try {
+  const publicAlerts = buildAlerts(ALERTCTX, schoolsForAlerts, { CEX_RX, WALLET_DIR });
+  const watchAlerts = ARKHAM_KEY ? await checkWatches(arkhamGet, 20) : [];
+  const fresh = writeFeed([...publicAlerts, ...watchAlerts.map(({ chat, ...a }) => a)]);
+  console.log(`alerts: ${publicAlerts.length} public (${fresh} new in feed), ${watchAlerts.length} watch hits`);
+  await sendTelegram(publicAlerts, watchAlerts);
+} catch (e) { console.log('alerts err', e.message.slice(0, 120)); }

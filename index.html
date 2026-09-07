@@ -283,7 +283,7 @@
       <button data-view="holders"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="2" height="2"/><rect x="6" y="3" width="8" height="2"/><rect x="2" y="7" width="2" height="2"/><rect x="6" y="7" width="8" height="2"/><rect x="2" y="11" width="2" height="2"/><rect x="6" y="11" width="8" height="2"/></svg><span>Top holders</span></button>
       <button data-view="wallets"><svg viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="2"/><rect x="2" y="12" width="12" height="2"/><rect x="2" y="6" width="2" height="6"/><rect x="12" y="6" width="2" height="6"/><rect x="9" y="8" width="3" height="2"/></svg><span>Wallets</span></button>
       <button data-view="flows"><svg viewBox="0 0 16 16"><rect x="2" y="4" width="8" height="2"/><rect x="10" y="2" width="2" height="2"/><rect x="12" y="4" width="2" height="2"/><rect x="10" y="6" width="2" height="2"/><rect x="6" y="10" width="8" height="2"/><rect x="4" y="8" width="2" height="2"/><rect x="2" y="10" width="2" height="2"/><rect x="4" y="12" width="2" height="2"/></svg><span>Flows</span></button>
-      <button data-view="alerts"><svg viewBox="0 0 16 16"><rect x="6" y="2" width="4" height="2"/><rect x="5" y="4" width="6" height="2"/><rect x="4" y="6" width="8" height="4"/><rect x="3" y="10" width="10" height="2"/><rect x="7" y="13" width="2" height="2"/></svg><span>Alerts</span><em class="soon">SOON</em></button>
+      <button data-view="alerts"><svg viewBox="0 0 16 16"><rect x="6" y="2" width="4" height="2"/><rect x="5" y="4" width="6" height="2"/><rect x="4" y="6" width="8" height="4"/><rect x="3" y="10" width="10" height="2"/><rect x="7" y="13" width="2" height="2"/></svg><span>Alerts</span><em class="soon" id="alertBadge" style="display:none;background:var(--coral);color:#fff;border-color:var(--coral)"></em></button>
       <button data-view="watch"><svg viewBox="0 0 16 16"><rect x="7" y="2" width="2" height="3"/><rect x="2" y="7" width="3" height="2"/><rect x="11" y="7" width="3" height="2"/><rect x="6" y="5" width="4" height="2"/><rect x="5" y="7" width="6" height="2"/><rect x="6" y="9" width="4" height="2"/><rect x="4" y="11" width="2" height="2"/><rect x="10" y="11" width="2" height="2"/><rect x="7" y="9" width="2" height="3"/></svg><span>Watchlist</span></button>
     </nav>
     <div class="tracked">
@@ -331,6 +331,7 @@
     <div class="view" id="walletsView"></div>
     <div class="view" id="watchView"></div>
     <div class="view" id="flowsView"></div>
+    <div class="view" id="alertsView"></div>
     <div class="wp" id="walletPage"></div>
     <div class="bar">
       <div class="t">Fish size = wallet size<small>Bigger fish hold more. That's it. · tiers relative to this tank</small></div>
@@ -917,11 +918,13 @@ function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>b
   document.getElementById('walletsView').classList.toggle('show',v==='wallets');
   document.getElementById('watchView').classList.toggle('show',v==='watch');
   document.getElementById('flowsView').classList.toggle('show',v==='flows');
+  document.getElementById('alertsView').classList.toggle('show',v==='alerts');
   document.getElementById('walletPage').classList.toggle('show',v==='wallet');
   if(v!=='wallet'&&location.hash.startsWith('#w='))history.replaceState(null,'',location.pathname+location.search);
   if(v==='wallets')renderWallets();
   if(v==='watch')renderWatch();
   if(v==='flows')renderFlows();
+  if(v==='alerts')renderAlerts();
   if(v==='aquarium')resize()}
 async function renderWallets(){
   const el=document.getElementById('walletsView');
@@ -1101,6 +1104,44 @@ const profCache={};
 const tokCache={};
 /* ============ schools (connected-wallet groups, evidence-based) ============ */
 let SCHOOLS=[];
+/* ---- Alerts: pipeline-detected events, live popups + feed ---- */
+const TG_BOT=''; // set to the bot's @handle once created, e.g. 'basefish_alerts_bot'
+const AICON={whale:'🐋',entry:'🎣',exit:'🏃',cex:'🏦',school:'🕸',watch:'👁'};
+let ALERTS=[],alertTokFilter='ALL';
+async function fetchAlerts(){try{const r=await fetch('data/alerts.json?t='+Date.now(),{cache:'no-store'});if(r.ok){ALERTS=((await r.json()).alerts)||[]}}catch(e){}return ALERTS}
+function alertSeenTs(){try{return +localStorage.getItem('bf_alertSeen')||0}catch(e){return 0}}
+function markAlertsSeen(){try{localStorage.setItem('bf_alertSeen',String(Date.now()))}catch(e){}updateAlertBadge()}
+function updateAlertBadge(){const b=document.getElementById('alertBadge');if(!b)return;const n=ALERTS.filter(a=>a.ts>alertSeenTs()).length;b.style.display=n?'':'none';b.textContent=n>9?'9+':n}
+async function renderAlerts(){
+  const el=document.getElementById('alertsView');
+  if(!ALERTS.length)await fetchAlerts();
+  markAlertsSeen();
+  const toks=['ALL',...TOKENS.map(t=>t.sym)];
+  const rows=ALERTS.filter(a=>alertTokFilter==='ALL'||a.sym===alertTokFilter);
+  el.innerHTML=`<div style="padding:16px;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><h3 style="margin:0;font-size:16px">Alerts</h3><span style="color:var(--dim);font-size:11.5px">detected on every refresh (~2h, or hit ⟳ REFRESH) · popups appear live while you're here</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">${toks.map(s=>`<button onclick="alertTokFilter='${s}';renderAlerts()" style="padding:5px 10px;border:1px solid ${alertTokFilter===s?'var(--teal)':'var(--line)'};color:${alertTokFilter===s?'var(--teal)':'var(--muted)'};font-weight:700;font-size:11px">${s==='ALL'?'All tokens':'$'+s}</button>`).join('')}</div>
+    ${TG_BOT?`<div style="border:1px solid var(--line);background:var(--panel2);padding:11px 14px;font-size:12px">📲 Get these in Telegram → <a href="https://t.me/${TG_BOT}" target="_blank" rel="noopener" style="color:var(--teal);font-weight:800">@${TG_BOT}</a> — /start subscribes, /help shows filters &amp; custom wallet watches</div>`:''}
+    <div style="border:1px solid var(--line);background:var(--panel)">
+    ${rows.length?rows.map(a=>`<div class="flowrow" style="padding:10px 14px;cursor:${a.addr?'pointer':'default'}" ${a.addr?`onclick="openProfileByAddr('${a.addr}')"`:''}>
+      <span style="display:flex;gap:10px;align-items:center;min-width:0"><span style="font-size:16px">${AICON[a.kind]||'🔔'}</span>
+        <span style="min-width:0"><b>${esc(a.title)}</b><br><small style="color:var(--muted)">${esc(a.sub||'')}</small></span></span>
+      <span style="text-align:right;white-space:nowrap;color:var(--dim);font-size:11px">$${a.sym}<br>${agoStr(a.ts)} ago${a.hash?` · <a href="https://basescan.org/tx/${a.hash}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--dim);font-weight:700">tx ↗</a>`:''}</span>
+    </div>`).join(''):'<div style="padding:26px;color:var(--dim)">No alerts yet in this window. Calm waters — they show up here as refreshes detect whale moves, entries/exits, exchange inflows and school swings.</div>'}
+    </div>
+    <div style="color:var(--dim);font-size:11px">🐋 whale move ≥$100K · 🎣 entered top 20 · 🏃 top-10 exit · 🏦 exchange inflow ≥$250K · 🕸 school swing ≥10% · 👁 custom watch · not financial advice</div>
+  </div>`;
+}
+/* live popups: poll the feed; toast anything new while the user is on the site */
+(async()=>{await fetchAlerts();updateAlertBadge();
+  setInterval(async()=>{
+    const seen=new Set(ALERTS.map(a=>a.id));
+    await fetchAlerts();
+    const fresh=ALERTS.filter(a=>!seen.has(a.id));
+    fresh.slice(0,3).forEach(a=>toastMsg(`${AICON[a.kind]||'🔔'} <b>${esc(a.title)}</b>`,a.usd>=0?'var(--teal)':'var(--coral)'));
+    if(view==='alerts'&&fresh.length)renderAlerts();else updateAlertBadge();
+  },60000);
+})();
 /* ---- Flows view: where the top-100's money is moving ---- */
 function tokAmt(v,signed){const x=Math.abs(v);const s=x>=1e9?(x/1e9).toFixed(2)+'B':x>=1e6?(x/1e6).toFixed(2)+'M':x>=1e3?(x/1e3).toFixed(1)+'K':x.toFixed(0);return (signed?(v<0?'−':'+'):'')+s}
 function flowName(a){const h=data.list.find(x=>x.addr.toLowerCase()===a.toLowerCase());return h?(h.entity||h.basename||short(a)):short(a)}
