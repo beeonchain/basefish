@@ -1160,6 +1160,25 @@ fs.writeFileSync(FUND_PATH, JSON.stringify(fundCache));
 
 // ---- schools: build the cross-token graph and annotate token files ----
 try {
+  // stale-profile sweep: spend leftover Arkham budget on the oldest profiles so no wallet page drifts stale
+  if (ARKHAM_KEY && profileBudget > 80) {
+    const active = [...new Set(Object.values(ALLTOPS).flat().map(h => h.addr.toLowerCase()))];
+    const staleList = [];
+    for (const a of active) {
+      try {
+        const pr = JSON.parse(fs.readFileSync(path.join(WALLET_DIR, a + '.json'), 'utf8'));
+        const age = Date.now() - new Date(pr.updated || 0).getTime();
+        if (age > 3 * 864e5) staleList.push({ a, age });
+      } catch (e) { staleList.push({ a, age: Infinity }); }
+    }
+    staleList.sort((x, y) => y.age - x.age);
+    let swept = 0;
+    for (const s of staleList) {
+      if (profileBudget <= 60) break;
+      try { await enrichWalletProfile(s.a); swept++; } catch (e) {}
+    }
+    if (swept) console.log(`stale-profile sweep: ${swept} oldest profiles refreshed (${staleList.length} were >3d old, budget left ${profileBudget})`);
+  }
   const schools = buildSchools(ALLTOPS);
   fs.writeFileSync('data/schools.json', JSON.stringify({ updated: new Date().toISOString(), schools }));
   const bySchool = {};

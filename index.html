@@ -106,6 +106,9 @@
   .zoom{position:absolute;right:12px;top:12px;z-index:3;display:flex;flex-direction:column;gap:4px}
   .webtog{position:absolute;right:52px;top:12px;z-index:3;display:flex;gap:7px;align-items:center;background:rgba(10,11,13,.78);color:#fff;border:1px solid rgba(255,255,255,.2);padding:7px 11px;font-size:10.5px;font-weight:800;letter-spacing:.5px;cursor:pointer;backdrop-filter:blur(6px)}
   .webtog input{accent-color:var(--teal);margin:0;cursor:pointer}
+  #refBtn{background:none;border:0;border-left:1px solid rgba(255,255,255,.25);color:#9db4ff;font:700 10.5px var(--font-mono);letter-spacing:.5px;padding:0 2px 0 9px;cursor:pointer}
+  #refBtn:hover{color:#fff}
+  #refBtn:disabled{color:#667;cursor:default}
   .zoom button{width:30px;height:30px;border-radius:0;background:rgba(10,11,13,.78);color:#fff;border:1px solid rgba(255,255,255,.2);font-weight:700;font-size:15px;backdrop-filter:blur(6px)}
   .zoom button:hover{background:var(--teal)}
   .toast{position:absolute;left:12px;bottom:12px;z-index:3;display:flex;flex-direction:column;gap:6px;pointer-events:none}
@@ -314,7 +317,7 @@
     <div class="tank" id="tank">
       <canvas id="cv"></canvas>
       <div class="glass"></div>
-      <div class="chip"><span id="chipFresh"><span style="color:#4D6BFF">■</span> Snapshot</span><span id="chipTok">$BRETT</span><span>Top 100</span></div>
+      <div class="chip"><span id="chipFresh"><span style="color:#4D6BFF">■</span> Snapshot</span><span id="chipTok">$BRETT</span><span>Top 100</span><button id="refBtn" onclick="refreshNow(this)" title="Run a data refresh now (takes ~3 min end to end)">⟳ REFRESH</button></div>
       <div class="tierkey"><span><i style="background:#3B6BFF"></i>whale · deep</span><span><i style="background:#F2C14E"></i>large</span><span><i style="background:#53C7F0"></i>medium</span><span><i style="background:#AFCBE8"></i>small · shallow</span></div>
       <div class="ambnote">background schools = holders 101+ · ambient, not clickable</div>
       <div class="zoom"><button id="zin" title="Zoom in">+</button><button id="zout" title="Zoom out">−</button><button id="zfit" title="Reset" style="font-size:11px">⟲</button></div>
@@ -1050,6 +1053,23 @@ function pushFeed(silent){
     for(let i=0;i<8;i++)bubbles.push({x:f.x+(Math.random()-.5)*f.size,y:f.y,v:30+Math.random()*30,r:1+Math.random()*2,p:Math.random()*6});
     toastMsg(`${f.h.tier==='whale'?'Whale':'Wallet'} <b>${short(f.h.addr)}</b> ${buy?'bought':'sold'} <b style="color:${buy?'var(--teal)':'var(--coral)'}">${buy?'+':'−'}${usd(amt)}</b>`,buy?'var(--teal)':'var(--coral)');
     document.getElementById('stUpd').textContent='just now';upd=0}
+}
+async function refreshNow(btn){
+  let last=0;try{last=+localStorage.getItem('bf_disp')||0}catch(e){}
+  if(Date.now()-last<5*60e3){toastMsg('A refresh is already on its way — data lands ~3 min after the request','var(--muted)');return}
+  btn.disabled=true;btn.textContent='⟳ QUEUED…';
+  try{
+    const r=await fetch('/api/refresh',{method:'POST'});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok||!d.ok)throw new Error(d.error||('http '+r.status));
+    try{localStorage.setItem('bf_disp',String(Date.now()))}catch(e){}
+    toastMsg('Refresh started — fresh data in ~3 minutes','var(--teal)');
+    const g0=data&&data.generated_at;
+    const iv=setInterval(async()=>{try{const nd=await fetchToken(cur.sym);
+      if(nd.generated_at!==g0){clearInterval(iv);toastMsg('Fresh data just landed','var(--teal)');loadToken(TOKENS.find(t2=>t2.sym===cur.sym))}}catch(e){}},30000);
+    setTimeout(()=>clearInterval(iv),9*60e3);
+  }catch(e){toastMsg('Could not start a refresh ('+String(e.message||e).slice(0,60)+') — try again shortly','var(--coral)')}
+  setTimeout(()=>{btn.disabled=false;btn.textContent='⟳ REFRESH'},5000);
 }
 function freshTick(){
   const el=document.getElementById('stUpd'),chip=document.getElementById('chipFresh');
