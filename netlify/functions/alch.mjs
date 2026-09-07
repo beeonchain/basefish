@@ -83,6 +83,9 @@ export default async (req) => {
   const acts = (body.event && body.event.activity) || [];
   if (!acts.length) return new Response('ok');
   const { tokens, cex, subs, feed: feedCtx } = await loadCtx();
+  // global pause (admin /pauseall): only admins + allowlisted chats receive anything; feed still updates
+  const admins = new Set((process.env.TG_ADMIN_CHATS || '7400046972').split(',').map((s) => s.trim()));
+  const allowed = (chat) => !(subs.pause && subs.pause.on) || admins.has(chat) || (subs.pause.allow || []).includes(chat);
   const feed = []; let msgs = 0;
   for (const a of acts) {
     const contract = String((a.rawContract && a.rawContract.address) || '').toLowerCase();
@@ -94,7 +97,7 @@ export default async (req) => {
     const link = `https://basescan.org/tx/${hash}`;
     // 1) custom watches — any size, straight to the owner
     for (const [chat, p] of Object.entries(subs.chats || {})) {
-      if (p.muted) continue;
+      if (p.muted || !allowed(chat)) continue;
       for (const w of p.watches || []) {
         if (w.t.toUpperCase() !== tok.sym) continue;
         const ww = w.w.toLowerCase();
@@ -119,7 +122,7 @@ export default async (req) => {
       const alert = { id: kind + ':' + hash, ts: Date.now(), kind, sym: tok.sym, addr: whale, hash, usd: toCex ? -usd : usd, title, sub };
       feed.push(alert);
       for (const [chat, p] of Object.entries(subs.chats || {})) {
-        if (p.muted) continue;
+        if (p.muted || !allowed(chat)) continue;
         if (p.tokens && p.tokens.length && !p.tokens.includes(tok.sym)) continue;
         if (p.events && p.events.length && !p.events.includes(kind)) continue;
         await tg(chat, `${kind === 'cex' ? '🏦' : '🐋'} <b>${title.replace(/</g, '&lt;')}</b>\n${sub} · <a href="${link}">view tx</a>`);

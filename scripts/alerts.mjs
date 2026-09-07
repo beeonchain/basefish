@@ -146,9 +146,12 @@ export async function sendTelegram(publicAlerts, watchAlerts, siteUrl = 'https:/
       return r.ok;
     } catch (e) { return false; }
   };
+  // global pause (admin /pauseall): only admins + allowlisted chats receive anything
+  const admins = new Set((process.env.TG_ADMIN_CHATS || '7400046972').split(',').map((s) => s.trim()));
+  const allowed = (chat) => !(subs.pause && subs.pause.on) || admins.has(chat) || (subs.pause.allow || []).includes(chat);
   let sent = 0;
   for (const [chat, prefs] of Object.entries(subs.chats || {})) {
-    if (prefs.muted) continue;
+    if (prefs.muted || !allowed(chat)) continue;
     for (const a of publicAlerts) {
       if (prefs.tokens && prefs.tokens.length && !prefs.tokens.includes(a.sym)) continue;
       if (prefs.events && prefs.events.length && !prefs.events.includes(a.kind)) continue;
@@ -156,7 +159,7 @@ export async function sendTelegram(publicAlerts, watchAlerts, siteUrl = 'https:/
       await new Promise((s) => setTimeout(s, 60));
     }
   }
-  for (const a of watchAlerts) { if (await send(a.chat, a)) sent++; await new Promise((s) => setTimeout(s, 60)); }
+  for (const a of watchAlerts) { if (!allowed(a.chat)) continue; if (await send(a.chat, a)) sent++; await new Promise((s) => setTimeout(s, 60)); }
   if (sent) console.log(`telegram: ${sent} messages sent`);
   return sent;
 }

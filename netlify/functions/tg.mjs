@@ -47,6 +47,18 @@ Alerts arrive with each data refresh (~every 2h).
 /list — your current setup
 /help — this message`;
 
+// global pause: subs.pause = { on: true, allow: [chatId...] } — admins + allowlisted chats keep receiving
+const ADMIN_HELP = `\n\n<b>Admin</b>
+/pauseall [id,id] — stop alerts for everyone except admins (+ optional ids)
+/resumeall — lift the pause
+/allow id — add an exception while paused
+/disallow id — remove an exception
+/users — list subscribers with chat ids
+/broadcast msg — service message to all
+/stats`;
+const isAllowed = (subs, chat) => !(subs.pause && subs.pause.on) || ADMINS.has(chat) || ((subs.pause.allow || []).includes(chat));
+const pauseLine = (subs) => (subs.pause && subs.pause.on) ? `⏸ <b>Global pause ON</b> — receiving: admins${(subs.pause.allow || []).length ? ' + ' + subs.pause.allow.map((c) => `<code>${c}</code>`).join(', ') : ''}` : '▶️ Global pause off — everyone receives alerts';
+
 function fmtPrefs(p) {
   return `<b>Your setup</b>
 tokens: ${p.tokens && p.tokens.length ? p.tokens.join(', ') : 'all'}
@@ -131,10 +143,34 @@ export default async (req) => {
     case '/stats': {
       if (!ADMINS.has(chat)) { out = HELP; break; }
       const all = Object.values(subs.chats), active = all.filter((x) => !x.muted).length, watches = all.reduce((n, x) => n + (x.watches || []).length, 0);
-      out = `<b>Bot stats</b>\nsubscribers: ${all.length} (${active} active, ${all.length - active} paused)\ncustom watches: ${watches}`; break; }
+      out = `<b>Bot stats</b>\nsubscribers: ${all.length} (${active} active, ${all.length - active} paused)\ncustom watches: ${watches}\n${pauseLine(subs)}`; break; }
+    case '/pauseall': { // admin: nobody but admins (+ listed ids) gets alerts until /resumeall
+      if (!ADMINS.has(chat)) { out = HELP; break; }
+      const ids = (arg.match(/\d{5,}/g) || []);
+      subs.pause = { on: true, allow: [...new Set([...((subs.pause && subs.pause.allow) || []), ...ids])] }; dirty = true;
+      out = `${pauseLine(subs)}\nEveryone else is muted (their setups are kept). /allow id to add exceptions, /resumeall to lift.`; break; }
+    case '/resumeall': {
+      if (!ADMINS.has(chat)) { out = HELP; break; }
+      subs.pause = { on: false, allow: (subs.pause && subs.pause.allow) || [] }; dirty = true;
+      out = 'Pause lifted — all subscribers receive alerts again.'; break; }
+    case '/allow': case '/disallow': {
+      if (!ADMINS.has(chat)) { out = HELP; break; }
+      const ids = (arg.match(/\d{5,}/g) || []);
+      if (!ids.length) { out = `Usage: ${cmd} chatId — ids from /users (or the user sends /id)`; break; }
+      subs.pause = subs.pause || { on: false, allow: [] };
+      const set = new Set(subs.pause.allow || []);
+      ids.forEach((i) => (cmd.toLowerCase().startsWith('/allow') ? set.add(i) : set.delete(i)));
+      subs.pause.allow = [...set]; dirty = true;
+      out = pauseLine(subs); break; }
+    case '/users': {
+      if (!ADMINS.has(chat)) { out = HELP; break; }
+      const rows = Object.entries(subs.chats).map(([c, x]) => `<code>${c}</code> ${ADMINS.has(c) ? '👑' : ''}${x.muted ? '⏹' : '✅'}${(x.watches || []).length ? ' 👁' + x.watches.length : ''}${isAllowed(subs, c) ? '' : ' 🔇'}`);
+      out = `<b>Subscribers</b> (${rows.length})\n${rows.join('\n')}\n\n👑 admin · ✅ active · ⏹ self-paused · 👁 watches · 🔇 muted by global pause\n${pauseLine(subs)}`; break; }
     default: out = HELP;
   }
   if (dirty) await saveSubs(GH, subs, sha);
+  if (out && ADMINS.has(chat) && out === HELP) out += ADMIN_HELP;
+  if (out && !ADMINS.has(chat) && !isAllowed(subs, chat) && out !== HELP) out += '\n\n⏸ Alerts are currently paused by the admin — your setup is saved and resumes automatically.';
   if (out) await reply(TG, chat, out);
   return new Response('ok');
 };
