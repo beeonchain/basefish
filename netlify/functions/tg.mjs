@@ -9,6 +9,8 @@ const SUBS_PATH = 'data/tg_subs.json';
 const TOKENS = ['BRETT', 'TOSHI', 'BASECAT', 'AERO', 'VIRTUAL'];
 const EVENTS = ['whale', 'entry', 'exit', 'cex', 'school'];
 const MAX_WATCHES = 5;
+// admin chat ids (Bee) — comma-separated in TG_ADMIN_CHATS env; falls back to the founder chat
+const ADMINS = new Set((process.env.TG_ADMIN_CHATS || '7400046972').split(',').map((s) => s.trim()));
 
 const hookSecret = (t) => crypto.createHash('sha256').update(t).digest('hex').slice(0, 32);
 const gh = (t) => ({ Authorization: 'Bearer ' + t, Accept: 'application/vnd.github+json', 'User-Agent': 'basefish-tg', 'X-GitHub-Api-Version': '2022-11-28' });
@@ -115,6 +117,20 @@ export default async (req) => {
       dirty = p.watches.length !== before;
       out = dirty ? 'Removed.' : 'That wallet was not on your watch list.'; break; }
     case '/list': case '/settings': out = fmtPrefs(p); break;
+    case '/broadcast': { // admin: service message to every subscriber (paused ones included)
+      if (!ADMINS.has(chat)) { out = HELP; break; }
+      if (!arg) { out = 'Usage: /broadcast your message (HTML ok: <b>bold</b>, <a href="...">link</a>)'; break; }
+      const targets = Object.keys(subs.chats).filter((c) => c !== chat);
+      let sent = 0;
+      for (const c of targets) {
+        try { await reply(TG, c, `📢 <b>Basefish</b>\n${arg}`); sent++; } catch (e) {}
+        await new Promise((s) => setTimeout(s, 40));
+      }
+      out = `Broadcast sent to ${sent}/${targets.length} subscriber${targets.length === 1 ? '' : 's'}.`; break; }
+    case '/stats': {
+      if (!ADMINS.has(chat)) { out = HELP; break; }
+      const all = Object.values(subs.chats), active = all.filter((x) => !x.muted).length, watches = all.reduce((n, x) => n + (x.watches || []).length, 0);
+      out = `<b>Bot stats</b>\nsubscribers: ${all.length} (${active} active, ${all.length - active} paused)\ncustom watches: ${watches}`; break; }
     default: out = HELP;
   }
   if (dirty) await saveSubs(GH, subs, sha);
