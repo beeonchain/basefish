@@ -1105,7 +1105,7 @@ const tokCache={};
 /* ============ schools (connected-wallet groups, evidence-based) ============ */
 let SCHOOLS=[];
 /* ---- Alerts: pipeline-detected events, live popups + feed ---- */
-const TG_BOT=''; // set to the bot's @handle once created, e.g. 'basefish_alerts_bot'
+const TG_BOT='aquariumtest_bot';
 const AICON={whale:'🐋',entry:'🎣',exit:'🏃',cex:'🏦',school:'🕸',watch:'👁'};
 let ALERTS=[],alertTokFilter='ALL';
 async function fetchAlerts(){try{const r=await fetch('data/alerts.json?t='+Date.now(),{cache:'no-store'});if(r.ok){ALERTS=((await r.json()).alerts)||[]}}catch(e){}return ALERTS}
