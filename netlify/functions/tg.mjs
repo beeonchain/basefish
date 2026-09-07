@@ -48,14 +48,16 @@ Alerts arrive with each data refresh (~every 2h).
 /help — this message`;
 
 // global pause: subs.pause = { on: true, allow: [chatId...] } — admins + allowlisted chats keep receiving
-const ADMIN_HELP = `\n\n<b>Admin</b>
+const ADMIN_HELP = `<b>🛠 Admin commands</b>
 /pauseall [id,id] — stop alerts for everyone except admins (+ optional ids)
 /resumeall — lift the pause
 /allow id — add an exception while paused
 /disallow id — remove an exception
 /users — list subscribers with chat ids
-/broadcast msg — service message to all
-/stats`;
+/broadcast msg — service message to all subscribers
+/stats — subscriber counts + pause state
+/id — your chat id
+/admin — this list`;
 const isAllowed = (subs, chat) => !(subs.pause && subs.pause.on) || ADMINS.has(chat) || ((subs.pause.allow || []).includes(chat));
 const pauseLine = (subs) => (subs.pause && subs.pause.on) ? `⏸ <b>Global pause ON</b> — receiving: admins${(subs.pause.allow || []).length ? ' + ' + subs.pause.allow.map((c) => `<code>${c}</code>`).join(', ') : ''}` : '▶️ Global pause off — everyone receives alerts';
 
@@ -170,10 +172,10 @@ export default async (req) => {
       const label = (x) => x.who ? (x.who.u ? '@' + x.who.u : '') + (x.who.n ? ` ${x.who.n.replace(/</g, '&lt;')}` : '') : '';
       const rows = Object.entries(subs.chats).map(([c, x]) => `<code>${c}</code> ${label(x) || '<i>unknown yet</i>'} ${ADMINS.has(c) ? '👑' : ''}${x.muted ? '⏹' : '✅'}${(x.watches || []).length ? ' 👁' + x.watches.length : ''}${isAllowed(subs, c) ? '' : ' 🔇'}`);
       out = `<b>Subscribers</b> (${rows.length})\n${rows.join('\n')}\n\n👑 admin · ✅ active · ⏹ self-paused · 👁 watches · 🔇 muted by global pause\n${pauseLine(subs)}`; break; }
+    case '/admin': out = ADMINS.has(chat) ? ADMIN_HELP : HELP; break;
     default: out = HELP;
   }
   if (dirty) await saveSubs(GH, subs, sha);
-  if (out && ADMINS.has(chat) && out === HELP) out += ADMIN_HELP;
   if (out && !ADMINS.has(chat) && !isAllowed(subs, chat) && out !== HELP) out += '\n\n⏸ Alerts are currently paused by the admin — your setup is saved and resumes automatically.';
   if (out) await reply(TG, chat, out);
   return new Response('ok');
