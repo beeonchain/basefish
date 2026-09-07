@@ -19,6 +19,7 @@ const ARKHAM_BASES = ['https://api.arkm.com', 'https://api.arkhamintelligence.co
 const LABELS_PATH = 'data/labels.json';
 let labelCache = {};
 try { labelCache = JSON.parse(fs.readFileSync(LABELS_PATH, 'utf8')); } catch {}
+const HOLDERS_SRC = {}; // per token: which holders source produced this run (stored in snapshots; alerts skip cross-source comparisons)
 const EXCL_PATH = 'data/excluded.json'; // wallets the live pipeline excluded (CEX/pool/bridge) — used to filter historical snapshots too
 let exclCache = {};
 try { exclCache = JSON.parse(fs.readFileSync(EXCL_PATH, 'utf8')); } catch {}
@@ -915,8 +916,10 @@ for (const t of cfg.tokens) {
     let kept = [], seen = 0;
 
     // holders: Bitquery primary
+    HOLDERS_SRC[t.sym] = 'none';
     const bq = await bqHolders(t);
     if (bq) {
+      HOLDERS_SRC[t.sym] = 'bitquery';
       console.log(`  holders via bitquery: ${bq.length}`);
       for (const o of bq) {
         seen++;
@@ -945,12 +948,14 @@ for (const t of cfg.tokens) {
           cursor = page.cursor || ''; pages++; if (!cursor) break;
         }
         gotOwners = kept.length >= 50;
+        if (gotOwners) HOLDERS_SRC[t.sym] = 'moralis';
       } catch (e) { console.log('  moralis owners failed:', e.message.slice(0, 100)); }
       if (!gotOwners && !kept.length) {
         // fallback: Bitquery Holders cube — exact balances as of yesterday (survives a dead Moralis key)
         const yday = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
         const rows = await bqHoldersAt(c, yday, 250, true);
         if (rows && rows.length) {
+          HOLDERS_SRC[t.sym] = 'bq-holders-' + yday; // day-granular balances: source id includes the date so deltas only count on day change
           console.log(`  holders via bitquery Holders cube (as of ${yday}): ${rows.length}`);
           for (const o of rows) {
             seen++;
@@ -1038,7 +1043,7 @@ for (const t of cfg.tokens) {
         top.forEach((h, i) => {
           const o = ref.h[h.addr.toLowerCase()];
           if (!o) { h.rankChange = 'new'; h.usdChange = null; }
-          else { h.rankChange = o.r - (i + 1); h.usdChange = Math.round(h.usd - o.u); }
+          else { h.rankChange = o.r - (i + 1); h.usdChange = o.a != null ? Math.round(((Number(h.amount) || 0) - o.a) * usd) : null; } // value of the BALANCE change at today's price (null for pre-amount snapshots)
         });
       }
       const ref7 = nearest(want7);
@@ -1048,11 +1053,11 @@ for (const t of cfg.tokens) {
         top.forEach((h, i) => {
           const o = ref7.h[h.addr.toLowerCase()];
           if (!o) { h.rankChange7 = 'new'; h.usdChange7 = null; }
-          else { h.rankChange7 = o.r - (i + 1); h.usdChange7 = Math.round(h.usd - o.u); }
+          else { h.rankChange7 = o.r - (i + 1); h.usdChange7 = o.a != null ? Math.round(((Number(h.amount) || 0) - o.a) * usd) : null; }
         });
       }
       // a = token amount so alerts can tell real balance changes from price moves; p = price at snapshot time
-      snaps.push({ ts: nowTs, p: usd, h: Object.fromEntries(top.map((h, i) => [h.addr.toLowerCase(), { r: i + 1, u: Math.round(h.usd), a: Number(h.amount) || 0 }])) });
+      snaps.push({ ts: nowTs, p: usd, src: HOLDERS_SRC[t.sym] || 'none', h: Object.fromEntries(top.map((h, i) => [h.addr.toLowerCase(), { r: i + 1, u: Math.round(h.usd), a: Number(h.amount) || 0 }])) });
       snaps = thinSnaps(snaps);
       ALERTCTX[t.sym] = { prev: snaps.length > 1 ? snaps[snaps.length - 2] : null, cur: snaps[snaps.length - 1], top, price: usd };
       fs.writeFileSync(spath, JSON.stringify(snaps));
@@ -1089,10 +1094,10 @@ for (const t of cfg.tokens) {
           for (const h of top) {
             const o = ref7s.h[h.addr.toLowerCase()];
             if (!o) { entries.push({ addr: h.addr, usd: Math.round(h.usd || 0) }); continue; }
-            const dAmt = (h.amount || 0) - o.u / refPrice;
+            const dAmt = (h.amount || 0) - (o.a != null ? o.a : o.u / refPrice);
             if (Math.abs(dAmt * usd) >= 500) movers.push({ addr: h.addr, amt: Math.round(dAmt), usd: Math.round(dAmt * usd) });
           }
-          for (const k in ref7s.h) { const o = ref7s.h[k]; if (o.r <= 100 && !curSet.has(k)) exits.push({ addr: k, usd: Math.round(o.u), amt: Math.round(o.u / refPrice) }); }
+          for (const k in ref7s.h) { const o = ref7s.h[k]; if (o.r <= 100 && !curSet.has(k)) exits.push({ addr: k, usd: Math.round(o.u), amt: Math.round(o.a != null ? o.a : o.u / refPrice) }); }
           movers.sort((a, b) => b.usd - a.usd);
           entries.sort((a, b) => b.usd - a.usd); exits.sort((a, b) => b.usd - a.usd);
         }

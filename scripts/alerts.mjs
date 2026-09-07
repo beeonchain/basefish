@@ -24,9 +24,19 @@ export function buildAlerts(ctx, schools, { CEX_RX, WALLET_DIR }) {
   const alerts = [];
   const push = (a) => alerts.push({ id: a.kind + ':' + (a.addr || a.school || '') + ':' + a.sym + ':' + Math.round(now / 36e5), ts: now, ...a });
 
+  const excluded = jread('data/excluded.json', {}); // infra wallets (CEX/pool/bridge) — never "exit" alerts, they were filtered not sold
   for (const [sym, c] of Object.entries(ctx)) {
     if (!c || !c.top) continue;
-    const prev = c.prev, byAddr = Object.fromEntries(c.top.map((h) => [h.addr.toLowerCase(), h]));
+    let prev = c.prev;
+    const byAddr = Object.fromEntries(c.top.map((h) => [h.addr.toLowerCase(), h]));
+    // Guard 1: snapshots from different holder sources (Moralis live vs Bitquery day-old vs …) are not comparable —
+    // a source flip would look like mass buying/selling/entries/exits. Skip delta alerts for that run.
+    const fam = (x) => String(x || '').replace(/-\d{4}-\d\d-\d\d$/, ''); // 'bq-holders-2026-09-07' -> 'bq-holders'
+    if (prev && c.cur && (prev.src || c.cur.src) && fam(prev.src) !== fam(c.cur.src)) { console.log(`alerts ${sym}: source changed ${prev.src} -> ${c.cur.src}, delta alerts skipped`); prev = null; }
+    // Guard 2: day-granular source and same day as the previous snapshot = identical balances, nothing to compare
+    if (prev && c.cur && /^bq-holders-/.test(prev.src || '') && prev.src === c.cur.src) prev = null;
+    const pending = [];
+    const push2 = (a) => pending.push(a);
     if (prev) {
       // whale moves: TOKEN balance change since the previous snapshot (~2h) worth ≥ $100k at the current price.
       // (Comparing USD values conflated price swings with selling — a -20% day read as "sold $106K".)
@@ -36,17 +46,25 @@ export function buildAlerts(ctx, schools, { CEX_RX, WALLET_DIR }) {
         if (!o || o.a == null || !price) continue; // old snapshots without amounts: no whale claims
         const dAmt = (Number(h.amount) || 0) - o.a;
         const d = Math.round(dAmt * price);
-        if (Math.abs(d) >= TH.whale && Math.abs(dAmt) >= o.a * 0.002) push({ kind: 'whale', sym, addr: h.addr, usd: d, title: `${nameFor(h)} ${d > 0 ? 'accumulated' : 'sold'} ${musd(d)} of $${sym}`, sub: `rank #${c.top.indexOf(h) + 1} · now holds ${musd(h.usd || 0)}` });
+        if (o.a <= 0) continue;
+        if (Math.abs(d) >= TH.whale && Math.abs(dAmt) >= o.a * 0.002) push2({ kind: 'whale', sym, addr: h.addr, usd: d, title: `${nameFor(h)} ${d > 0 ? 'accumulated' : 'sold'} ${musd(d)} of $${sym}`, sub: `rank #${c.top.indexOf(h) + 1} · now holds ${musd(h.usd || 0)}` });
       }
       // entries into the top 20 / exits from the top 10
       const prevRank = (a) => (prev.h[a] ? prev.h[a].r : Infinity);
       c.top.slice(0, TH.entryTop).forEach((h, i) => {
-        if (prevRank(h.addr.toLowerCase()) > TH.entryTop) push({ kind: 'entry', sym, addr: h.addr, usd: h.usd || 0, title: `${nameFor(h)} entered the $${sym} top ${TH.entryTop} at #${i + 1}`, sub: `holding ${musd(h.usd || 0)}` });
+        const o = prev.h[h.addr.toLowerCase()];
+        // entered the top 20 by BUYING (balance up ≥1%) or by being new to the top 100 — not by others being removed above it
+        const bought = !o || o.a == null || (Number(h.amount) || 0) >= o.a * 1.01;
+        if (prevRank(h.addr.toLowerCase()) > TH.entryTop && bought) push2({ kind: 'entry', sym, addr: h.addr, usd: h.usd || 0, title: `${nameFor(h)} entered the $${sym} top ${TH.entryTop} at #${i + 1}`, sub: `holding ${musd(h.usd || 0)}` });
       });
       for (const [a, o] of Object.entries(prev.h)) {
-        if (o.r <= TH.exitTop && !byAddr[a]) push({ kind: 'exit', sym, addr: a, usd: -o.u, title: `Top-${TH.exitTop} wallet ${short(a)} left the $${sym} top 100`, sub: `was #${o.r} with ${musd(o.u)}` });
+        if (o.r <= TH.exitTop && !byAddr[a] && !excluded[a]) push2({ kind: 'exit', sym, addr: a, usd: -o.u, title: `Top-${TH.exitTop} wallet ${short(a)} left the $${sym} top 100`, sub: `was #${o.r} with ${musd(o.u)}` });
       }
     }
+    // Guard 3: mass churn in one run (many entries/exits/whales at once) is a data artifact, not a market event
+    const n = (k) => pending.filter((a) => a.kind === k).length;
+    if (n('entry') > 6 || n('exit') > 3 || n('whale') > 10) { console.log(`alerts ${sym}: mass churn (${n('entry')} entries, ${n('exit')} exits, ${n('whale')} whales) — dropped as data artifact`); pending.length = 0; }
+    pending.forEach(push);
     // CEX inflows: cached transfers with exchange-labeled counterparties, recent + unseen
     for (const h of c.top) {
       const pw = jread(path.join(WALLET_DIR, h.addr.toLowerCase() + '.json'), null);
@@ -70,7 +88,7 @@ export function buildAlerts(ctx, schools, { CEX_RX, WALLET_DIR }) {
         const k = s.id + ':' + sym, lastPct = state.school[k] || 0, pct = Math.round(((cur - was) / was) * 100);
         if (Math.sign(pct) !== Math.sign(lastPct) || Math.abs(pct) > Math.abs(lastPct) + 5) {
           state.school[k] = pct;
-          push({ kind: 'school', sym, school: s.id, usd: Math.round(cur - was), title: `A ${mem.length}-wallet school moved ${pct > 0 ? '+' : ''}${pct}% on $${sym}`, sub: `combined position now ${musd(cur)}` });
+          push2({ kind: 'school', sym, school: s.id, usd: Math.round(cur - was), title: `A ${mem.length}-wallet school moved ${pct > 0 ? '+' : ''}${pct}% on $${sym}`, sub: `combined position now ${musd(cur)}` });
         }
       }
     }
