@@ -1113,24 +1113,61 @@ async function fetchAlerts(){try{const r=await fetch('data/alerts.json?t='+Date.
 function alertSeenTs(){try{return +localStorage.getItem('bf_alertSeen')||0}catch(e){return 0}}
 function markAlertsSeen(){try{localStorage.setItem('bf_alertSeen',String(Date.now()))}catch(e){}updateAlertBadge()}
 function updateAlertBadge(){const b=document.getElementById('alertBadge');if(!b)return;const n=ALERTS.filter(a=>a.ts>alertSeenTs()).length;b.style.display=n?'':'none';b.textContent=n>9?'9+':n}
+let alertOpen=new Set(); // expanded wallet rows
+async function alertNames(){ // addr -> best display name across every tracked token
+  const m={};
+  for(const tk of TOKENS){const d=REAL?await tokData(tk.sym):null;(d&&d.holdersTop||[]).forEach(h=>{const n=h.entity||h.basename;if(n&&!m[h.addr.toLowerCase()])m[h.addr.toLowerCase()]=n})}
+  return m;
+}
 async function renderAlerts(){
   const el=document.getElementById('alertsView');
   if(!ALERTS.length)await fetchAlerts();
+  const seenTs=alertSeenTs();
   markAlertsSeen();
+  const names=await alertNames();
   const toks=['ALL',...TOKENS.map(t=>t.sym)];
   const rows=ALERTS.filter(a=>alertTokFilter==='ALL'||a.sym===alertTokFilter);
+  // group by actor: wallet address, or school id
+  const groups=new Map();
+  for(const a of rows){
+    const key=a.addr?a.addr.toLowerCase():(a.school?'school:'+a.school:'misc');
+    if(!groups.has(key))groups.set(key,{key,addr:a.addr?a.addr.toLowerCase():null,school:a.school||null,items:[],syms:new Set(),kinds:new Set(),net:0,last:0,unread:0});
+    const g=groups.get(key);g.items.push(a);g.syms.add(a.sym);g.kinds.add(a.kind);g.net+=(a.usd||0);g.last=Math.max(g.last,a.ts);if(a.ts>seenTs)g.unread++;
+  }
+  const list=[...groups.values()].sort((x,y)=>y.last-x.last);
+  const wallets=list.filter(g=>g.addr),schools=list.filter(g=>g.school);
+  const nameOf=g=>g.addr?(names[g.addr]||short(g.addr)):`School ${String(g.school).slice(0,6)}`;
+  const latest=[...rows].sort((x,y)=>y.ts-x.ts).slice(0,3);
+  const item=a=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:12px">
+      <span style="display:flex;gap:8px;min-width:0"><span>${AICON[a.kind]||'🔔'}</span><span style="min-width:0"><b>${esc(a.title)}</b><br><small style="color:var(--muted)">${esc(a.sub||'')}</small></span></span>
+      <span style="white-space:nowrap;color:var(--dim);font-size:11px;text-align:right">$${a.sym}<br>${agoStr(a.ts)} ago${a.hash?` · <a href="https://basescan.org/tx/${a.hash}" target="_blank" rel="noopener" style="color:var(--dim);font-weight:700">tx ↗</a>`:''}</span></div>`;
+  const row=g=>{const open=alertOpen.has(g.key);const kindsIc=[...g.kinds].map(k=>AICON[k]||'🔔').join('');
+    return `<div style="border-bottom:1px solid var(--line)">
+      <button class="flowrow" style="padding:11px 14px;border:0" onclick="alertOpen.has('${g.key}')?alertOpen.delete('${g.key}'):alertOpen.add('${g.key}');renderAlerts()">
+        <span style="display:flex;gap:10px;align-items:center;min-width:0">
+          <span style="color:var(--dim);font-size:10px;width:10px">${open?'▾':'▸'}</span>
+          <span style="min-width:0"><b>${esc(nameOf(g))}</b>${g.unread?` <i style="display:inline-block;width:7px;height:7px;background:var(--coral);vertical-align:middle;margin-left:4px" title="${g.unread} new"></i>`:''}<br>
+            <small style="color:var(--muted)">${kindsIc} ${g.items.length} alert${g.items.length===1?'':'s'} · ${[...g.syms].map(s=>'$'+s).join(' ')} · last ${agoStr(g.last)} ago</small></span></span>
+        <b class="mono ${g.net>=0?'up':'down'}" style="white-space:nowrap">${g.net>=0?'+':'−'}${usd(Math.abs(g.net))}<br><small style="color:var(--dim);font-weight:400">net</small></b>
+      </button>
+      ${open?`<div style="padding:0 14px 12px 34px">
+        ${g.addr?`<div style="display:flex;gap:8px;margin:2px 0 6px"><button onclick="openProfileByAddr('${g.addr}')" style="border:1px solid var(--line);padding:4px 9px;font-size:11px;font-weight:700;color:var(--teal)">Open wallet page →</button><span class="mono" style="font-size:11px;color:var(--dim);align-self:center">${g.addr}</span></div>`:''}
+        ${g.items.sort((x,y)=>y.ts-x.ts).slice(0,alertOpen.has(g.key+':all')?9999:25).map(item).join('')}
+        ${g.items.length>25&&!alertOpen.has(g.key+':all')?`<button onclick="alertOpen.add('${g.key}:all');renderAlerts()" style="margin-top:8px;font-size:11px;font-weight:700;color:var(--teal)">show all ${g.items.length} →</button>`:''}
+      </div>`:''}
+    </div>`};
+  const section=(title,gs)=>gs.length?`<div style="border:1px solid var(--line);background:var(--panel)">
+      <div style="padding:9px 14px;font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)">${title} <span style="color:var(--dim);font-weight:400">· ${gs.length}</span></div>${gs.map(row).join('')}</div>`:'';
   el.innerHTML=`<div style="padding:16px;display:flex;flex-direction:column;gap:14px">
-    <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><h3 style="margin:0;font-size:16px">Alerts</h3><span style="color:var(--dim);font-size:11.5px">detected on every refresh (~2h, or hit ⟳ REFRESH) · popups appear live while you're here</span></div>
+    <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><h3 style="margin:0;font-size:16px">Alerts</h3><span style="color:var(--dim);font-size:11.5px">instant on-chain + refresh digest · grouped by wallet, click to expand</span></div>
     <div style="display:flex;gap:6px;flex-wrap:wrap">${toks.map(s=>`<button onclick="alertTokFilter='${s}';renderAlerts()" style="padding:5px 10px;border:1px solid ${alertTokFilter===s?'var(--teal)':'var(--line)'};color:${alertTokFilter===s?'var(--teal)':'var(--muted)'};font-weight:700;font-size:11px">${s==='ALL'?'All tokens':'$'+s}</button>`).join('')}</div>
-    ${TG_BOT?`<div style="border:1px solid var(--line);background:var(--panel2);padding:11px 14px;font-size:12px">📲 Get these in Telegram → <a href="https://t.me/${TG_BOT}" target="_blank" rel="noopener" style="color:var(--teal);font-weight:800">@${TG_BOT}</a> — /start subscribes, /help shows filters &amp; custom wallet watches</div>`:''}
-    <div style="border:1px solid var(--line);background:var(--panel)">
-    ${rows.length?rows.map(a=>`<div class="flowrow" style="padding:10px 14px;cursor:${a.addr?'pointer':'default'}" ${a.addr?`onclick="openProfileByAddr('${a.addr}')"`:''}>
-      <span style="display:flex;gap:10px;align-items:center;min-width:0"><span style="font-size:16px">${AICON[a.kind]||'🔔'}</span>
-        <span style="min-width:0"><b>${esc(a.title)}</b><br><small style="color:var(--muted)">${esc(a.sub||'')}</small></span></span>
-      <span style="text-align:right;white-space:nowrap;color:var(--dim);font-size:11px">$${a.sym}<br>${agoStr(a.ts)} ago${a.hash?` · <a href="https://basescan.org/tx/${a.hash}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--dim);font-weight:700">tx ↗</a>`:''}</span>
-    </div>`).join(''):'<div style="padding:26px;color:var(--dim)">No alerts yet in this window. Calm waters — they show up here as refreshes detect whale moves, entries/exits, exchange inflows and school swings.</div>'}
-    </div>
-    <div style="color:var(--dim);font-size:11px">🐋 whale move ≥$100K · 🎣 entered top 20 · 🏃 top-10 exit · 🏦 exchange inflow ≥$250K · 🕸 school swing ≥10% · 👁 custom watch · not financial advice</div>
+    ${latest.length?`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">${latest.map(a=>`<button class="flowrow" style="border:1px solid var(--line);background:var(--panel);padding:10px 12px;display:block;text-align:left" ${a.addr?`onclick="openProfileByAddr('${a.addr}')"`:''}>
+        <small style="color:var(--dim);font-size:10px;letter-spacing:.4px;text-transform:uppercase">${AICON[a.kind]||'🔔'} latest · ${agoStr(a.ts)} ago</small><br><b style="font-size:12px">${esc(a.title)}</b></button>`).join('')}</div>`:''}
+    ${TG_BOT?`<div style="border:1px solid var(--line);background:var(--panel2);padding:10px 14px;font-size:12px">📲 Instant alerts in Telegram → <a href="https://t.me/${TG_BOT}" target="_blank" rel="noopener" style="color:var(--teal);font-weight:800">@${TG_BOT}</a> — /start subscribes, /watch 0x… TOKEN follows any wallet live</div>`:''}
+    ${section('Wallets',wallets)}
+    ${section('Schools',schools)}
+    ${!list.length?'<div style="padding:26px;color:var(--dim);border:1px solid var(--line)">No alerts in this window yet. Calm waters.</div>':''}
+    <div style="color:var(--dim);font-size:11px">🐋 whale move · 🎣 entered top 20 · 🏃 top-10 exit · 🏦 exchange flow · 🕸 school swing · 👁 custom watch · net = sum of the wallet's alerted moves at current prices · not financial advice</div>
   </div>`;
 }
 /* live popups: poll the feed; toast anything new while the user is on the site */

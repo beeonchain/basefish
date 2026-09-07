@@ -12,6 +12,18 @@ const CEX_RX = /coinbase|binance|kraken|okx|bybit|upbit|bithumb|\bgate\b|kucoin|
 
 let ctx = null, ctxAt = 0; // tokens/prices/top100/excluded/subs, cached ~90s per instance
 const seen = new Set(); // tx-hash dedupe per instance
+const recent = new Map(); // addr -> [ts...] public alerts fired by this instance
+const THROTTLE = { minGapMs: 30 * 60e3, maxPerDay: 6 }; // one public alert per wallet per 30 min; >6/day = market-maker noise, muted
+function throttled(addr, feed) {
+  const now = Date.now();
+  const mine = (recent.get(addr) || []).filter((t) => now - t < 864e5);
+  const inFeed = feed.filter((a) => a.addr && a.addr.toLowerCase() === addr && now - a.ts < 864e5).map((a) => a.ts);
+  const all = [...mine, ...inFeed];
+  if (all.some((t) => now - t < THROTTLE.minGapMs)) return true;
+  if (all.length >= THROTTLE.maxPerDay) return true;
+  mine.push(now); recent.set(addr, mine);
+  return false;
+}
 const short = (a) => a.slice(0, 6) + '…' + a.slice(-4);
 const musd = (v) => { const x = Math.abs(v); return x >= 1e6 ? '$' + (x / 1e6).toFixed(2) + 'M' : x >= 1e3 ? '$' + (x / 1e3).toFixed(0) + 'K' : '$' + x.toFixed(0); };
 
@@ -30,7 +42,8 @@ async function loadCtx() {
   const excludedRaw = (await g('excluded.json')) || {};
   const cex = {}; for (const [a, l] of Object.entries(excludedRaw)) if (CEX_RX.test(String(l))) cex[a] = l;
   const subs = (await g('tg_subs.json')) || { chats: {} };
-  ctx = { tokens, cex, subs };
+  const feed = ((await g('alerts.json')) || {}).alerts || [];
+  ctx = { tokens, cex, subs, feed };
   ctxAt = Date.now();
   return ctx;
 }
@@ -68,7 +81,7 @@ export default async (req) => {
   let body; try { body = JSON.parse(raw); } catch { return new Response('ok'); }
   const acts = (body.event && body.event.activity) || [];
   if (!acts.length) return new Response('ok');
-  const { tokens, cex, subs } = await loadCtx();
+  const { tokens, cex, subs, feed: feedCtx } = await loadCtx();
   const feed = []; let msgs = 0;
   for (const a of acts) {
     const contract = String((a.rawContract && a.rawContract.address) || '').toLowerCase();
@@ -94,6 +107,7 @@ export default async (req) => {
     if (usd >= TH.whale && (tok.top.has(from) || tok.top.has(to)) && !seen.has(hash)) {
       seen.add(hash);
       const whale = tok.top.has(from) ? from : to, dir = tok.top.has(from) ? 'sent' : 'received';
+      if (throttled(whale, feedCtx)) continue;
       const name = tok.names[whale] || short(whale);
       const toCex = cex[to] && usd >= TH.cex, fromCex = cex[from] && usd >= TH.cex;
       const kind = toCex || fromCex ? 'cex' : 'whale';
