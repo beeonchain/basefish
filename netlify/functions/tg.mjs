@@ -117,6 +117,7 @@ export default async (req) => {
       dirty = p.watches.length !== before;
       out = dirty ? 'Removed.' : 'That wallet was not on your watch list.'; break; }
     case '/list': case '/settings': out = fmtPrefs(p); break;
+    case '/id': case '/whoami': out = `Your chat id: <code>${chat}</code>${ADMINS.has(chat) ? ' (admin)' : ''}`; break;
     case '/broadcast': { // admin: service message to every subscriber (paused ones included)
       if (!ADMINS.has(chat)) { out = HELP; break; }
       if (!arg) { out = 'Usage: /broadcast your message (HTML ok: <b>bold</b>, <a href="...">link</a>)'; break; }
