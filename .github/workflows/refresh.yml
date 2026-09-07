@@ -26,6 +26,7 @@ jobs:
           ARKHAM_API_KEY: ${{ secrets.ARKHAM_API_KEY }}
           BITQUERY_TOKEN: ${{ secrets.BITQUERY_TOKEN }}
           FRONTRUN_API_KEY: ${{ secrets.FRONTRUN_API_KEY }}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
         run: node scripts/fetch.mjs
       - name: Commit data
         run: |
