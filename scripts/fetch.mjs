@@ -1312,11 +1312,11 @@ if (process.env.ALCH_NOTIFY_TOKEN) {
     try { const subs = JSON.parse(fs.readFileSync('data/tg_subs.json', 'utf8')); for (const c of Object.values(subs.chats || {})) for (const w of c.watches || []) want.add(w.w.toLowerCase()); } catch {}
     try { const us = JSON.parse(fs.readFileSync('data/users.json', 'utf8')); for (const u of Object.values(us.users || {})) for (const w of u.watches || []) want.add(w.w.toLowerCase()); } catch {}
     const have = new Set(); let after = null;
-    for (let i = 0; i < 40; i++) {
-      const r = await fetch(`https://dashboard.alchemy.com/api/webhook-addresses?webhook_id=${WH}&limit=1000${after ? `&after=${after}` : ''}`, { headers: H });
-      if (!r.ok) throw new Error('list ' + r.status);
+    for (let i = 0; i < 200; i++) { // 100 per page (API max), cursor pagination
+      const r = await fetch(`https://dashboard.alchemy.com/api/webhook-addresses?webhook_id=${WH}&limit=100${after ? `&after=${encodeURIComponent(after)}` : ''}`, { headers: H });
+      if (!r.ok) throw new Error('list ' + r.status + ' ' + (await r.text()).slice(0, 80));
       const d = await r.json(); (d.data || []).forEach(a => have.add(String(a).toLowerCase()));
-      after = d.pagination && d.pagination.after_cursor; if (!after) break;
+      after = d.pagination && d.pagination.cursors && d.pagination.cursors.after; if (!after || !(d.data || []).length) break;
     }
     const add = [...want].filter(a => !have.has(a)), remove = [...have].filter(a => !want.has(a));
     for (let i = 0; i < Math.max(add.length, remove.length); i += 500) {
