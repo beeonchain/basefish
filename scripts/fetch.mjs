@@ -179,11 +179,15 @@ let fundCache = {}; try { fundCache = JSON.parse(fs.readFileSync(FUND_PATH, 'utf
 let fundBudget = 150;
 const CEX_RX = /coinbase|binance|kraken|okx|bybit|upbit|bithumb|\bgate\b|kucoin|mexc|bitget|htx|crypto\.com|bitpanda|bitvavo|bitstamp|gemini|robinhood|exchange|deposit/i;
 const BRIDGE_RX = /bridge|stargate|across|hop protocol|wormhole|layerzero|relay|orbiter|debridge|synapse|portal/i;
+let fundUpgradeBudget = 30;
 async function fundingFor(addr) {
   const a = addr.toLowerCase();
-  if (fundCache[a] !== undefined) return fundCache[a]; // null means checked: no usable data
-  if (!ARKHAM_KEY || fundBudget <= 0 || profileBudget <= 10) return undefined; // try again next run
-  fundBudget--;
+  const cached = fundCache[a];
+  // upgrade older records (pre tx-hash) lazily, ~30 per run, so wallet pages get the funding tx link
+  const needsUpgrade = cached && cached.hash === undefined && fundUpgradeBudget > 0;
+  if (cached !== undefined && !needsUpgrade) return cached; // null means checked: no usable data
+  if (!ARKHAM_KEY || fundBudget <= 0 || profileBudget <= 10) return cached === undefined ? undefined : cached; // try again next run
+  fundBudget--; if (needsUpgrade) fundUpgradeBudget--;
   const t = await arkhamGet(`/transfers?base=${addr}&limit=6&sortDir=asc`);
   if (!t) return undefined; // transient — do not cache a failure
   const arr = (t.transfers || t.result || (Array.isArray(t) ? t : [])) || [];
@@ -202,7 +206,10 @@ async function fundingFor(addr) {
   if (fType === 'cex' || CEX_RX.test(hay)) kind = 'cex';
   else if (BRIDGE_RX.test(hay)) kind = 'bridge';
   const rec = { funder: /^0x[0-9a-f]{40}$/.test(from) ? from : null, funderLabel: cleanLabel(fLbl), kind,
-    firstTs: first.blockTimestamp || first.timestamp || first.time || null };
+    firstTs: first.blockTimestamp || first.timestamp || first.time || null,
+    hash: first.transactionHash || first.txHash || first.hash || null,
+    usd: Number(first.historicalUSD || first.usd || 0) || null,
+    token: String(first.tokenSymbol || first.symbol || (first.tokenName || '') || 'ETH').toUpperCase() };
   fundCache[a] = rec;
   return rec;
 }
@@ -589,6 +596,15 @@ const BURN = new Set([
   '0x000000000000000000000000000000000000dead',
 ]);
 // Labels/entities we exclude from the top-100 (pools, CEXs, bridges, lockers)
+// classify an excluded (infrastructure) wallet for the "show infrastructure" toggle on the site
+const infraKind = (label) => { const l = String(label || '').toLowerCase();
+  if (/binance|coinbase|bybit|okx|\bgate\b|kucoin|mexc|bitget|htx|kraken|crypto\.com|bitpanda|bitvavo|bitstamp|gemini|robinhood|upbit|bithumb|exchange|cex/.test(l)) return 'cex';
+  if (/bridge/.test(l)) return 'bridge';
+  if (/uniswap|aerodrome|pancake|sushi|baseswap|alien.?base|pool|liquidity|\blp\b|\bdex\b/.test(l)) return 'pool';
+  if (/locker|timelock|vesting|staking/.test(l)) return 'locker';
+  if (/wintermute|market maker|\bmm\b/.test(l)) return 'mm';
+  if (/burn|dead/.test(l)) return 'burn';
+  return 'contract'; };
 const EXCLUDE_RX = /uniswap|aerodrome|pancake|sushi|baseswap|alien.?base|pool|liquidity|\blp\b|exchange|binance|coinbase|bybit|okx|gate|kucoin|mexc|bitget|htx|kraken|crypto\.com|bridge|locker|timelock|vesting|multisig deployer|wintermute|market maker/i;
 
 async function j(url, tries = 3) {
@@ -914,6 +930,8 @@ for (const t of cfg.tokens) {
     const perToken = new Set((t.exclude || []).map(a => a.toLowerCase()));
     const knownLabel = (a) => { const lc = labelCache[a]; return (lc && (lc.name || lc.label)) || ''; };
     let kept = [], seen = 0;
+    const infra = []; // excluded CEX/pool/bridge/… wallets, kept aside so the site can show them at their true rank
+    const noteInfra = (addr, amount, label, why) => { if (amount > 0) infra.push({ addr, amount, pct: supply ? amount / supply * 100 : 0, usd: amount * usd, label: label || why || null, kind: infraKind(label || why) }); };
 
     // holders: Bitquery primary
     HOLDERS_SRC[t.sym] = 'none';
@@ -926,7 +944,7 @@ for (const t of cfg.tokens) {
         const a = o.addr.toLowerCase();
         if (BURN.has(a) || a === c || perToken.has(a)) continue;
         const kl = knownLabel(a);
-        if (kl && EXCLUDE_RX.test(kl)) { exclCache[a] = kl; console.log('  excluded:', a.slice(0, 10), kl); continue; }
+        if (kl && EXCLUDE_RX.test(kl)) { exclCache[a] = kl; noteInfra(o.addr, o.amount, kl); console.log('  excluded:', a.slice(0, 10), kl); continue; }
         kept.push({ addr: o.addr, amount: o.amount, pct: supply ? o.amount / supply * 100 : 0, usd: o.amount * usd, label: kl || null, isContract: false });
       }
     } else {
@@ -941,8 +959,8 @@ for (const t of cfg.tokens) {
             const a = (o.owner_address || '').toLowerCase();
             const label = o.owner_address_label || o.entity || '';
             if (BURN.has(a) || a === c || perToken.has(a)) continue;
-            if (label && EXCLUDE_RX.test(label)) { exclCache[a] = label; console.log('  excluded:', a.slice(0, 10), label); continue; }
             const amount = Number(o.balance_formatted) || 0;
+            if (label && EXCLUDE_RX.test(label)) { exclCache[a] = label; noteInfra(o.owner_address, amount, label); console.log('  excluded:', a.slice(0, 10), label); continue; }
             kept.push({ addr: o.owner_address, amount, pct: Number(o.percentage_relative_to_total_supply) || (supply ? amount / supply * 100 : 0), usd: Number(o.usd_value) || amount * usd, label: label || null, isContract: !!o.is_contract });
           }
           cursor = page.cursor || ''; pages++; if (!cursor) break;
@@ -962,8 +980,8 @@ for (const t of cfg.tokens) {
             const a = o.addr;
             if (BURN.has(a) || a === c || perToken.has(a)) continue;
             const kl = knownLabel(a);
-            if (kl && EXCLUDE_RX.test(kl)) { exclCache[a] = kl; continue; }
-            if (exclCache[a]) continue;
+            if (kl && EXCLUDE_RX.test(kl)) { exclCache[a] = kl; noteInfra(o.addr, o.amount, kl); continue; }
+            if (exclCache[a]) { noteInfra(o.addr, o.amount, exclCache[a]); continue; }
             kept.push({ addr: o.addr, amount: o.amount, pct: supply ? o.amount / supply * 100 : 0, usd: o.amount * usd, label: kl || null, isContract: false });
           }
         }
@@ -986,7 +1004,7 @@ for (const t of cfg.tokens) {
     }
     const filtered = kept.filter(h => {
       const drop = h.entityType && EXCLUDE_TYPES.has(String(h.entityType).toLowerCase());
-      if (drop) exclCache[h.addr.toLowerCase()] = h.entity || h.label || h.entityType;
+      if (drop) { exclCache[h.addr.toLowerCase()] = h.entity || h.label || h.entityType; noteInfra(h.addr, h.amount, h.entity || h.label, h.entityType); }
       return !drop;
     });
     const dropped = kept.length - filtered.length;
@@ -1074,8 +1092,9 @@ for (const t of cfg.tokens) {
         const byDayF = new Map(); // last snapshot of each UTC day
         for (const s of snapsF) byDayF.set(new Date(s.ts).toISOString().slice(0, 10), s);
         const daily = [...byDayF.values()].sort((a, b) => a.ts - b.ts);
-        const totAmt = (s) => { const p2 = priceAt(s.ts) || 1; let a2 = 0; for (const k in s.h) { const o = s.h[k]; if (o.r <= 100) a2 += o.u / p2; } return a2; };
-        const series = daily.map(s => ({ ts: s.ts, amt: Math.round(totAmt(s)) }));
+        const totAmt = (s) => { const p2 = priceAt(s.ts) || 1; let a2 = 0; for (const k in s.h) { const o = s.h[k]; if (o.r <= 100) a2 += (o.a != null ? o.a : o.u / p2); } return a2; };
+        // series carries the day's price too, so the site can overlay price and value balances without re-fetching
+        const series = daily.map(s => { const p2 = s.p || priceAt(s.ts) || usd; const amt = Math.round(totAmt(s)); return { ts: s.ts, amt, p: +Number(p2).toPrecision(6), usd: Math.round(amt * p2) }; });
         const nowS = snapsF[snapsF.length - 1], nowAmt = totAmt(nowS);
         const nearestS = (target) => daily.reduce((b, s) => Math.abs(s.ts - target) < Math.abs(b.ts - target) ? s : b);
         const net = (daysN) => {
@@ -1155,6 +1174,9 @@ for (const t of cfg.tokens) {
       price: usd, chg, mcap, vol, holders, changeRefH, changeRef7D, flows,
       generated_at: index.generated_at,
       holdersTop: top, recent,
+      // infrastructure wallets (CEX / pools / bridges / lockers / market makers) that are excluded from the ranking;
+      // rank = where they'd sit among the real holders if included. Site shows them behind a toggle.
+      infra: infra.sort((a, b) => b.usd - a.usd).slice(0, 40).map((x) => ({ ...x, rank: 1 + top.filter((h) => (h.usd || 0) > x.usd).length + infra.filter((y) => y.usd > x.usd).length })),
     };
     fs.writeFileSync(path.join('data', `${t.sym.toLowerCase()}.json`), JSON.stringify(out));
     ALLTOPS[t.sym] = top;

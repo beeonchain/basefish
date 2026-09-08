@@ -1,4 +1,4 @@
-// Shared helpers for Basefish functions: GitHub-backed JSON store, sessions (JWT), user records.
+// Shared helpers for Walletsea functions: GitHub-backed JSON store, sessions (JWT), user records.
 // Users live in data/users.json (committed via the Contents API — same pattern as tg_subs.json;
 // netlify.toml skips builds for that file). Keep writes rare: sign-in, watch add/remove, hits.
 import crypto from 'node:crypto';
@@ -61,7 +61,7 @@ export function nonceFor(addr, bucketOffset = 0) {
   const b = Math.floor(Date.now() / 3e5) + bucketOffset;
   return crypto.createHmac('sha256', secret()).update(`nonce:${addr.toLowerCase()}:${b}`).digest('hex').slice(0, 16);
 }
-export const siweMessage = (addr, nonce) => `Sign in to Basefish\n\nWallet: ${addr}\nNonce: ${nonce}\n\nThis signature costs no gas and only proves you own this wallet.`;
+export const siweMessage = (addr, nonce) => `Sign in to Walletsea\n\nWallet: ${addr}\nNonce: ${nonce}\n\nThis signature costs no gas and only proves you own this wallet.`;
 
 // ---- user records ----
 // users.json = { users: { uid: { label, kind:'wallet'|'google', addr?, email?, watches:[{w,t}], hits:[...], tg?: chatId, link?: {code,exp}, created, seen } } }

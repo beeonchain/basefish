@@ -1,7 +1,7 @@
-# Basefish 🐟
+# WALLETSEA 🌊
 
-Top 100 holders of Base ecosystem tokens, visualised as a living aquarium.
-Community project — not affiliated with Base, Coinbase, or any token team.
+The top holders of Base tokens as a living sea of wallets — whales, schools, flows, instant alerts.
+Live at https://basefish.netlify.app (domain pending). Not affiliated with Base, Coinbase, or any token team.
 
 ## How it works
 - `scripts/fetch.mjs` pulls top holders, prices and recent transfers from Moralis (every ~2h via GitHub Actions) and writes static JSON into `data/`.
