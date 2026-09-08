@@ -1326,8 +1326,9 @@ if (process.env.ALCH_NOTIFY_TOKEN) {
       if (!r.ok) { console.log('webhook sync patch', r.status, (await r.text()).slice(0, 100)); break; }
     }
     console.log(`webhook address sync: ${have.size} -> ${want.size} (+${add.length} / -${remove.length})`);
-  } catch (e) { console.log('webhook sync skipped:', e.message.slice(0, 100)); }
-}
+    RUNLOG.webhook = { have: have.size, want: want.size, added: add.length, removed: remove.length };
+  } catch (e) { console.log('webhook sync skipped:', e.message.slice(0, 100)); RUNLOG.webhook = { error: e.message.slice(0, 120) }; }
+} else RUNLOG.webhook = { skipped: 'no ALCH_NOTIFY_TOKEN' };
 
 // ---- alerts: detect events, publish the site feed, push Telegram ----
 try {
@@ -1337,3 +1338,4 @@ try {
   console.log(`alerts: ${publicAlerts.length} public (${fresh} new in feed), ${watchAlerts.length} watch hits`);
   await sendTelegram(publicAlerts, watchAlerts);
 } catch (e) { console.log('alerts err', e.message.slice(0, 120)); }
+fs.writeFileSync('data/run_log.json', JSON.stringify(RUNLOG, null, 1));
