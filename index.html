@@ -74,7 +74,16 @@
   #hqDrop small{color:var(--dim)}
   @media (max-width:1350px){.hsearch input{width:120px}}
   @media (prefers-reduced-motion:reduce){.tank .glass{display:none}}
-  .tokpick{display:flex;gap:4px;margin-left:12px;padding:3px;border:1px solid var(--line);border-radius:0;background:var(--panel)}
+  .tokpick{display:flex;gap:4px;margin-left:12px;padding:3px;border:1px solid var(--line);border-radius:0;background:var(--panel);max-width:46vw;overflow-x:auto;scrollbar-width:thin;position:relative}
+  .tokpick::-webkit-scrollbar{height:4px}.tokpick::-webkit-scrollbar-thumb{background:var(--line)}
+  .tokall{position:relative;margin-left:6px}
+  .tokall>button{padding:7px 10px;border:1px solid var(--line);background:var(--panel);font-weight:800;font-size:11.5px;font-family:var(--font-mono);color:var(--muted);white-space:nowrap}
+  .tokmenu{position:absolute;top:100%;right:0;z-index:30;width:380px;max-height:70vh;overflow:auto;background:var(--panel);border:1px solid var(--line);box-shadow:0 10px 30px rgba(10,11,13,.15);display:none}
+  .tokmenu.open{display:block}
+  .tokmenu input{width:100%;box-sizing:border-box;padding:9px 12px;border:0;border-bottom:1px solid var(--line);font:600 12px var(--font-mono);background:var(--panel2)}
+  .tokmenu .trow{display:flex;align-items:center;gap:9px;width:100%;padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:12px}
+  .tokmenu .trow:hover{background:var(--panel2)}.tokmenu .trow img,.tokmenu .trow i{width:16px;height:16px;flex:none;display:inline-block}
+  .tokmenu .trow b{font-family:var(--font-mono)}.tokmenu .trow small{color:var(--dim);margin-left:auto;font-family:var(--font-mono);white-space:nowrap}
   .tokpick button{padding:6px 10px;border-radius:0;font-weight:700;color:var(--muted);font-size:11.5px;font-family:var(--font-mono);display:flex;align-items:center;gap:6px}
   .tokpick button i{width:8px;height:8px;border-radius:0;display:inline-block}
   .tokpick button.on{background:var(--text);color:#fff}
@@ -307,6 +316,7 @@
   <header class="head">
     <div><h2>Aquarium <em class="by">by Walletsea</em></h2><div class="sub">Every wallet is a fish. Top 100, live from Base.</div></div>
     <div class="tokpick" id="tokpick"></div>
+    <div class="tokall" id="tokall" style="display:none"><button id="tokallBtn">ALL TOKENS ▾</button><div class="tokmenu" id="tokmenu"></div></div>
     <div class="stats">
       <div><small>Holders</small><b class="mono" id="stHolders">—</b></div>
       <div><small>Top 100 hold</small><b class="mono" id="stTop">—</b></div>
@@ -850,6 +860,7 @@ function renderChrome(){
   document.getElementById('holdList').innerHTML=L.slice(0,7).map((h,i)=>`<button data-i="${i}"><span class="n">${h.rank}</span><span style="width:26px;height:19px;flex:none"><img src="assets/tank/${h.rank===1?'king':h.tier}.webp" style="width:26px;height:19px;object-fit:contain" onerror="this.style.display='none'"></span><span><div class="a">${short(h.addr)}</div>${(h.entity||h.label)?`<div style="font-size:9.5px;color:var(--teal);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc((h.entity||h.label).slice(0,26))}</div>`:''}<div class="bar2"><i style="width:${Math.min(100,h.pct/L[0].pct*100)}%"></i></div></span><span class="p mono">${h.pct.toFixed(2)}%<small>${usd(h.value)}</small></span></button>`).join('');
   document.querySelectorAll('#holdList button').forEach(b=>b.onclick=()=>{setView('aquarium');select(fish[+b.dataset.i])});
   drawMinis();drawDonut();renderTable();freshTick();if(view==='flows')renderFlows();
+  if(![...document.querySelectorAll('#tokpick button')].some(b=>b.dataset.sym===t.sym))buildPicker();
   document.querySelectorAll('#tokpick button').forEach(b=>b.classList.toggle('on',b.dataset.sym===t.sym));
   const f=document.getElementById('feed');f.innerHTML='';
   if(REAL)renderRealFeed();else for(let i=0;i<5;i++)pushFeed(true);
@@ -952,8 +963,19 @@ function renderTable(){
   const cb=document.getElementById('csvBtn');if(cb)cb.onclick=exportCSV;
 }
 /* token picker */
+function renderTokMenu(q){
+  const m=document.getElementById('tokmenu');const ql=q.trim().toLowerCase();
+  const list=[...TOKENS].sort((a,b)=>(b.mcap||0)-(a.mcap||0)).filter(t=>!ql||t.sym.toLowerCase().includes(ql)||(t.name||'').toLowerCase().includes(ql));
+  m.innerHTML=`<input placeholder="filter ${TOKENS.length} tokens…" value="${esc(q)}">`+list.map(t=>`<button class="trow" data-sym="${t.sym}">${t.logo?`<img src="${t.logo}" onerror="this.style.display='none'">`:`<i style="background:${t.color}"></i>`}<b>$${esc(t.sym)}</b><span style="color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.name||'')}</span>${t.trending?'<span class="pill" style="background:#F9731622;color:#F76B15;border:1px solid #F76B1555">📈 trending</span>':''}<small>${t.mcap?usd(t.mcap):''}${t.stale?' · daily':''}</small></button>`).join('')+(list.length?'':'<div style="padding:12px;color:var(--dim);font-size:12px">no match — paste a contract address in the search box to add a token</div>');
+  const inp=m.querySelector('input');inp.oninput=()=>{const v=inp.value;const pos=inp.selectionStart;renderTokMenu(v);const i2=m.querySelector('input');i2.focus();i2.setSelectionRange(pos,pos)};inp.onclick=e=>e.stopPropagation();
+  m.querySelectorAll('.trow').forEach(b=>b.onclick=()=>{m.classList.remove('open');closeCard();loadToken(TOKENS.find(t=>t.sym===b.dataset.sym));toastMsg(`Aquarium switched to <b>$${b.dataset.sym}</b>`,'var(--muted)')});
+}
 function buildPicker(){
-  document.getElementById('tokpick').innerHTML=TOKENS.map(t=>`<button data-sym="${t.sym}">${t.logo?`<img src="${t.logo}" style="width:13px;height:13px" onerror="this.style.display='none'">`:`<i style="background:${t.color}"></i>`}${t.sym}</button>`).join('');
+  const many=TOKENS.length>8;const inline=many?[...TOKENS.slice(0,7),...TOKENS.slice(7).filter(t=>cur&&t.sym===cur.sym)]:TOKENS;
+  document.getElementById('tokall').style.display=many?'':'none';
+  if(many){const ta=document.getElementById('tokallBtn');ta.textContent=`ALL ${TOKENS.length} TOKENS ▾`;ta.onclick=e=>{e.stopPropagation();const m=document.getElementById('tokmenu');m.classList.toggle('open');if(m.classList.contains('open')){renderTokMenu('');const i=m.querySelector('input');if(i){i.value='';i.focus()}}};
+    document.addEventListener('click',e=>{if(!e.target.closest('.tokall'))document.getElementById('tokmenu').classList.remove('open')})}
+  document.getElementById('tokpick').innerHTML=inline.map(t=>`<button data-sym="${t.sym}">${t.logo?`<img src="${t.logo}" style="width:13px;height:13px" onerror="this.style.display='none'">`:`<i style="background:${t.color}"></i>`}${t.sym}</button>`).join('');
   document.querySelectorAll('#tokpick button').forEach(b=>b.onclick=()=>{closeCard();loadToken(TOKENS.find(t=>t.sym===b.dataset.sym));toastMsg(`Aquarium switched to <b>$${cur.sym}</b>`,'var(--muted)')});
 }
 /* views */

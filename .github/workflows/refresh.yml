@@ -2,8 +2,14 @@ name: Refresh holder data
 
 on:
   workflow_dispatch:
+    inputs:
+      tier:
+        description: "hot (tier-hot tokens only) or all (every token + daily discovery)"
+        default: "hot"
+        required: false
   schedule:
-    - cron: '17 */2 * * *'   # every 2 hours (keeps Moralis free tier comfortable)
+    - cron: '17 */2 * * *'   # hot tier every 2 hours
+    - cron: '47 4 * * *'     # full daily run: discover tokens, refresh everything
 
 permissions:
   contents: write
@@ -15,25 +21,36 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Decide tier
+        id: tier
+        run: |
+          if [ "${{ github.event.schedule }}" = "47 4 * * *" ]; then T=all; else T="${{ github.event.inputs.tier || 'hot' }}"; fi
+          echo "tier=$T" >> "$GITHUB_OUTPUT"; echo "tier=$T"
+      - name: Discover tokens (daily)
+        if: steps.tier.outputs.tier == 'all'
+        run: node scripts/discover.mjs || echo "discover failed — keeping current token list"
       - name: Fetch holder data
         env:
+          TIER: ${{ steps.tier.outputs.tier }}
           MORALIS_API_KEY: ${{ secrets.MORALIS_API_KEY }}
           ARKHAM_API_KEY: ${{ secrets.ARKHAM_API_KEY }}
           BITQUERY_TOKEN: ${{ secrets.BITQUERY_TOKEN }}
           FRONTRUN_API_KEY: ${{ secrets.FRONTRUN_API_KEY }}
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          ALCH_NOTIFY_TOKEN: ${{ secrets.ALCH_NOTIFY_TOKEN }}
         run: node scripts/fetch.mjs
       - name: Commit data
         run: |
           git config user.name "walletsea-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/
-          git diff --cached --quiet && echo "no changes" || git commit -m "data: refresh $(date -u +'%Y-%m-%d %H:%M')"
+          git add data/ tokens.config.json
+          git diff --cached --quiet && echo "no changes" || git commit -m "data: refresh $(date -u +'%Y-%m-%d %H:%M') (${{ steps.tier.outputs.tier }})"
           # the instant-alert webhook and the Telegram bot commit to main at any time —
           # rebase onto whatever landed during this run, then push (retry a few times)
           for i in 1 2 3 4 5; do

@@ -10,6 +10,13 @@ const BQ_TOKEN = process.env.BITQUERY_TOKEN || '';
 if (!KEY && !BQ_TOKEN) { console.error('No data keys (MORALIS_API_KEY / BITQUERY_TOKEN)'); process.exit(1); }
 
 const cfg = JSON.parse(fs.readFileSync('tokens.config.json', 'utf8'));
+// Tiered runs: TIER=hot (every 2h) refreshes the tokens marked tier:'hot'; TIER=all (daily) does everything.
+// Tokens skipped this run keep their previous data files and stay in index.json.
+const TIER = (process.env.TIER || 'all').toLowerCase();
+const RUN_TOKENS = TIER === 'hot' ? cfg.tokens.filter(t => (t.tier || 'hot') === 'hot') : cfg.tokens;
+const SKIPPED = cfg.tokens.filter(t => !RUN_TOKENS.includes(t));
+console.log(`run tier=${TIER}: ${RUN_TOKENS.length} of ${cfg.tokens.length} tokens${SKIPPED.length ? ` (${SKIPPED.length} kept from last run)` : ''}`);
+const FULL = TIER !== 'hot';
 const M = 'https://deep-index.moralis.io/api/v2.2';
 const H = { 'X-API-Key': KEY, accept: 'application/json' };
 
@@ -26,7 +33,7 @@ try { exclCache = JSON.parse(fs.readFileSync(EXCL_PATH, 'utf8')); } catch {}
 { // heal cached labels stored before the template sanitizer existed
   for (const r of Object.values(labelCache)) if (r && Array.isArray(r.labels)) r.labels = cleanLabels(r.labels);
 }
-const LABEL_TTL_DAYS = 30, ARKHAM_MAX_LOOKUPS = 300;
+const LABEL_TTL_DAYS = 30, ARKHAM_MAX_LOOKUPS = FULL ? 1200 : 300;
 let arkhamBudget = ARKHAM_MAX_LOOKUPS, arkhamBase = null;
 
 // Arkham/Frontrun tag templates sometimes arrive with raw token JSON un-substituted,
@@ -134,7 +141,7 @@ try { frCache = JSON.parse(fs.readFileSync(FR_PATH, 'utf8')); frCache.wallets = 
   const st = Date.parse(frCache.updated) || Date.now();
   for (const k of Object.keys(frCache.wallets)) if (!frCache.wallets[k].ts) frCache.wallets[k].ts = st;
 }
-const FR_TTL_MATCH_D = 30, FR_TTL_MISS_D = 7, FR_BATCH = 25, FR_MAX_PER_RUN = 150; // ~150 lookups/run keeps credit burn tiny
+const FR_TTL_MATCH_D = 30, FR_TTL_MISS_D = 7, FR_BATCH = 25, FR_MAX_PER_RUN = FULL ? 400 : 150; // ~150 lookups/run keeps credit burn tiny
 let frBudget = FR_MAX_PER_RUN;
 const OWN_SYMS = new Set(cfg.tokens.map(t => t.sym.toUpperCase()));
 // drop self-referential tags like "BRETT Top 100 Holder" — being on our list already says that
@@ -176,7 +183,7 @@ async function frontrunBatch(addrs) {
 // First funding is immutable, so cache hits are permanent. Backfills ~150 wallets/run.
 const FUND_PATH = 'data/funding.json';
 let fundCache = {}; try { fundCache = JSON.parse(fs.readFileSync(FUND_PATH, 'utf8')); } catch {}
-let fundBudget = 150;
+let fundBudget = FULL ? 400 : 150;
 const CEX_RX = /coinbase|binance|kraken|okx|bybit|upbit|bithumb|\bgate\b|kucoin|mexc|bitget|htx|crypto\.com|bitpanda|bitvavo|bitstamp|gemini|robinhood|exchange|deposit/i;
 const BRIDGE_RX = /bridge|stargate|across|hop protocol|wormhole|layerzero|relay|orbiter|debridge|synapse|portal/i;
 let fundUpgradeBudget = 30;
@@ -224,7 +231,7 @@ function fundingLabels(rec) {
 
 // ---- Base RPC (free public endpoints, rotated) ----
 const RPCS = ['https://mainnet.base.org', 'https://base-rpc.publicnode.com', 'https://base.llamarpc.com'];
-let rpcIdx = 0, rpcBudget = 400;
+let rpcIdx = 0, rpcBudget = FULL ? 1200 : 400;
 async function rpc(method, params) {
   if (rpcBudget <= 0) return null;
   for (let tries = 0; tries < RPCS.length; tries++) {
@@ -302,7 +309,7 @@ function frLabelsFor(addr) {
 const WALLET_DIR = 'data/wallets';
 const WALLET_DETAIL_PER_TOKEN = 25;
 const WALLET_TTL_H = 12;
-let profileBudget = 600; // total arkham profile calls per run
+let profileBudget = FULL ? 900 : 600; // total arkham profile calls per run
 let loggedShapes = false;
 
 async function arkhamGet(pathname) {
@@ -670,7 +677,7 @@ try { logoCache = JSON.parse(fs.readFileSync('data/logos.json', 'utf8')); } catc
 async function tokenLogo(t) {
   const hit = logoCache[t.sym];
   if (hit && Date.now() - (hit.ts || 0) < 7 * 864e5) return hit.url;
-  if (!t.coingecko) return hit ? hit.url : null;
+  if (!t.coingecko) return hit ? hit.url : (t.logoUrl || null);
   try {
     const r = await fetch(`https://api.coingecko.com/api/v3/coins/${t.coingecko}?localization=false&tickers=false&market_data=false&community_data=false&developer_data=false&sparkline=false`);
     if (r.ok) { const d = await r.json(); const url = (d.image && (d.image.small || d.image.large)) || null;
@@ -804,7 +811,7 @@ async function histBackfillSnapshots() {
   };
   fs.mkdirSync('data/snapshots', { recursive: true });
   let okTokens = 0;
-  for (const t of cfg.tokens) {
+  for (const t of RUN_TOKENS) {
     try {
       const c = t.contract.toLowerCase();
       const prices = await cgDailyPrices(t, DAYS + 2);
@@ -906,7 +913,7 @@ async function backfillPositions(t, top) {
   if (done) console.log(`  backfilled 30d position history for ${done} wallets`);
 }
 
-for (const t of cfg.tokens) {
+for (const t of RUN_TOKENS) {
   const c = t.contract.toLowerCase();
   console.log(`\n== ${t.sym} ${c}`);
   try {
@@ -1226,6 +1233,15 @@ fs.writeFileSync(CT_PATH, JSON.stringify(ctCache));
 fs.writeFileSync(FUND_PATH, JSON.stringify(fundCache));
 
 // ---- schools: build the cross-token graph and annotate token files ----
+// tokens not refreshed this run: keep their last data in the index (config order) and in the schools graph
+for (const t of SKIPPED) {
+  try { const old = JSON.parse(fs.readFileSync(path.join('data', `${t.sym.toLowerCase()}.json`), 'utf8'));
+    if (!index.tokens.some(x => x.sym === old.sym)) index.tokens.push({ sym: old.sym, name: old.name, color: old.color, contract: old.contract, logo: old.logo, price: old.price, chg: old.chg, mcap: old.mcap, vol: old.vol, holders: old.holders, stale: old.generated_at || null });
+    if (!ALLTOPS[old.sym]) ALLTOPS[old.sym] = old.holdersTop || [];
+  } catch (e) {}
+}
+{ const order = new Map(cfg.tokens.map((t, i) => [t.sym, i])); index.tokens.sort((a, b) => (order.get(a.sym) ?? 999) - (order.get(b.sym) ?? 999)); }
+index.tiers = { hot: cfg.tokens.filter(t => (t.tier || 'hot') === 'hot').map(t => t.sym), run: TIER };
 try {
   // stale-profile sweep: spend leftover Arkham budget on the oldest profiles so no wallet page drifts stale
   if (ARKHAM_KEY && profileBudget > 80) {
@@ -1246,6 +1262,7 @@ try {
     }
     if (swept) console.log(`stale-profile sweep: ${swept} oldest profiles refreshed (${staleList.length} were >3d old, budget left ${profileBudget})`);
   }
+  // (skipped-tier tokens were merged into ALLTOPS above)
   const schools = buildSchools(ALLTOPS);
   schoolsForAlerts = schools;
   fs.writeFileSync('data/schools.json', JSON.stringify({ updated: new Date().toISOString(), schools }));
@@ -1269,6 +1286,33 @@ try {
 fs.writeFileSync('data/logos.json', JSON.stringify(logoCache));
 fs.writeFileSync('data/index.json', JSON.stringify(index));
 console.log(`\nWrote data/index.json with ${index.tokens.length} tokens. Label cache: ${Object.keys(labelCache).length} addresses${ARKHAM_KEY ? '' : ' (no ARKHAM_API_KEY — enrichment skipped)'}.`);
+
+// ---- Alchemy Address Activity webhook: keep its address list = every tracked top-100 + every custom watch ----
+// Needs ALCH_NOTIFY_TOKEN (Notify auth token) in the Actions secrets. Best-effort; skipped silently otherwise.
+if (process.env.ALCH_NOTIFY_TOKEN) {
+  try {
+    const WH = process.env.ALCH_WEBHOOK_ID || 'wh_1ailuvfsjb3deig0', H = { 'X-Alchemy-Token': process.env.ALCH_NOTIFY_TOKEN, 'content-type': 'application/json' };
+    const want = new Set();
+    for (const top of Object.values(ALLTOPS)) for (const h of top || []) want.add(h.addr.toLowerCase());
+    try { const subs = JSON.parse(fs.readFileSync('data/tg_subs.json', 'utf8')); for (const c of Object.values(subs.chats || {})) for (const w of c.watches || []) want.add(w.w.toLowerCase()); } catch {}
+    try { const us = JSON.parse(fs.readFileSync('data/users.json', 'utf8')); for (const u of Object.values(us.users || {})) for (const w of u.watches || []) want.add(w.w.toLowerCase()); } catch {}
+    const have = new Set(); let after = null;
+    for (let i = 0; i < 40; i++) {
+      const r = await fetch(`https://dashboard.alchemy.com/api/webhook-addresses?webhook_id=${WH}&limit=1000${after ? `&after=${after}` : ''}`, { headers: H });
+      if (!r.ok) throw new Error('list ' + r.status);
+      const d = await r.json(); (d.data || []).forEach(a => have.add(String(a).toLowerCase()));
+      after = d.pagination && d.pagination.after_cursor; if (!after) break;
+    }
+    const add = [...want].filter(a => !have.has(a)), remove = [...have].filter(a => !want.has(a));
+    for (let i = 0; i < Math.max(add.length, remove.length); i += 500) {
+      const body = { webhook_id: WH, addresses_to_add: add.slice(i, i + 500), addresses_to_remove: remove.slice(i, i + 500) };
+      if (!body.addresses_to_add.length && !body.addresses_to_remove.length) break;
+      const r = await fetch('https://dashboard.alchemy.com/api/update-webhook-addresses', { method: 'PATCH', headers: H, body: JSON.stringify(body) });
+      if (!r.ok) { console.log('webhook sync patch', r.status, (await r.text()).slice(0, 100)); break; }
+    }
+    console.log(`webhook address sync: ${have.size} -> ${want.size} (+${add.length} / -${remove.length})`);
+  } catch (e) { console.log('webhook sync skipped:', e.message.slice(0, 100)); }
+}
 
 // ---- alerts: detect events, publish the site feed, push Telegram ----
 try {
