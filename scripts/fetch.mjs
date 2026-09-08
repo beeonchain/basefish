@@ -1086,11 +1086,12 @@ for (const t of RUN_TOKENS) {
     const projWords = [t.name, t.sym].filter(Boolean).map(x => String(x).toLowerCase().replace(/\s*(token|coin|protocol|network|finance)\s*$/i, '').trim()).filter(x => x.length >= 3);
     const isProject = (h) => { const hay = [h.entity, h.label, ...(h.labels || [])].filter(Boolean).join(' ').toLowerCase();
       if (/treasury|vesting|team wallet|token vault|airdrop distributor|reserve/.test(hay)) return true;
-      return !!(h.isContract && h.entity && projWords.some(w => hay.includes(w))); };
+      // named after the project and holding ≥5% of supply → project-owned (treasury/vesting), contract flag or not
+      return !!(h.entity && projWords.some(w => hay.includes(w)) && ((h.pct || 0) >= 5 || h.isContract)); };
     const filtered = kept.filter(h => {
       const drop = h.entityType && EXCLUDE_TYPES.has(String(h.entityType).toLowerCase());
       if (drop) { exclCache[h.addr.toLowerCase()] = h.entity || h.label || h.entityType; noteInfra(h.addr, h.amount, h.entity || h.label, h.entityType); return false; }
-      if (isProject(h) && (h.pct || 0) >= 0.5) { noteInfra(h.addr, h.amount, h.entity || h.label, 'project'); infra[infra.length - 1].kind = 'project'; return false; }
+      if (isProject(h) && (h.pct || 0) >= 0.5) { noteInfra(h.addr, h.amount, h.entity || h.label || (h.labels || [])[0] || `${t.sym} project wallet`, 'project'); infra[infra.length - 1].kind = 'project'; return false; }
       return true;
     });
     const dropped = kept.length - filtered.length;
