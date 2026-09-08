@@ -6,7 +6,13 @@ import crypto from 'node:crypto';
 export const REPO = 'beeonchain/basefish';
 export const USERS_PATH = 'data/users.json';
 export const SUBS_PATH = 'data/tg_subs.json';
-export const TOKENS = ['BRETT', 'TOSHI', 'BASECAT', 'AERO', 'VIRTUAL'];
+export const TOKENS = ['BRETT', 'TOSHI', 'BASECAT', 'AERO', 'VIRTUAL']; // static fallback; prefer trackedSyms()
+let _syms = null, _symsAt = 0;
+export async function trackedSyms() { // live list from tokens.config.json (site-added tokens included), cached 5 min per instance
+  if (_syms && Date.now() - _symsAt < 3e5) return _syms;
+  try { const r = await fetch(`https://raw.githubusercontent.com/${REPO}/main/tokens.config.json?t=${Math.floor(Date.now() / 3e5)}`); if (r.ok) { const c = await r.json(); const l = (c.tokens || []).map((t) => String(t.sym).toUpperCase()); if (l.length) { _syms = l; _symsAt = Date.now(); return l; } } } catch {}
+  return _syms || TOKENS;
+}
 export const MAX_WATCHES = 10;
 export const MAX_HITS = 40;
 

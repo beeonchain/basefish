@@ -336,6 +336,7 @@
     <div class="view" id="watchView"></div>
     <div class="view" id="flowsView"></div>
     <div class="view" id="alertsView"></div>
+    <div class="view" id="miniView"></div>
     <div class="wp" id="walletPage"></div>
     <div class="bar">
       <div class="t">Fish size = wallet size<small>Bigger fish hold more. That's it. · tiers relative to this tank</small></div>
@@ -942,6 +943,7 @@ function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>b
   document.getElementById('watchView').classList.toggle('show',v==='watch');
   document.getElementById('flowsView').classList.toggle('show',v==='flows');
   document.getElementById('alertsView').classList.toggle('show',v==='alerts');
+  document.getElementById('miniView').classList.toggle('show',v==='mini');
   document.getElementById('walletPage').classList.toggle('show',v==='wallet');
   if(v!=='wallet'&&location.hash.startsWith('#w='))history.replaceState(null,'',location.pathname+location.search);
   if(v==='wallets')renderWallets();
@@ -1035,6 +1037,10 @@ async function searchAll(q){
   if(/^0x[0-9a-f]{40}$/i.test(q)){
     const tok=TOKENS.find(t=>(t.contract||'').toLowerCase()===ql);
     if(tok)return[{type:'token',sym:tok.sym,label:'$'+tok.sym+' — open aquarium'}];
+    // is it a token contract we don't track yet? ask the lookup endpoint (fast: CDN-cached)
+    let info=null;try{const r=await fetch('/api/token?ca='+ql);if(r.ok)info=await r.json()}catch{}
+    if(info&&info.tracked){const t2=TOKENS.find(t=>t.sym===info.sym);if(t2)return[{type:'token',sym:t2.sym,label:'$'+t2.sym+' — open aquarium'}]}
+    if(info&&info.isToken)return[{type:'mini',ca:ql,info,label:`$${esc(info.sym)} — ${esc(info.name)} · <b>preview top holders</b>`,sub:'not tracked yet'},{type:'wallet',addr:q,label:short(q)+' — open as a wallet'}];
     return[{type:'wallet',addr:q,label:short(q)+' — open wallet page'}];
   }
   if(ql.length<2)return out;
@@ -1052,7 +1058,7 @@ async function searchAll(q){
   return out.slice(0,9);
 }
 {const hq=document.getElementById('hq'),drop=document.getElementById('hqDrop');let tmr=null;
- const go=r=>{drop.style.display='none';hq.value='';if(r.type==='token')jumpToken(r.sym);else openProfileByAddr(r.addr)};
+ const go=r=>{drop.style.display='none';hq.value='';if(r.type==='token')jumpToken(r.sym);else if(r.type==='mini')openMini(r.ca,r.info);else openProfileByAddr(r.addr)};
  hq.oninput=()=>{clearTimeout(tmr);tmr=setTimeout(async()=>{const rs=await searchAll(hq.value);
    if(!rs.length){drop.style.display=hq.value.trim().length>1?'block':'none';drop.innerHTML='<button disabled style="color:var(--dim)">no match in tracked top-100s</button>';return}
    drop.innerHTML=rs.map((r,i)=>`<button data-i="${i}">${r.label}${r.sub?` <small>· ${r.sub}</small>`:''}</button>`).join('');
@@ -1259,6 +1265,41 @@ function acctPanel(){
     ${hits?`<div style="margin-top:12px"><b style="font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)">Recent hits</b> <button onclick="acctOp('clearhits')" style="color:var(--dim);font-size:11px">clear</button>${hits}</div>`:''}`);
 }
 acctInit();
+/* ---- Mini aquarium: any Base token by contract address, on demand (holders as of yesterday via Bitquery) ---- */
+let MINI=null;
+async function openMini(ca,info){
+  setView('mini');const el=document.getElementById('miniView');
+  el.innerHTML=`<div style="padding:30px;color:var(--dim)">Fetching holders for <span class="mono">${short(ca)}</span>…</div>`;
+  if(!info||!info.holders){try{const r=await fetch('/api/token?ca='+ca);info=await r.json()}catch{info=null}}
+  if(!info||!info.isToken){el.innerHTML=`<div style="padding:30px;color:var(--muted)">Couldn't read that contract as an ERC-20 token.${info&&info.error?' <small>'+esc(info.error)+'</small>':''}</div>`;return}
+  MINI=info;const H=info.holders||[],sym=esc(info.sym),price=info.price||0;
+  const fmtP=v=>v>=1?'$'+v.toFixed(2):v>0?'$'+v.toPrecision(3):'—';
+  const rows=H.map(h=>`<tr><td class="mono" style="color:var(--dim)">${h.rank}</td><td class="mono">${cpa(h.addr)}</td><td class="r mono">${num(h.amount)}</td><td class="r mono">${h.pct!=null?h.pct.toFixed(2)+'%':'—'}</td><td class="r mono">${price?usd(h.usd):'—'}</td><td class="r"><button onclick="openProfileByAddr('${h.addr}')" style="color:var(--teal);font-weight:700;font-size:11px">wallet →</button></td></tr>`).join('');
+  const canTrack=!!ACCT.user;
+  el.innerHTML=`<div style="padding:16px;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">${info.logo?`<img src="${info.logo}" style="width:34px;height:34px;border:1px solid var(--line)" onerror="this.style.display='none'">`:''}<div><h3 style="margin:0;font-size:18px">$${sym} <span style="color:var(--muted);font-weight:500;font-size:13px">${esc(info.name)}</span></h3><div class="mono" style="font-size:11px;color:var(--dim)">${cpa(ca,ca)}</div></div>
+      <span class="pill" style="background:var(--panel2);color:var(--muted);border:1px solid var(--line)">PREVIEW · not tracked yet</span>
+      <span style="margin-left:auto;display:flex;gap:8px;align-items:center">
+        <button onclick="trackMini('${ca}')" title="${canTrack?'Add this token to Walletsea: full aquarium, flows, alerts, schools':'Sign in (Alerts tab) to add tokens'}" style="border:1px solid var(--teal);background:var(--teal);color:#fff;padding:8px 14px;font-weight:800;font-size:12px">⚓ Fetch full data</button>
+        <a href="https://basescan.org/token/${ca}" target="_blank" rel="noopener" style="color:var(--muted);font-weight:700;font-size:11px">Basescan ↗</a><a href="https://dexscreener.com/base/${ca}" target="_blank" rel="noopener" style="color:var(--muted);font-weight:700;font-size:11px">Dexscreener ↗</a></span></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div style="flex:1;min-width:150px;border:1px solid var(--line);padding:12px 14px;background:var(--panel)"><div style="color:var(--dim);font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;font-weight:700">Price</div><div class="mono" style="font-size:19px;font-weight:800;margin-top:4px">${fmtP(price)}</div><div style="color:${(info.chg||0)>=0?'var(--teal)':'var(--coral)'};font-size:11px;margin-top:3px">${info.chg!=null?(info.chg>=0?'+':'')+info.chg.toFixed(2)+'% 24h':'no 24h data'}</div></div>
+      <div style="flex:1;min-width:150px;border:1px solid var(--line);padding:12px 14px;background:var(--panel)"><div style="color:var(--dim);font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;font-weight:700">Market cap</div><div class="mono" style="font-size:19px;font-weight:800;margin-top:4px">${info.mcap?usd(info.mcap):'—'}</div><div style="color:var(--muted);font-size:11px;margin-top:3px">${info.supply?'supply '+num(Math.round(info.supply)):''}</div></div>
+      <div style="flex:1;min-width:150px;border:1px solid var(--line);padding:12px 14px;background:var(--panel)"><div style="color:var(--dim);font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;font-weight:700">Top ${H.length} hold</div><div class="mono" style="font-size:19px;font-weight:800;margin-top:4px">${info.topShare!=null?info.topShare.toFixed(1)+'%':'—'}</div><div style="color:var(--muted);font-size:11px;margin-top:3px">of supply · includes pools &amp; exchanges (unfiltered preview)</div></div>
+      <div style="flex:1;min-width:150px;border:1px solid var(--line);padding:12px 14px;background:var(--panel)"><div style="color:var(--dim);font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;font-weight:700">Balances as of</div><div class="mono" style="font-size:19px;font-weight:800;margin-top:4px">${esc(info.asOf||'—')}</div><div style="color:var(--muted);font-size:11px;margin-top:3px">daily snapshot · live data once tracked</div></div>
+    </div>
+    <div style="border:1px solid var(--line);background:var(--panel2);padding:10px 14px;font-size:12px"><b>⚓ Fetch full data</b> adds $${sym} to Walletsea: live top-100 with exchange/pool filtering, labels &amp; X identities, schools, flows history, instant alerts and the fish tank. Takes ~10 minutes after you click. ${canTrack?'':'<span style="color:var(--coral)">Sign in first (Alerts tab → Your watches).</span>'}</div>
+    ${H.length?`<div style="border:1px solid var(--line);background:var(--panel);overflow-x:auto"><table style="min-width:640px"><thead><tr><th>#</th><th>Wallet</th><th class="r">Amount</th><th class="r">% supply</th><th class="r">Value</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`:`<div style="padding:26px;color:var(--dim);border:1px solid var(--line)">No holder snapshot available for this token yet${info.holdersError?': <small>'+esc(info.holdersError)+'</small>':''}.</div>`}
+  </div>`;
+}
+async function trackMini(ca){
+  if(!ACCT.user){toastMsg('Sign in first — Alerts tab → Your watches → Connect wallet / Google','var(--coral)');setView('alerts');return}
+  try{const j=await acctApi('/api/track',{ca});
+    if(j.already){toastMsg(`$${esc(j.sym)} is already tracked`,'var(--muted)');jumpToken(j.sym);return}
+    toastMsg(`⚓ <b>$${esc(j.sym)}</b> added — full aquarium in ~10 min${j.dispatched?'':' (refresh queued)'}`,'var(--teal)');
+    const b=document.querySelector('#miniView button[onclick^="trackMini"]');if(b){b.disabled=true;b.textContent='⚓ Added · building…';b.style.opacity=.6}
+  }catch(e){toastMsg(esc(e.message),'var(--coral)')}
+}
 /* ---- Flows view: where the top-100's money is moving ---- */
 let flowWin='7d',FLOWSNAPS={};// window: '1d' | '7d' | '30d' | 'all'; snapshots cache per token (client-side windowed maths)
 const FLOW_WINS=[['1d','24h',1],['7d','7 days',7],['30d','30 days',30],['all','All time',3650]];

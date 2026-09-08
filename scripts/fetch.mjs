@@ -921,6 +921,17 @@ for (const t of cfg.tokens) {
     if (!supply && KEY) {
       try { const meta = (await j(`${M}/erc20/metadata?chain=${cfg.chain}&addresses%5B0%5D=${c}`))[0] || {}; supply = Number(meta.total_supply_formatted) || 0; if (!mcap) mcap = usd * supply; } catch (e) {}
     }
+    if (!usd) { // DexScreener fallback (keyless) — for tokens added from the site without a CoinGecko id, or when Moralis is down
+      try {
+        const d = await (await fetch(`https://api.dexscreener.com/latest/dex/tokens/${c}`)).json();
+        const pair = (d.pairs || []).filter(x => x.chainId === 'base').sort((a, b) => ((b.liquidity && b.liquidity.usd) || 0) - ((a.liquidity && a.liquidity.usd) || 0))[0];
+        if (pair) { usd = Number(pair.priceUsd) || 0; chg = Number(pair.priceChange && pair.priceChange.h24) || 0; vol = Number(pair.volume && pair.volume.h24) || 0; if (!mcap) mcap = Number(pair.marketCap || pair.fdv) || 0; console.log('  price via dexscreener'); }
+      } catch (e) {}
+    }
+    if (!supply) { // total supply straight from the contract (public RPC)
+      try { const hex = await rpc('eth_call', [{ to: c, data: '0x18160ddd' }, 'latest']); const dec = await rpc('eth_call', [{ to: c, data: '0x313ce567' }, 'latest']);
+        if (hex && hex !== '0x') { const dd = dec && dec !== '0x' ? parseInt(dec, 16) : 18; supply = Number(BigInt(hex)) / 10 ** dd; if (!mcap) mcap = usd * supply; } } catch (e) {}
+    }
     if (!usd) throw new Error('no price source available');
 
     // holder count (best effort, Moralis, cheap)

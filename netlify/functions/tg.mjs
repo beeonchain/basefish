@@ -3,11 +3,11 @@
 // the data pipeline reads that file on each run and sends the actual alerts.
 // One-time setup: open  /api/tg?setup=1  once after adding TG_BOT_TOKEN + GH_DISPATCH_TOKEN in Netlify env.
 import crypto from 'node:crypto';
-import { readJson, updateJson, USERS_PATH, MAX_WATCHES as ACCT_MAX, webhookAddresses } from '../lib/store.mjs';
+import { readJson, updateJson, USERS_PATH, MAX_WATCHES as ACCT_MAX, webhookAddresses, trackedSyms } from '../lib/store.mjs';
 
 const REPO = 'beeonchain/basefish';
 const SUBS_PATH = 'data/tg_subs.json';
-const TOKENS = ['BRETT', 'TOSHI', 'BASECAT', 'AERO', 'VIRTUAL'];
+let TOKENS = ['BRETT', 'TOSHI', 'BASECAT', 'AERO', 'VIRTUAL']; // refreshed per request from tokens.config.json
 const EVENTS = ['whale', 'entry', 'exit', 'cex', 'school'];
 const MAX_WATCHES = 5;
 // admin chat ids (Bee) — comma-separated in TG_ADMIN_CHATS env; falls back to the founder chat
@@ -96,6 +96,7 @@ export default async (req) => {
   const [cmd, ...args] = msg.text.trim().split(/\s+/);
   const arg = args.join(' ');
 
+  TOKENS = await trackedSyms();
   const { subs, sha } = await loadSubs(GH);
   subs.chats = subs.chats || {};
   const p = subs.chats[chat] || (subs.chats[chat] = { tokens: [], events: [], watches: [] });

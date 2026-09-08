@@ -1,6 +1,6 @@
 // Account endpoint. GET → profile (watches, private hits, TG link state).
 // POST {op:'add', w, t} | {op:'remove', w, t} | {op:'linkcode'} | {op:'unlink'} | {op:'clearhits'}
-import { readRaw, updateJson, USERS_PATH, SUBS_PATH, readSession, publicUser, json, TOKENS, MAX_WATCHES, webhookAddresses } from '../lib/store.mjs';
+import { readRaw, updateJson, USERS_PATH, SUBS_PATH, readSession, publicUser, json, trackedSyms, MAX_WATCHES, webhookAddresses } from '../lib/store.mjs';
 
 export default async (req) => {
   const uid = readSession(req);
@@ -13,6 +13,7 @@ export default async (req) => {
   if (req.method !== 'POST') return json({ error: 'method' }, 405);
   const body = await req.json().catch(() => ({}));
   const op = String(body.op || '');
+  const TOKENS = await trackedSyms();
   let out = null, err = null, addedAddr = null;
   try {
     await updateJson(USERS_PATH, { users: {} }, (d) => {
