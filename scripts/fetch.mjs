@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { namehash } from './keccak.mjs';
 import { buildAlerts, checkWatches, writeFeed, sendTelegram } from './alerts.mjs';
+import { computeTags, applyTags } from './tags.mjs';
 
 const KEY = process.env.MORALIS_API_KEY || '';
 const BQ_TOKEN = process.env.BITQUERY_TOKEN || '';
@@ -188,6 +189,59 @@ let fundBudget = FULL ? 400 : 150;
 const CEX_RX = /coinbase|binance|kraken|okx|bybit|upbit|bithumb|\bgate\b|kucoin|mexc|bitget|htx|crypto\.com|bitpanda|bitvavo|bitstamp|gemini|robinhood|exchange|deposit/i;
 const BRIDGE_RX = /bridge|stargate|across|hop protocol|wormhole|layerzero|relay|orbiter|debridge|synapse|portal/i;
 let fundUpgradeBudget = 30;
+// ---- token launch times (GeckoTerminal, once per token) + first-buy / outflow facts (Arkham, budgeted) for SNIPE / DIAMOND ----
+const LAUNCH_PATH = 'data/launch.json', FIRSTBUY_PATH = 'data/firstbuy.json', MANUAL_TAGS_PATH = 'data/tags_manual.json';
+let launchCache = {}, firstBuy = {}; try { launchCache = JSON.parse(fs.readFileSync(LAUNCH_PATH, 'utf8')); } catch {} try { firstBuy = JSON.parse(fs.readFileSync(FIRSTBUY_PATH, 'utf8')); } catch {}
+let firstBuyBudget = FULL ? 500 : 180; // Arkham calls per run for first-buy / outflow checks (cached forever / 7d)
+async function launchFor(contract) {
+  const c = contract.toLowerCase();
+  if (launchCache[c] !== undefined) return launchCache[c];
+  try {
+    const r = await fetch(`https://api.geckoterminal.com/api/v2/networks/base/tokens/${c}/pools?page=1`, { headers: { accept: 'application/json;version=20230302' } });
+    if (r.status === 429) return undefined; // try next run
+    if (!r.ok) { launchCache[c] = null; return null; }
+    const d = await r.json();
+    const ts = (d.data || []).map(x => x.attributes && x.attributes.pool_created_at).filter(Boolean).map(x => new Date(x).getTime()).filter(Boolean);
+    launchCache[c] = ts.length ? new Date(Math.min(...ts)).toISOString() : null;
+    return launchCache[c];
+  } catch { return undefined; }
+}
+// first inbound transfer of <contract> into <addr> (asc) and whether any outbound ever happened
+async function firstBuyFor(addr, contract, sym) {
+  const key = `${addr.toLowerCase()}:${contract.toLowerCase()}`;
+  // free evidence first: the wallet's cached recent transfers already show an outflow of this token?
+  try { const pw = JSON.parse(fs.readFileSync(path.join(WALLET_DIR, addr.toLowerCase() + '.json'), 'utf8'));
+    const o = (pw.transfers || []).find(x => x.dir === 'out' && sym && String(x.token).toUpperCase() === String(sym).toUpperCase());
+    if (o && firstBuy[key] && firstBuy[key].in && firstBuy[key].out === 'none') { firstBuy[key].out = o.ts; firstBuy[key].chk = Date.now(); } } catch {}
+  const rec = firstBuy[key];
+  const fresh = rec && rec.chk && Date.now() - rec.chk < 7 * 864e5;
+  if (rec && rec.in && fresh) return rec;
+  if (rec && rec.in === null && rec.chk && Date.now() - rec.chk < 30 * 864e5) return rec; // nothing found: retry monthly
+  if (!ARKHAM_KEY || firstBuyBudget <= 0 || profileBudget <= 20) return rec || null;
+  const matchTok = (x) => String((x.tokenAddress || (x.token && x.token.address) || '')).toLowerCase() === contract.toLowerCase() || String(x.tokenId || '').toLowerCase().includes(contract.toLowerCase());
+  const norm = (x) => ({ ts: x.blockTimestamp || x.timestamp || x.time || null, from: String((x.fromAddress && (x.fromAddress.address || x.fromAddress)) || x.from || '').toLowerCase(), to: String((x.toAddress && (x.toAddress.address || x.toAddress)) || x.to || '').toLowerCase() });
+  let inTs = rec && rec.in ? rec.in : null, out = 'none';
+  try {
+    if (!inTs) {
+      firstBuyBudget--;
+      let t = await arkhamGet(`/transfers?base=${addr}&tokens=${contract}&chains=base&flow=in&sortDir=asc&limit=5`);
+      let rows = (t && (t.transfers || t.result || (Array.isArray(t) ? t : []))) || [];
+      let hit = rows.map(norm).find(x => x.ts && x.to === addr.toLowerCase());
+      if (rows.length && !rows.some(matchTok)) hit = null; // token filter ignored by the API → don't trust it
+      if (!hit) { firstBuyBudget--; t = await arkhamGet(`/transfers?base=${addr}&chains=base&flow=in&sortDir=asc&limit=100`); rows = (t && (t.transfers || t.result || (Array.isArray(t) ? t : []))) || []; hit = rows.filter(matchTok).map(norm).find(x => x.ts && x.to === addr.toLowerCase()); }
+      inTs = hit ? hit.ts : null;
+    }
+    if (inTs) { // any outbound of this token, ever?
+      firstBuyBudget--;
+      const t2 = await arkhamGet(`/transfers?base=${addr}&tokens=${contract}&chains=base&flow=out&sortDir=asc&limit=5`);
+      const rows2 = (t2 && (t2.transfers || t2.result || (Array.isArray(t2) ? t2 : []))) || [];
+      const o = rows2.filter(matchTok).map(norm).find(x => x.ts && x.from === addr.toLowerCase());
+      out = o ? o.ts : (rows2.length && !rows2.some(matchTok) ? 'unknown' : 'none');
+    }
+  } catch { return rec || null; }
+  firstBuy[key] = { in: inTs, out, chk: Date.now() };
+  return firstBuy[key];
+}
 async function fundingFor(addr) {
   const a = addr.toLowerCase();
   const cached = fundCache[a];
@@ -612,6 +666,7 @@ const infraKind = (label) => { const l = String(label || '').toLowerCase();
   if (/locker|timelock|vesting|staking/.test(l)) return 'locker';
   if (/wintermute|market maker|\bmm\b/.test(l)) return 'mm';
   if (/burn|dead/.test(l)) return 'burn';
+  if (/treasury|vesting|team wallet|token vault|airdrop distributor|reserve|project/.test(l)) return 'project';
   return 'contract'; };
 const EXCLUDE_RX = /uniswap|aerodrome|pancake|sushi|baseswap|alien.?base|pool|liquidity|\blp\b|exchange|binance|coinbase|bybit|okx|gate|kucoin|mexc|bitget|htx|kraken|crypto\.com|bridge|locker|timelock|vesting|multisig deployer|wintermute|market maker/i;
 
@@ -1027,10 +1082,16 @@ for (const t of RUN_TOKENS) {
         if (info.labels && info.labels.length) h.labels = info.labels.slice(0, 12);
       }
     }
+    // project-owned wallets: the token's own treasury / vesting / team contracts (e.g. "Venice" holding 43% of VVV)
+    const projWords = [t.name, t.sym].filter(Boolean).map(x => String(x).toLowerCase().replace(/\s*(token|coin|protocol|network|finance)\s*$/i, '').trim()).filter(x => x.length >= 3);
+    const isProject = (h) => { const hay = [h.entity, h.label, ...(h.labels || [])].filter(Boolean).join(' ').toLowerCase();
+      if (/treasury|vesting|team wallet|token vault|airdrop distributor|reserve/.test(hay)) return true;
+      return !!(h.isContract && h.entity && projWords.some(w => hay.includes(w))); };
     const filtered = kept.filter(h => {
       const drop = h.entityType && EXCLUDE_TYPES.has(String(h.entityType).toLowerCase());
-      if (drop) { exclCache[h.addr.toLowerCase()] = h.entity || h.label || h.entityType; noteInfra(h.addr, h.amount, h.entity || h.label, h.entityType); }
-      return !drop;
+      if (drop) { exclCache[h.addr.toLowerCase()] = h.entity || h.label || h.entityType; noteInfra(h.addr, h.amount, h.entity || h.label, h.entityType); return false; }
+      if (isProject(h) && (h.pct || 0) >= 0.5) { noteInfra(h.addr, h.amount, h.entity || h.label, 'project'); infra[infra.length - 1].kind = 'project'; return false; }
+      return true;
     });
     const dropped = kept.length - filtered.length;
     if (dropped) console.log(`  arkham-excluded ${dropped} CEX/bridge/dex wallets`);
@@ -1071,6 +1132,13 @@ for (const t of RUN_TOKENS) {
         const fl = fundingLabels(f);
         if (fl.length) h.labels = [...new Set([...(h.labels || []), ...fl])].slice(0, 14);
       } catch (e) {}
+    }
+    // launch time (once) + first-buy / outflow facts for the top 30 (budgeted, cached) → SNIPE / DIAMOND tags
+    try { const L = await launchFor(c); if (L !== undefined) t._launch = L; } catch {}
+    for (const h of top.slice(0, 30)) {
+      if (firstBuyBudget <= 0) break;
+      if (h.isContract && !/gnosis safe/i.test([h.entity, h.label, ...(h.labels || [])].filter(Boolean).join(' '))) continue;
+      try { await firstBuyFor(h.addr, c, t.sym); } catch {}
     }
     // snapshot history → rank & balance change vs the snapshot closest to 24h ago (+7d when history allows)
     let changeRefH = null, changeRef7D = null;
@@ -1281,6 +1349,14 @@ try {
   fs.writeFileSync('data/schools.json', JSON.stringify({ updated: new Date().toISOString(), schools }));
   const bySchool = {};
   schools.forEach(s => s.members.forEach(m => bySchool[m.addr] = s.id));
+  // wallet tags over every tracked top-100 (cheap ones + SNIPE/DIAMOND from the first-buy cache + admin curated)
+  let manualTags = {}; try { manualTags = JSON.parse(fs.readFileSync(MANUAL_TAGS_PATH, 'utf8')); } catch {}
+  const contracts = Object.fromEntries(cfg.tokens.map(t => [t.sym, t.contract.toLowerCase()]));
+  const tagsOut = computeTags({ ALLTOPS, frCache, fundCache, manual: manualTags, firstBuy, launch: launchCache, contracts });
+  const tagCount = {}; for (const g of Object.values(tagsOut.global)) for (const t of g.tags) tagCount[t] = (tagCount[t] || 0) + 1;
+  for (const pt of Object.values(tagsOut.perToken)) for (const e of Object.values(pt)) for (const t of e.tags) tagCount[t] = (tagCount[t] || 0) + 1;
+  console.log('tags:', JSON.stringify(tagCount), `· first-buy cache ${Object.keys(firstBuy).length} pairs (budget left ${firstBuyBudget}) · launches ${Object.values(launchCache).filter(Boolean).length}`);
+  RUNLOG.tags = tagCount;
   for (const sym of Object.keys(ALLTOPS)) {
     const p = path.join('data', sym.toLowerCase() + '.json');
     try {
@@ -1290,9 +1366,11 @@ try {
         const sid = bySchool[h.addr.toLowerCase()] ?? null;
         if ((h.school ?? null) !== sid) { h.school = sid; touched = true; }
       }
+      if (applyTags(d, sym, tagsOut)) touched = true;
       if (touched) fs.writeFileSync(p, JSON.stringify(d));
     } catch (e) {}
   }
+  fs.writeFileSync(LAUNCH_PATH, JSON.stringify(launchCache)); fs.writeFileSync(FIRSTBUY_PATH, JSON.stringify(firstBuy));
   const fundDone = Object.keys(fundCache).length;
   console.log(`Schools: ${schools.length} detected (${schools.reduce((s, x) => s + x.members.length, 0)} wallets) · funding cached for ${fundDone} wallets (budget left ${fundBudget})`);
 } catch (e) { console.log('schools build failed:', e.message.slice(0, 120)); }

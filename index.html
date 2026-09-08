@@ -472,7 +472,7 @@ const BANDS={small:[0.10,0.36],medium:[0.30,0.56],large:[0.50,0.74],whale:[0.62,
 function addrHash(a){let h1=7,h2=13;const s=String(a).toLowerCase();for(let i=0;i<s.length;i++){h1=(h1*31+s.charCodeAt(i))>>>0;h2=(h2*131+s.charCodeAt(i))>>>0}return[h1/4294967295,h2/4294967295]}
 function homeOf(f){const b=BANDS[f.h.tier]||BANDS.small;return{x:W*(0.08+f.hx*0.84),y:H*(b[0]+f.hy*(b[1]-b[0])),b}}
 function fromReal(d){
-  const list=(d.holdersTop||[]).map((h,i)=>({rank:i+1,addr:h.addr,pct:h.pct||0,value:h.usd||0,amount:h.amount||0,tier:'small',label:h.label||'',entity:h.entity||null,entityType:h.entityType||null,labels:h.labels||[],isContract:!!h.isContract,rankChange:h.rankChange??null,usdChange:h.usdChange??null,rankChange7:h.rankChange7??null,usdChange7:h.usdChange7??null,basename:h.basename||null,contractKind:h.contractKind||null,funding:h.funding||null,school:h.school||null}));
+  const list=(d.holdersTop||[]).map((h,i)=>({rank:i+1,addr:h.addr,pct:h.pct||0,value:h.usd||0,amount:h.amount||0,tier:'small',label:h.label||'',entity:h.entity||null,entityType:h.entityType||null,labels:h.labels||[],isContract:!!h.isContract,tags:h.tags||[],tagInfo:h.tagInfo||null,rankChange:h.rankChange??null,usdChange:h.usdChange??null,rankChange7:h.rankChange7??null,usdChange7:h.usdChange7??null,basename:h.basename||null,contractKind:h.contractKind||null,funding:h.funding||null,school:h.school||null}));
   list.sort((a,b)=>b.value-a.value).forEach((h,i)=>h.rank=i+1);
   list.forEach(h=>h.tier=h.rank<=6?'whale':h.rank<=24?'large':h.rank<=60?'medium':'small');
   const at=i=>list[Math.min(i,list.length-1)].value;
@@ -722,7 +722,7 @@ function drawOneFishInner(f,t){
 function fishLabel(f,t,force){
   const s=f.size*zoom;
   ctx.save();ctx.globalAlpha=force==='soft'?.7:force?1:(f.h.rank<=6?.92:Math.max(f.glow,f===selected?1:0));
-  ctx.font=`500 ${f.h.tier==='whale'?11:10}px JetBrains Mono, monospace`;const lbl=(f.h.infra?(KIND[f.h.kind]||KIND.contract).n+' · ':'')+(f.h.entity||f.h.label||short(f.h.addr)).slice(0,24);const tw=ctx.measureText(lbl).width+14;
+  ctx.font=`500 ${f.h.tier==='whale'?11:10}px JetBrains Mono, monospace`;const lbl=(f.h.infra?(KIND[f.h.kind]||KIND.contract).n+' · ':'')+((f.h.tags||[]).map(t=>(TAGS[t]||{ic:''}).ic).join('')+' ').trim()+((f.h.tags||[]).length?' ':'')+(f.h.entity||f.h.label||short(f.h.addr)).slice(0,24);const tw=ctx.measureText(lbl).width+14;
   const sel=f===selected||f===hovered;
   const ly=Math.max(4,f.y-s*.62-22); // never clipped above the tank
   ctx.fillStyle=sel?'#0000FF':(f.h.infra?(KIND[f.h.kind]||KIND.contract).c:'rgba(10,11,13,.78)');roundRect(f.x-tw/2,ly,tw,18,0);ctx.fill();if(!sel){ctx.strokeStyle='rgba(255,255,255,.25)';ctx.stroke()}
@@ -804,7 +804,7 @@ tank.addEventListener('click',e=>{if(card.contains(e.target))return;const r=tank
 function select(f){selected=f;tip.style.display='none';const h=f.h,t=TIER[h.tier];
   const scan=`https://basescan.org/token/${cur.contract||''}?a=${h.addr}`;
   const tc=typeColor(h.entityType);
-  const chips=[h.entity?`<span style="color:${tc};border-color:${tc}55">${esc(h.entity)}</span>`:'',lblChips(h,3),(!REAL)?`<span>${h.first}d on-chain</span><span>${h.tx} txs</span>`:''].join('');
+  const chips=[tagPills(h),h.entity?`<span style="color:${tc};border-color:${tc}55">${esc(h.entity)}</span>`:'',lblChips(h,3),(!REAL)?`<span>${h.first}d on-chain</span><span>${h.tx} txs</span>`:''].join('');
   card.innerHTML=`<button class="x" id="cx">✕</button><div class="tier" style="color:${h.infra?(KIND[h.kind]||KIND.contract).c:t.c}"><i style="background:${h.infra?(KIND[h.kind]||KIND.contract).c:t.c}"></i>${h.infra?`${(KIND[h.kind]||KIND.contract).n} · excluded from ranking`:`${t.n} wallet · rank #${h.rank}`}</div>
   <div class="addr">${short(h.addr)}<button id="ccopy" title="Copy address">copy</button></div>
   ${chips?`<div class="lbls">${chips}</div>`:''}
@@ -908,13 +908,16 @@ function isInfra(h){
   return INFRA_RX.test(hay);
 }
 function typeOf(h){return h.entityType?h.entityType:(isInfra(h)?'infra':(h.isContract?'contract':'wallet'))}
-let hideInfra=true,showExcluded=false,sortKey='rank',sortDir=1;
+let hideInfra=true,showExcluded=false,sortKey='rank',sortDir=1,tagFilter='';
 /* infrastructure kinds: fixed colours everywhere (holders table, wallet pages, alerts, funding) */
 const KIND={cex:{n:'CEX',c:'#E5484D'},pool:{n:'POOL',c:'#8E4EC6'},bridge:{n:'BRIDGE',c:'#F76B15'},locker:{n:'LOCKER',c:'#6B7280'},mm:{n:'MM',c:'#0E9F8A'},burn:{n:'BURN',c:'#1F2937'},contract:{n:'CONTRACT',c:'#5B616E'}};
 /* exchanges: fixed colour + letter-mark per venue, shown wherever a counterparty is an exchange */
 const CEXES=[['coinbase','#0052FF','CB'],['binance','#F0B90B','BN'],['okx','#000000','OKX'],['bybit','#F7A600','BY'],['kraken','#7132F5','KR'],['kucoin','#23AF91','KC'],['gate','#2354E6','GT'],['mexc','#1972F5','MX'],['bitget','#00F0FF','BG'],['htx','#008CD6','HTX'],['crypto.com','#002D74','CDC'],['gemini','#00DCFA','GM'],['bitstamp','#12A45D','BS'],['upbit','#093687','UP'],['bithumb','#F37321','BT'],['robinhood','#00C805','RH'],['bitpanda','#1FA847','BP'],['bitvavo','#2F57F0','BV']];
 function cexOf(label){const l=String(label||'').toLowerCase();return CEXES.find(c=>l.includes(c[0]))||null}
 function cexIcon(label){const c=cexOf(label);return c?`<i class="cexi" style="background:${c[1]}" title="${c[0]}">${c[2]}</i>`:''}
+/* wallet tags (computed by the pipeline; evidence in h.tagInfo) */
+const TAGS={WHALE:{ic:'🐋',c:'#0000FF',t:'Whale — ≥$250K held across tracked top-100s'},OG:{ic:'🏛',c:'#B8860B',t:'OG — whale with 1y+ on-chain history'},CT:{ic:'𝕏',c:'#0A0B0D',t:'CT — known X account'},DIAMOND:{ic:'💎',c:'#0891B2',t:'Diamond hands — held 90d+ without sending any out'},SNIPE:{ic:'🎯',c:'#E5484D',t:'Sniper — bought within 30 min of launch'}};
+function tagPills(h,small){const tg=(h&&h.tags)||[];if(!tg.length)return'';return tg.map(t=>{const T=TAGS[t]||{ic:'🏷',c:'#5B616E',t:t};const info=(h.tagInfo&&h.tagInfo[t])||T.t;return `<span class="pill tagp" style="background:${T.c}14;color:${T.c};border:1px solid ${T.c}66;font-weight:800;${small?'font-size:9.5px;padding:1px 5px':''}" title="${esc(info)}">${T.ic} ${esc(t)}</span>`}).join('')}
 function tokTag(sym){const t=TOKENS.find(x=>x.sym===sym);const c=t?t.color:'#888';return `<span class="pill" style="background:${c}22;color:${c};border:1px solid ${c}55;font-weight:800">${t&&t.logo?`<img src="${t.logo}" style="width:10px;height:10px;vertical-align:-1px;margin-right:3px" onerror="this.style.display='none'">`:''}$${esc(sym)}</span>`}
 function kindTag(k){const K=KIND[k]||KIND.contract;return `<span class="pill" style="background:${K.c}22;color:${K.c};border:1px solid ${K.c}55;font-weight:800;letter-spacing:.4px">${K.n}</span>`}
 function rankChip(h,k='rankChange'){
@@ -939,6 +942,8 @@ function exportCSV(){
 function renderTable(){
   let rows=data.list.filter(h=>!(REAL&&hideInfra&&isInfra(h)));
   const hidden=data.list.length-rows.length;
+  const tagCounts={};data.list.forEach(h=>(h.tags||[]).forEach(t=>tagCounts[t]=(tagCounts[t]||0)+1));
+  if(tagFilter)rows=rows.filter(h=>(h.tags||[]).includes(tagFilter));
   const exl=REAL?(cur.infra||[]):[];
   const merged=REAL&&showExcluded&&exl.length;
   if(merged){rows=[...rows,...exl].sort((a,b)=>b.value-a.value);rows.forEach((h,i)=>h._m=i+1)}
@@ -953,8 +958,9 @@ function renderTable(){
     <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="infraTog" ${hideInfra?'checked':''}> Hide contracts &amp; exchange deposits</label>
     ${exl.length?`<label style="display:flex;gap:6px;align-items:center;cursor:pointer" title="Exchanges, liquidity pools, bridges and lockers are excluded from the ranking. Show them where they would sit."><input type="checkbox" id="exclTog" ${showExcluded?'checked':''}> Show excluded infrastructure <span style="color:var(--dim)">(${exl.length}: ${[...new Set(exl.map(x=>x.kind))].map(k=>(KIND[k]||KIND.contract).n).join(', ').toLowerCase()})</span></label>`:''}
     ${hidden?`<span style="color:var(--dim)">${hidden} infrastructure wallet${hidden>1?'s':''} hidden · ranks unchanged</span>`:''}${merged?`<span style="color:var(--dim)">merged ranking · (#n) = rank among real holders</span>`:''}
+    ${Object.keys(tagCounts).length?`<span style="display:flex;gap:5px;flex-wrap:wrap;align-items:center"><span style="color:var(--dim)">tags:</span>${Object.keys(TAGS).filter(t=>tagCounts[t]).map(t=>`<button onclick="tagFilter=tagFilter==='${t}'?'':'${t}';renderTable()" class="pill" style="background:${tagFilter===t?TAGS[t].c:TAGS[t].c+'14'};color:${tagFilter===t?'#fff':TAGS[t].c};border:1px solid ${TAGS[t].c}66;font-weight:800;cursor:pointer" title="${esc(TAGS[t].t)}">${TAGS[t].ic} ${t} · ${tagCounts[t]}</button>`).join('')}</span>`:''}
     <button id="csvBtn" style="margin-left:auto;border:1px solid var(--line);padding:3px 10px;color:var(--muted);cursor:pointer;font-size:10.5px;font-family:var(--font-mono)">EXPORT CSV</button></div>`:''}
-  <table><thead><tr>${sTh('rank','#')}<th>Wallet</th><th>Tier</th><th>Labels</th>${sTh('chg',refH,1)}${has7?sTh('chg7',ref7,1):''}${sTh('amount','Amount',1)}${sTh('pct','% supply',1)}${sTh('value','Value',1)}<th class="r">Type</th></tr></thead><tbody>${rows.map(h=>h.infra?`<tr data-a="${h.addr}" style="background:var(--panel2);opacity:.85"><td class="mono" style="color:var(--dim);white-space:nowrap">${h._m||h.rank}</td><td class="mono">${cpa(h.addr)} <span style="color:var(--muted)">${esc(h.label||'')}</span></td><td>${kindTag(h.kind)}</td><td><span style="color:var(--dim);font-size:11px">excluded from ranking</span></td><td class="r"></td>${has7?'<td></td>':''}<td class="r mono">${num(h.amount)}</td><td class="r mono">${(h.pct||0).toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:${(KIND[h.kind]||KIND.contract).c}">${(KIND[h.kind]||KIND.contract).n.toLowerCase()}</td></tr>`:`<tr data-i="${h.rank-1}"><td class="mono" style="color:var(--dim);white-space:nowrap">${merged?`${h._m} <small title="rank among real holders">(#${h.rank})</small>`:h.rank} ${rankChip(h)}</td><td class="mono">${cpa(h.addr)}${(h.entity||h.basename)?` <span style="color:${cexOf(h.entity)?cexOf(h.entity)[1]:'var(--teal)'};font-weight:700">${cexOf(h.entity)?cexIcon(h.entity):''}${esc(h.entity||h.basename)}</span>`:''}</td><td><span class="pill" style="background:${TIER[h.tier].c}22;color:${TIER[h.tier].c}">${TIER[h.tier].n}</span></td><td><div class="lbls">${lblChips(h,2)||'<span style="border:0;background:none;padding:0;color:var(--dim)">—</span>'}</div></td><td class="r">${usdChip(h)}</td>${has7?`<td class="r" style="white-space:nowrap">${rankChip(h,'rankChange7')} ${usdChip(h,'usdChange7')}</td>`:''}<td class="r mono">${num(h.amount)}</td><td class="r mono">${h.pct.toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:${typeOf(h)==='wallet'?'var(--muted)':typeColor(h.entityType)}">${typeOf(h)}</td></tr>`).join('')}</tbody></table>`;
+  <table><thead><tr>${sTh('rank','#')}<th>Wallet</th><th>Tier</th><th>Labels</th>${sTh('chg',refH,1)}${has7?sTh('chg7',ref7,1):''}${sTh('amount','Amount',1)}${sTh('pct','% supply',1)}${sTh('value','Value',1)}<th class="r">Type</th></tr></thead><tbody>${rows.map(h=>h.infra?`<tr data-a="${h.addr}" style="background:var(--panel2);opacity:.85"><td class="mono" style="color:var(--dim);white-space:nowrap">${h._m||h.rank}</td><td class="mono">${cpa(h.addr)} <span style="color:var(--muted)">${esc(h.label||'')}</span></td><td>${kindTag(h.kind)}</td><td><span style="color:var(--dim);font-size:11px">excluded from ranking</span></td><td class="r"></td>${has7?'<td></td>':''}<td class="r mono">${num(h.amount)}</td><td class="r mono">${(h.pct||0).toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:${(KIND[h.kind]||KIND.contract).c}">${(KIND[h.kind]||KIND.contract).n.toLowerCase()}</td></tr>`:`<tr data-i="${h.rank-1}"><td class="mono" style="color:var(--dim);white-space:nowrap">${merged?`${h._m} <small title="rank among real holders">(#${h.rank})</small>`:h.rank} ${rankChip(h)}</td><td class="mono">${cpa(h.addr)}${(h.entity||h.basename)?` <span style="color:${cexOf(h.entity)?cexOf(h.entity)[1]:'var(--teal)'};font-weight:700">${cexOf(h.entity)?cexIcon(h.entity):''}${esc(h.entity||h.basename)}</span>`:''}</td><td><span class="pill" style="background:${TIER[h.tier].c}22;color:${TIER[h.tier].c}">${TIER[h.tier].n}</span></td><td><div class="lbls">${tagPills(h,true)}${lblChips(h,2)||(h.tags&&h.tags.length?'':'<span style="border:0;background:none;padding:0;color:var(--dim)">—</span>')}</div></td><td class="r">${usdChip(h)}</td>${has7?`<td class="r" style="white-space:nowrap">${rankChip(h,'rankChange7')} ${usdChip(h,'usdChange7')}</td>`:''}<td class="r mono">${num(h.amount)}</td><td class="r mono">${h.pct.toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:${typeOf(h)==='wallet'?'var(--muted)':typeColor(h.entityType)}">${typeOf(h)}</td></tr>`).join('')}</tbody></table>`;
   document.querySelectorAll('#holdersView tr[data-i]').forEach(r=>r.onclick=()=>{setView('aquarium');select(fish[+r.dataset.i])});
   document.querySelectorAll('#holdersView th[data-sort]').forEach(th=>th.onclick=()=>{const k=th.dataset.sort;if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=1}renderTable()});
   const tog=document.getElementById('infraTog');if(tog)tog.onchange=()=>{hideInfra=tog.checked;renderTable()};
@@ -1014,7 +1020,8 @@ async function renderWallets(){
     }
     list.forEach(h=>{
       const k=h.addr.toLowerCase();
-      if(!agg.has(k))agg.set(k,{addr:h.addr,entity:h.entity||null,label:h.label||null,type:h.entityType||null,labels:[],usd:0,toks:[]});
+      if(!agg.has(k))agg.set(k,{addr:h.addr,entity:h.entity||null,label:h.label||null,type:h.entityType||null,labels:[],usd:0,toks:[],tags:[],tagInfo:{}});
+      {const A=agg.get(k);(h.tags||[]).forEach(t=>{if(!A.tags.includes(t))A.tags.push(t)});Object.assign(A.tagInfo,h.tagInfo||{})}
       const w=agg.get(k);w.usd+=h.usd||h.value||0;w.toks.push(t.sym);
       if(h.entity)w.entity=h.entity;if(h.label&&!w.label)w.label=h.label;if(h.entityType)w.type=h.entityType;
       (h.labels||[]).forEach(l=>{if(!w.labels.some(x=>x.toLowerCase()===String(l).toLowerCase()))w.labels.push(l)});
@@ -1044,7 +1051,7 @@ async function renderWallets(){
     ${hiddenW?`<span style="color:var(--dim)">${hiddenW} hidden</span>`:''}
     <span style="color:var(--dim)">· ${multi} wallet${multi===1?'':'s'} hold ${multi===1?'s':''}more than one tracked token</span></div>
   <table><thead><tr><th>Wallet</th><th>Labels</th><th># tokens</th><th>Holds</th><th class="r" title="Sums only positions where this wallet ranks in a token's top 100 — not full portfolio value">Combined value (top-100 positions) ⓘ</th></tr></thead><tbody>${
-    rows.map(r=>{const chips=(r.entity?entPill(r.entity,r.type):'')+lblChips(r,3);return `<tr style="cursor:pointer" onclick="openProfileByAddr('${r.addr}')"><td class="mono">${cpa(r.addr)}</td><td><div class="lbls">${chips||'<span style="border:0;background:none;padding:0;color:var(--dim)">Unknown</span>'}</div></td><td class="mono" style="color:${r.toks.length>1?'var(--teal)':'var(--dim)'}">${r.toks.length}</td><td style="white-space:nowrap">${r.toks.map(sym=>`<span title="${sym}" style="display:inline-flex;align-items:center;gap:3px;margin-right:6px">${tokLogo(sym,16)}<small style="color:var(--muted)">${sym}</small></span>`).join('')}</td><td class="r mono">${usd(r.usd)}</td></tr>`}).join('')
+    rows.map(r=>{const chips=tagPills(r,true)+(r.entity?entPill(r.entity,r.type):'')+lblChips(r,3);return `<tr style="cursor:pointer" onclick="openProfileByAddr('${r.addr}')"><td class="mono">${cpa(r.addr)}</td><td><div class="lbls">${chips||'<span style="border:0;background:none;padding:0;color:var(--dim)">Unknown</span>'}</div></td><td class="mono" style="color:${r.toks.length>1?'var(--teal)':'var(--dim)'}">${r.toks.length}</td><td style="white-space:nowrap">${r.toks.map(sym=>`<span title="${sym}" style="display:inline-flex;align-items:center;gap:3px;margin-right:6px">${tokLogo(sym,16)}<small style="color:var(--muted)">${sym}</small></span>`).join('')}</td><td class="r mono">${usd(r.usd)}</td></tr>`}).join('')
   }</tbody></table>
   <div style="padding:12px 14px;color:var(--dim);font-size:11.5px">wallets appearing in multiple aquariums are merged · combined value counts top-100 positions only${REAL?'':' · demo data'}</div>`;
   const tw=document.getElementById('infraTogW');if(tw)tw.onchange=()=>{hideInfra=tw.checked;renderWallets()};
@@ -1071,7 +1078,7 @@ async function renderWatch(){
   }
   rows.sort((a,b)=>b.usd-a.usd);
   el.innerHTML=`<table><thead><tr><th>Wallet</th><th>Labels</th><th>Positions</th><th class="r">Top-100 value</th><th class="r"></th></tr></thead><tbody>${
-    rows.map(r=>{const h=r.best||{};const chips=(h.entity?entPill(h.entity,h.entityType):'')+lblChips(h,2);
+    rows.map(r=>{const h=r.best||{};const chips=tagPills(h,true)+(h.entity?entPill(h.entity,h.entityType):'')+lblChips(h,2);
     return `<tr style="cursor:pointer" onclick="openProfileByAddr('${r.addr}')"><td class="mono">${cpa(r.addr)}${h.basename?` <span style="color:var(--teal)">${esc(h.basename)}</span>`:''}</td><td><div class="lbls">${chips||'<span style="border:0;background:none;padding:0;color:var(--dim)">Unknown</span>'}</div></td><td>${r.toks.length?r.toks.map(x=>`<span style="margin-right:8px;white-space:nowrap">${tokLogo(x.sym,15)} <small>#${x.rank} ${x.rankChange==='new'?'<b style=color:var(--teal)>NEW</b>':x.rankChange>0?'<b style=color:var(--teal)>↑'+x.rankChange+'</b>':x.rankChange<0?'<b style=color:var(--coral)>↓'+(-x.rankChange)+'</b>':''}</small></span>`).join(''):'<span style="color:var(--dim)">not in any top 100 right now</span>'}</td><td class="r mono">${usd(r.usd)}</td><td class="r"><button onclick="event.stopPropagation();WATCH.toggle('${r.addr}');renderWatch()" title="Remove" style="color:var(--coral);cursor:pointer;border:1px solid var(--line);padding:2px 8px;font-size:10px">✕</button></td></tr>`}).join('')
   }</tbody></table>
   <div style="padding:12px 14px;color:var(--dim);font-size:11.5px">${rows.length} watched · stored in this browser · alerts land here in a future version</div>`;
@@ -1532,7 +1539,7 @@ async function openProfile(h){
   const ark=`https://intel.arkm.com/explorer/address/${h.addr}`;
   el.innerHTML=`<div class="whead"><div class="fishic"><img src="assets/tank/${h.rank===1?'king':h.tier}.webp" style="width:40px;height:32px;object-fit:contain" onerror="this.style.display='none'"></div>
     <div><h3 id="wpname">${h.entity||short(h.addr)}</h3><div class="addr">${cpa(h.addr,h.addr)}</div>
-      <div class="lbls" id="wplbls" style="margin-top:6px">${[h.rank?`<span style="color:${t.c}">${t.n} · rank #${h.rank} in $${h.tokSym||cur.sym}</span>`:`<span>free swimmer · not in a tracked top 100</span>`,lblChips(h,5)].join('')}</div></div>
+      <div class="lbls" id="wplbls" style="margin-top:6px">${[tagPills(h),h.rank?`<span style="color:${t.c}">${t.n} · rank #${h.rank} in $${h.tokSym||cur.sym}</span>`:`<span>free swimmer · not in a tracked top 100</span>`,lblChips(h,5)].join('')}</div></div>
     <div class="val"><small id="wpvlabel">Tracked positions · Base</small><b class="mono" id="wpval">—</b></div>
     <div class="wbtns"><button onclick="setView('aquarium')">← Aquarium</button><button id="wpcopy">Copy address</button><button id="wpshare">Share wallet</button><button id="wpwatch"></button><button onclick="acctWatchPrefill('${h.addr.toLowerCase()}')" title="get an alert on every tx of this wallet">🔔 Alert me</button><span id="wpsocials" style="display:contents"></span><a href="${ark}" target="_blank" rel="noopener">Arkham ↗</a><a href="${scan}" target="_blank" rel="noopener">Basescan ↗</a></div></div>
   <div class="wgrid" id="wpgrid"><div class="empty2">Loading. Trust the fish.</div></div>`;
@@ -1639,7 +1646,7 @@ function closeCardOnly(){card.classList.remove('show')}
 async function openProfileByAddr(addr){
   if(!/^0x[0-9a-fA-F]{40}$/.test(addr||''))return;
   let h=data&&data.list.find(x=>x.addr.toLowerCase()===addr.toLowerCase());
-  if(!h){for(const tk of TOKENS){const d=REAL?await tokData(tk.sym):null;if(!d)continue;const m=d.holdersTop.find(x=>x.addr.toLowerCase()===addr.toLowerCase());if(m){h={rank:d.holdersTop.indexOf(m)+1,addr:m.addr,pct:m.pct||0,value:m.usd||0,amount:m.amount||0,tier:'medium',label:m.label||'',entity:m.entity||null,entityType:m.entityType||null,labels:m.labels||[],isContract:!!m.isContract,funding:m.funding||null,school:m.school||null,basename:m.basename||null,tokSym:tk.sym};break}}}
+  if(!h){for(const tk of TOKENS){const d=REAL?await tokData(tk.sym):null;if(!d)continue;const m=d.holdersTop.find(x=>x.addr.toLowerCase()===addr.toLowerCase());if(m){h={rank:d.holdersTop.indexOf(m)+1,addr:m.addr,pct:m.pct||0,value:m.usd||0,amount:m.amount||0,tier:'medium',label:m.label||'',entity:m.entity||null,entityType:m.entityType||null,labels:m.labels||[],isContract:!!m.isContract,tags:m.tags||[],tagInfo:m.tagInfo||null,funding:m.funding||null,school:m.school||null,basename:m.basename||null,tokSym:tk.sym};break}}}
   if(!h)h={rank:null,addr,pct:0,value:0,amount:0,tier:'small',label:'',entity:null,entityType:null,labels:[],isContract:false,funding:null,school:null};
   openProfile(h);
 }

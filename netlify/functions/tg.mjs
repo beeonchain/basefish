@@ -57,6 +57,8 @@ const ADMIN_HELP = `<b>🛠 Admin commands</b>
 /allow id — add an exception while paused
 /disallow id — remove an exception
 /users — list subscribers with chat ids
+/tag 0x… TAG [note] — curate a wallet tag (CT, WHALE, OG, SNIPE, DIAMOND or custom ≤12 chars); shows after the next refresh
+/untag 0x… [TAG] — remove a curated tag (all if omitted)
 /broadcast msg — service message to all subscribers
 /stats — subscriber counts + pause state
 /id — your chat id
@@ -215,6 +217,19 @@ export default async (req) => {
       const label = (x) => x.who ? (x.who.u ? '@' + x.who.u : '') + (x.who.n ? ` ${x.who.n.replace(/</g, '&lt;')}` : '') : '';
       const rows = Object.entries(subs.chats).map(([c, x]) => `<code>${c}</code> ${label(x) || '<i>unknown yet</i>'} ${ADMINS.has(c) ? '👑' : ''}${x.muted ? '⏹' : '✅'}${(x.watches || []).length ? ' 👁' + x.watches.length : ''}${isAllowed(subs, c) ? '' : ' 🔇'}`);
       out = `<b>Subscribers</b> (${rows.length})\n${rows.join('\n')}\n\n👑 admin · ✅ active · ⏹ self-paused · 👁 watches · 🔇 muted by global pause\n${pauseLine(subs)}`; break; }
+    case '/tag': case '/untag': {
+      if (!ADMINS.has(chat)) { out = HELP; break; }
+      const m = arg.match(/^(0x[0-9a-fA-F]{40})\s*(\S+)?\s*(.*)$/);
+      if (!m) { out = `Usage: ${cmd} 0xWALLET TAG [note]`; break; }
+      const a = m[1].toLowerCase(), tag = m[2] ? m[2].toUpperCase().replace(/[^A-Z0-9_]/g, '').slice(0, 12) : null, note = (m[3] || '').trim().slice(0, 80);
+      if (cmd.toLowerCase().startsWith('/tag') && !tag) { out = 'Usage: /tag 0xWALLET TAG [note]'; break; }
+      let res = '';
+      await updateJson('data/tags_manual.json', {}, (d) => {
+        if (cmd.toLowerCase().startsWith('/untag')) { if (!d[a]) { res = 'No curated tags on that wallet.'; return false; } if (tag) { d[a].tags = (d[a].tags || []).filter((x) => x !== tag); if (!d[a].tags.length) delete d[a]; } else delete d[a]; res = `Removed${tag ? ' ' + tag : ' all curated tags'} from ${a.slice(0, 8)}…`; return; }
+        const e = d[a] || (d[a] = { tags: [] }); if (!e.tags.includes(tag)) e.tags.push(tag); if (note) e.note = note; e.by = chat; e.ts = Date.now();
+        res = `Tagged ${a.slice(0, 8)}… as <b>${tag}</b>${note ? ` (${note.replace(/</g, '&lt;')})` : ''}. Live after the next refresh (~2h max, or hit ⟳ on the site).`;
+      }, `tags: ${cmd} ${a.slice(0, 10)} ${tag || ''}`);
+      out = res; break; }
     case '/admin': out = ADMINS.has(chat) ? ADMIN_HELP : HELP; break;
     default: out = HELP;
   }
