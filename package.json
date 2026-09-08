@@ -2,9 +2,8 @@
   "name": "walletsea",
   "private": true,
   "type": "module",
-  "description": "Walletsea — Netlify functions deps (viem for wallet sign-in verification). The site itself is static.",
+  "description": "Walletsea \u2014 Netlify functions deps (viem for wallet sign-in verification). The site itself is static.",
   "dependencies": {
-    "playwright": "^1.63.0",
     "viem": "^2.21.0"
   }
 }

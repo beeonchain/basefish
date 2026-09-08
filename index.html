@@ -325,6 +325,7 @@
       <div class="tierkey"><span><i style="background:#3B6BFF"></i>whale · deep</span><span><i style="background:#F2C14E"></i>large</span><span><i style="background:#53C7F0"></i>medium</span><span><i style="background:#AFCBE8"></i>small · shallow</span></div>
       <div class="ambnote">background schools = holders 101+ · ambient, not clickable</div>
       <div class="zoom"><button id="zin" title="Zoom in">+</button><button id="zout" title="Zoom out">−</button><button id="zfit" title="Reset" style="font-size:11px">⟲</button></div>
+      <label class="webtog" style="right:196px" title="Show exchanges, liquidity pools, bridges and contracts in the tank (they are excluded from the ranking)"><input type="checkbox" id="infraTogT"> SHOW INFRA</label>
       <label class="webtog" title="Highlight wallet clusters our evidence links together"><input type="checkbox" id="websTog"> SHOW SCHOOLS</label>
       <div class="toast" id="toast"></div>
       <div class="tankid" id="tankid">TANK 01</div>
@@ -391,7 +392,7 @@ const LABELS=['','','','','Smart money','Early buyer','Airdrop farmer','Bridged 
 const TYPE_COLORS={cex:'#E5484D',exchange:'#E5484D',dex:'#E5484D',bridge:'#E5484D',fund:'#A78BFA',vc:'#A78BFA',institution:'#A78BFA','market maker':'#F2C14E',mm:'#F2C14E',individual:'#0000FF',kol:'#0000FF',influencer:'#0000FF','smart contract':'#717886',protocol:'#34A0E8',dao:'#34A0E8'};
 function typeColor(t){return TYPE_COLORS[String(t||'').toLowerCase()]||'#5B616E'}
 function typePill(t){if(!t)return'';const c=typeColor(t);return `<span class="pill" style="background:${c}18;color:${c};border:1px solid ${c}55">${t}</span>`}
-function entPill(name,t){if(!name)return'<span style="color:var(--dim)">Unknown</span>';const c=typeColor(t);return `<span class="pill" style="background:${c}18;color:${c};border:1px solid ${c}55">${name}</span>`}
+function entPill(name,t){if(!name)return'<span style="color:var(--dim)">Unknown</span>';const cx=cexOf(name);if(cx)return `<span class="pill" style="background:${cx[1]}18;color:${cx[1]};border:1px solid ${cx[1]}66;font-weight:800">${cexIcon(name)}${esc(name)}</span>`;const c=typeColor(t);return `<span class="pill" style="background:${c}18;color:${c};border:1px solid ${c}55">${name}</span>`}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 /* every distinct label for a wallet (Arkham-style multi-label), minus the entity name itself */
 function wlabels(h){const out=[],seen=new Set();const add=s=>{if(!s)return;const k=String(s).trim();if(k&&!seen.has(k.toLowerCase())){seen.add(k.toLowerCase());out.push(k)}};(h.labels||[]).forEach(add);add(h.label);const ent=(h.entity||'').toLowerCase();return out.filter(l=>l.toLowerCase()!==ent)}
@@ -400,10 +401,20 @@ let LBL_UID=0;
 function lblChips(h,max=3){
   const ty=h.entityType||h.type||null,tc=typeColor(ty);
   const type=ty?`<span style="color:${tc};border-color:${tc}55">${esc(ty)}</span>`:'';
-  const ls=wlabels(h),vis=ls.slice(0,max),hid=ls.slice(max),id='lb'+(++LBL_UID);
-  const more=hid.length?`<span id="${id}" style="display:none;padding:0;border:0;background:none">${hid.map(l=>`<span>${esc(l)}</span>`).join('')}</span><button class="lblmore" title="Show all ${ls.length} labels" onclick="event.stopPropagation();document.getElementById('${id}').style.display='contents';this.remove()">+${hid.length}</button>`:'';
-  const chip=l=>{const c=cexOf(l);return c?`<span style="color:${c[1]};border-color:${c[1]}66">${cexIcon(l)}${esc(l)}</span>`:`<span>${esc(l)}</span>`};
-  return type+vis.map(chip).join('')+more+(h.isContract?'<span>contract</span>':'')}
+  const ls=wlabels(h).sort((x,y)=>labelRank(x)-labelRank(y)),vis=ls.slice(0,max),hid=ls.slice(max),id='lb'+(++LBL_UID);
+  const more=hid.length?`<span id="${id}" style="display:none;padding:0;border:0;background:none">${hid.map(labelChip).join('')}</span><button class="lblmore" title="Show all ${ls.length} labels" onclick="event.stopPropagation();document.getElementById('${id}').style.display='contents';this.remove()">+${hid.length}</button>`:'';
+  return type+vis.map(labelChip).join('')+more+(h.isContract?'<span>contract</span>':'')}
+/* label priority — identity first and loud, provenance last and quiet:
+   1 identity: @handle, basename/ENS, a known entity name (incl. exchanges → their brand colour)
+   2 typed/descriptive labels (fund, "Top Trader", "X Top 100 Holder", …) → neutral
+   3 provenance ("Coinbase funded", "Fresh wallet", "Bridge funded") → dim, small — context, not identity */
+const LBL_PROV=/\bfunded\b|fresh wallet|bridge funded|cex funded/i;
+function labelRank(l){const x=String(l);if(/^@/.test(x)||/\.(eth|base\.eth)$/i.test(x))return 0;if(LBL_PROV.test(x))return 3;if(cexOf(x))return 1;return 2}
+function labelChip(l){const x=String(l),r=labelRank(x);
+  if(r===0)return `<span style="color:var(--teal);border-color:var(--teal);font-weight:800">${/^@/.test(x)?ICON_X+' ':''}${esc(x)}</span>`;
+  if(r===3)return `<span style="color:var(--dim);border-style:dashed;font-weight:500">${esc(x)}</span>`;
+  const c=cexOf(x);if(c)return `<span style="color:${c[1]};border-color:${c[1]}66;font-weight:800">${cexIcon(x)}${esc(x)}</span>`;
+  return `<span>${esc(x)}</span>`}
 const ICON_X='<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M18.9 2H22l-6.8 7.8L23.3 22h-6.3l-4.9-6.4L6.4 22H3.3l7.3-8.3L1 2h6.5l4.4 5.9L18.9 2zm-1.1 18h1.7L7.1 3.9H5.3L17.8 20z"/></svg>';
 const ICON_WEB='<svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor" shape-rendering="crispEdges"><rect x="1" y="1" width="14" height="2"/><rect x="1" y="13" width="14" height="2"/><rect x="1" y="1" width="2" height="14"/><rect x="13" y="1" width="2" height="14"/><rect x="4" y="7" width="8" height="2"/><rect x="7" y="4" width="2" height="8"/></svg>';
 function tokLogo(sym,size){const t=TOKENS.find(x=>x.sym===sym);if(t&&t.logo)return `<img src="${t.logo}" alt="${sym}" title="${sym}" style="width:${size}px;height:${size}px;border-radius:0;vertical-align:middle;border:1px solid var(--line)" onerror="this.style.display='none'">`;return `<span class="pill" style="background:${t?t.color:'#888'}22;color:${t?t.color:'#aaa'}">${sym}</span>`}
@@ -437,7 +448,8 @@ function buildHolders(t){
 }
 /* ============ state ============ */
 let cur=DEMO_TOKENS[0], data, fish=[], schools=[], bubbles=[], selected=null, hovered=null, zoom=1, view='aquarium';
-let showWebs=false;
+let showWebs=false,tankInfra=false; // tank filter: exchanges / pools / bridges / contracts hidden by default
+const fishVisible=f=>tankInfra||!(f.h.infra||isInfra(f.h));
 const cv=document.getElementById('cv'), tank=document.getElementById('tank');let ctx=cv.getContext('2d');
 let W=0,H=0,DPR=1;
 const AMP=matchMedia('(prefers-reduced-motion: reduce)').matches?0:1; // 0 = static tank
@@ -469,6 +481,10 @@ async function loadToken(t){
   fish=data.list.map(h=>{const[hx,hy]=addrHash(h.addr);
     const f={h,hx,hy,dir:hx>.5?1:-1,speed:0,phase:hy*6.28,size:sizeFor(h),tsize:sizeFor(h),wob:0.6+r()*0.8,vy:0,ty:0,pulse:0,glow:0};
     const hm=homeOf(f);f.x=hm.x;f.y=hm.y;f.ty=hm.y;return f});
+  // infrastructure wallets (excluded from the ranking) swim too, behind the SHOW INFRA toggle
+  // only the 12 largest, drawn smaller + translucent so the tank still reads as "real holders + some structures"
+  (REAL&&cur.infra||[]).slice(0,12).forEach(x=>{const th=cur.th||[0,0,0];const h={...x,rank:999,tier:x.value>=th[2]?'whale':x.value>=th[1]?'large':x.value>=th[0]?'medium':'small',labels:[(KIND[x.kind]||KIND.contract).n],entity:x.label||null,label:x.label||'',entityType:x.kind,isContract:x.kind!=='cex'};
+    const[hx,hy]=addrHash(h.addr);const sz=Math.min(64,sizeFor(h)*0.7);const f={h,hx,hy,dir:hx>.5?1:-1,speed:0,phase:hy*6.28,size:sz,tsize:sz,wob:0.6+r()*0.8,vy:0,ty:0,pulse:0,glow:0};const hm=homeOf(f);f.x=hm.x;f.y=hm.y;f.ty=hm.y;fish.push(f)});
   fish.forEach(f=>{f.speed=(f.h.tier==='whale'?10:f.h.tier==='large'?16:f.h.tier==='medium'?22:30)*(0.8+r()*.5)});
   buildEnv(t.seed||7);
   /* schools are ambient background (holders 101+): near the surface, dimmer, not data points */
@@ -671,6 +687,10 @@ function step(dt,t){
   if(AMP&&envVault&&Math.random()<dt*.7)bubbles.push({x:envVault.x+(Math.random()-.5)*14,y:envVault.y,v:26+Math.random()*22,r:1.2+Math.random()*2,p:Math.random()*6});
 }
 function drawOneFish(f,t){
+  if(f.h.infra){ctx.save();ctx.globalAlpha=.62;drawOneFishInner(f,t);ctx.restore();return}
+  drawOneFishInner(f,t);
+}
+function drawOneFishInner(f,t){
   const s=f.size*zoom;
   const sp=sprFor(f.h);
   if(sp){
@@ -691,19 +711,19 @@ function drawOneFish(f,t){
 }
 function fishLabel(f,t,force){
   const s=f.size*zoom;
-  ctx.save();ctx.globalAlpha=force?1:(f.h.rank<=6?.92:Math.max(f.glow,f===selected?1:0));
-  ctx.font=`500 ${f.h.tier==='whale'?11:10}px JetBrains Mono, monospace`;const lbl=(f.h.entity||f.h.label||short(f.h.addr)).slice(0,24);const tw=ctx.measureText(lbl).width+14;
+  ctx.save();ctx.globalAlpha=force==='soft'?.7:force?1:(f.h.rank<=6?.92:Math.max(f.glow,f===selected?1:0));
+  ctx.font=`500 ${f.h.tier==='whale'?11:10}px JetBrains Mono, monospace`;const lbl=(f.h.infra?(KIND[f.h.kind]||KIND.contract).n+' · ':'')+(f.h.entity||f.h.label||short(f.h.addr)).slice(0,24);const tw=ctx.measureText(lbl).width+14;
   const sel=f===selected||f===hovered;
   const ly=Math.max(4,f.y-s*.62-22); // never clipped above the tank
-  ctx.fillStyle=sel?'#0000FF':'rgba(10,11,13,.78)';roundRect(f.x-tw/2,ly,tw,18,0);ctx.fill();if(!sel){ctx.strokeStyle='rgba(255,255,255,.25)';ctx.stroke()}
+  ctx.fillStyle=sel?'#0000FF':(f.h.infra?(KIND[f.h.kind]||KIND.contract).c:'rgba(10,11,13,.78)');roundRect(f.x-tw/2,ly,tw,18,0);ctx.fill();if(!sel){ctx.strokeStyle='rgba(255,255,255,.25)';ctx.stroke()}
   ctx.fillStyle='#FFFFFF';ctx.textAlign='center';ctx.fillText(lbl,f.x,ly+13);ctx.restore();
 }
 function drawFishes(t){
-  const order=[...fish].sort((a,b)=>a.size-b.size);
+  const order=fish.filter(fishVisible).sort((a,b)=>a.size-b.size);
   order.forEach(f=>{if(f!==selected)drawOneFish(f,t)});
   if(sprReady)drawEnv(t,false);
   // labels render above every sprite: persistent for the top 6, on hover for the rest
-  order.forEach(f=>{if(f!==selected&&(f.h.rank<=6||f.glow>.2))fishLabel(f,t)});
+  order.forEach(f=>{if(f!==selected&&(f.h.rank<=6||f.h.infra||f.glow>.2))fishLabel(f,t,f.h.infra&&f.glow<.2?'soft':false)});
   if(showWebs&&!selected){ // resting overlay: dim the tank, whisper-thin webs per cluster
     ctx.save();ctx.fillStyle='rgba(3,9,22,.62)';ctx.fillRect(0,0,W,H);ctx.restore();
     const groups=new Map();
@@ -766,7 +786,7 @@ const tip=document.getElementById('tip'),card=document.getElementById('card');
   const end=e=>{if(!dragging)return;dragging=false;card.classList.remove('dragging');try{card.releasePointerCapture(e.pointerId)}catch(err){}};
   card.addEventListener('pointerup',end);card.addEventListener('pointercancel',end);
 })();
-function hit(mx,my){let best=null,bd=1e9;fish.forEach(f=>{const d=Math.hypot(f.x-mx,f.y-my);const r=f.size*zoom*.6+8;if(d<r&&d<bd){bd=d;best=f}});return best}
+function hit(mx,my){let best=null,bd=1e9;fish.forEach(f=>{if(!fishVisible(f))return;const d=Math.hypot(f.x-mx,f.y-my);const r=f.size*zoom*.6+8;if(d<r&&d<bd){bd=d;best=f}});return best}
 tank.addEventListener('mousemove',e=>{const r=tank.getBoundingClientRect();const mx=e.clientX-r.left,my=e.clientY-r.top;hovered=hit(mx,my);tank.style.cursor=hovered?'pointer':'default';
   if(hovered&&hovered!==selected){tip.style.display='block';tip.innerHTML=`<b>${esc(hovered.h.entity||hovered.h.label||short(hovered.h.addr))}</b> · ${hovered.h.pct.toFixed(2)}% · ${usd(hovered.h.value)}`;tip.style.left=Math.min(W-220,mx+14)+'px';tip.style.top=(my-34)+'px'}else tip.style.display='none'});
 tank.addEventListener('mouseleave',()=>{hovered=null;tip.style.display='none'});
@@ -775,7 +795,7 @@ function select(f){selected=f;tip.style.display='none';const h=f.h,t=TIER[h.tier
   const scan=`https://basescan.org/token/${cur.contract||''}?a=${h.addr}`;
   const tc=typeColor(h.entityType);
   const chips=[h.entity?`<span style="color:${tc};border-color:${tc}55">${esc(h.entity)}</span>`:'',lblChips(h,3),(!REAL)?`<span>${h.first}d on-chain</span><span>${h.tx} txs</span>`:''].join('');
-  card.innerHTML=`<button class="x" id="cx">✕</button><div class="tier" style="color:${t.c}"><i style="background:${t.c}"></i>${t.n} wallet · rank #${h.rank}</div>
+  card.innerHTML=`<button class="x" id="cx">✕</button><div class="tier" style="color:${h.infra?(KIND[h.kind]||KIND.contract).c:t.c}"><i style="background:${h.infra?(KIND[h.kind]||KIND.contract).c:t.c}"></i>${h.infra?`${(KIND[h.kind]||KIND.contract).n} · excluded from ranking`:`${t.n} wallet · rank #${h.rank}`}</div>
   <div class="addr">${short(h.addr)}<button id="ccopy" title="Copy address">copy</button></div>
   ${chips?`<div class="lbls">${chips}</div>`:''}
   ${(()=>{const sc=h.school?schoolOf(h.school):null;if(!sc)return'';const pt=sc.perToken[cur.sym];const inTank=pt?pt.members:1;
@@ -795,6 +815,7 @@ function select(f){selected=f;tip.style.display='none';const h=f.h,t=TIER[h.tier
   document.querySelectorAll('#holdList button').forEach(b=>b.classList.toggle('sel',b.dataset.i==h.rank-1));
 }
 function closeCard(){selected=null;card.classList.remove('show');document.getElementById('drawer').classList.remove('open');document.querySelectorAll('#holdList button').forEach(b=>b.classList.remove('sel'))}
+document.getElementById('infraTogT').onchange=e=>{tankInfra=e.target.checked;if(selected&&!fishVisible(selected))closeCard();toastMsg(tankInfra?'Showing the 12 largest exchanges, pools, bridges & contracts (translucent)':'Infrastructure hidden — real holders only','var(--muted)')};
 document.getElementById('websTog').onchange=e=>{showWebs=e.target.checked;
   if(showWebs){const n=new Set(fish.filter(f=>f.h.school).map(f=>f.h.school));
     let vis=0;n.forEach(id=>{if(fish.filter(f=>f.h.school===id).length>1)vis++});
@@ -922,7 +943,7 @@ function renderTable(){
     ${exl.length?`<label style="display:flex;gap:6px;align-items:center;cursor:pointer" title="Exchanges, liquidity pools, bridges and lockers are excluded from the ranking. Show them where they would sit."><input type="checkbox" id="exclTog" ${showExcluded?'checked':''}> Show excluded infrastructure <span style="color:var(--dim)">(${exl.length}: ${[...new Set(exl.map(x=>x.kind))].map(k=>(KIND[k]||KIND.contract).n).join(', ').toLowerCase()})</span></label>`:''}
     ${hidden?`<span style="color:var(--dim)">${hidden} infrastructure wallet${hidden>1?'s':''} hidden · ranks unchanged</span>`:''}${merged?`<span style="color:var(--dim)">merged ranking · (#n) = rank among real holders</span>`:''}
     <button id="csvBtn" style="margin-left:auto;border:1px solid var(--line);padding:3px 10px;color:var(--muted);cursor:pointer;font-size:10.5px;font-family:var(--font-mono)">EXPORT CSV</button></div>`:''}
-  <table><thead><tr>${sTh('rank','#')}<th>Wallet</th><th>Tier</th><th>Labels</th>${sTh('chg',refH,1)}${has7?sTh('chg7',ref7,1):''}${sTh('amount','Amount',1)}${sTh('pct','% supply',1)}${sTh('value','Value',1)}<th class="r">Type</th></tr></thead><tbody>${rows.map(h=>h.infra?`<tr data-a="${h.addr}" style="background:var(--panel2);opacity:.85"><td class="mono" style="color:var(--dim);white-space:nowrap">${h._m||h.rank}</td><td class="mono">${cpa(h.addr)} <span style="color:var(--muted)">${esc(h.label||'')}</span></td><td>${kindTag(h.kind)}</td><td><span style="color:var(--dim);font-size:11px">excluded from ranking</span></td><td class="r"></td>${has7?'<td></td>':''}<td class="r mono">${num(h.amount)}</td><td class="r mono">${(h.pct||0).toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:${(KIND[h.kind]||KIND.contract).c}">${(KIND[h.kind]||KIND.contract).n.toLowerCase()}</td></tr>`:`<tr data-i="${h.rank-1}"><td class="mono" style="color:var(--dim);white-space:nowrap">${merged?`${h._m} <small title="rank among real holders">(#${h.rank})</small>`:h.rank} ${rankChip(h)}</td><td class="mono">${cpa(h.addr)}${(h.entity||h.basename)?` <span style="color:var(--teal)">${esc(h.entity||h.basename)}</span>`:''}</td><td><span class="pill" style="background:${TIER[h.tier].c}22;color:${TIER[h.tier].c}">${TIER[h.tier].n}</span></td><td><div class="lbls">${lblChips(h,2)||'<span style="border:0;background:none;padding:0;color:var(--dim)">—</span>'}</div></td><td class="r">${usdChip(h)}</td>${has7?`<td class="r" style="white-space:nowrap">${rankChip(h,'rankChange7')} ${usdChip(h,'usdChange7')}</td>`:''}<td class="r mono">${num(h.amount)}</td><td class="r mono">${h.pct.toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:${typeOf(h)==='wallet'?'var(--muted)':typeColor(h.entityType)}">${typeOf(h)}</td></tr>`).join('')}</tbody></table>`;
+  <table><thead><tr>${sTh('rank','#')}<th>Wallet</th><th>Tier</th><th>Labels</th>${sTh('chg',refH,1)}${has7?sTh('chg7',ref7,1):''}${sTh('amount','Amount',1)}${sTh('pct','% supply',1)}${sTh('value','Value',1)}<th class="r">Type</th></tr></thead><tbody>${rows.map(h=>h.infra?`<tr data-a="${h.addr}" style="background:var(--panel2);opacity:.85"><td class="mono" style="color:var(--dim);white-space:nowrap">${h._m||h.rank}</td><td class="mono">${cpa(h.addr)} <span style="color:var(--muted)">${esc(h.label||'')}</span></td><td>${kindTag(h.kind)}</td><td><span style="color:var(--dim);font-size:11px">excluded from ranking</span></td><td class="r"></td>${has7?'<td></td>':''}<td class="r mono">${num(h.amount)}</td><td class="r mono">${(h.pct||0).toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:${(KIND[h.kind]||KIND.contract).c}">${(KIND[h.kind]||KIND.contract).n.toLowerCase()}</td></tr>`:`<tr data-i="${h.rank-1}"><td class="mono" style="color:var(--dim);white-space:nowrap">${merged?`${h._m} <small title="rank among real holders">(#${h.rank})</small>`:h.rank} ${rankChip(h)}</td><td class="mono">${cpa(h.addr)}${(h.entity||h.basename)?` <span style="color:${cexOf(h.entity)?cexOf(h.entity)[1]:'var(--teal)'};font-weight:700">${cexOf(h.entity)?cexIcon(h.entity):''}${esc(h.entity||h.basename)}</span>`:''}</td><td><span class="pill" style="background:${TIER[h.tier].c}22;color:${TIER[h.tier].c}">${TIER[h.tier].n}</span></td><td><div class="lbls">${lblChips(h,2)||'<span style="border:0;background:none;padding:0;color:var(--dim)">—</span>'}</div></td><td class="r">${usdChip(h)}</td>${has7?`<td class="r" style="white-space:nowrap">${rankChip(h,'rankChange7')} ${usdChip(h,'usdChange7')}</td>`:''}<td class="r mono">${num(h.amount)}</td><td class="r mono">${h.pct.toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:${typeOf(h)==='wallet'?'var(--muted)':typeColor(h.entityType)}">${typeOf(h)}</td></tr>`).join('')}</tbody></table>`;
   document.querySelectorAll('#holdersView tr[data-i]').forEach(r=>r.onclick=()=>{setView('aquarium');select(fish[+r.dataset.i])});
   document.querySelectorAll('#holdersView th[data-sort]').forEach(th=>th.onclick=()=>{const k=th.dataset.sort;if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=1}renderTable()});
   const tog=document.getElementById('infraTog');if(tog)tog.onchange=()=>{hideInfra=tog.checked;renderTable()};
@@ -1039,11 +1060,10 @@ async function searchAll(q){
   if(/^0x[0-9a-f]{40}$/i.test(q)){
     const tok=TOKENS.find(t=>(t.contract||'').toLowerCase()===ql);
     if(tok)return[{type:'token',sym:tok.sym,label:'$'+tok.sym+' — open aquarium'}];
-    // is it a token contract we don't track yet? ask the lookup endpoint (fast: CDN-cached)
-    let info=null;try{const r=await fetch('/api/token?ca='+ql);if(r.ok)info=await r.json()}catch{}
-    if(info&&info.tracked){const t2=TOKENS.find(t=>t.sym===info.sym);if(t2)return[{type:'token',sym:t2.sym,label:'$'+t2.sym+' — open aquarium'}]}
-    if(info&&info.isToken)return[{type:'mini',ca:ql,info,label:`$${esc(info.sym)} — ${esc(info.name)} · <b>preview top holders</b>`,sub:'not tracked yet'},{type:'wallet',addr:q,label:short(q)+' — open as a wallet'}];
-    return[{type:'wallet',addr:q,label:short(q)+' — open wallet page'}];
+    // is it a token contract we don't track yet? ask the lookup endpoint (CDN-cached after the first hit).
+    // Show the wallet option instantly; the token option is appended when the lookup answers.
+    const pending=fetch('/api/token?ca='+ql).then(r=>r.ok?r.json():null).catch(()=>null);
+    return[{type:'wallet',addr:q,label:short(q)+' — open wallet page',pending,pendingLabel:'checking if this is a token…'}];
   }
   if(ql.length<2)return out;
   const seen=new Set();
@@ -1061,13 +1081,16 @@ async function searchAll(q){
 }
 {const hq=document.getElementById('hq'),drop=document.getElementById('hqDrop');let tmr=null;
  const go=r=>{drop.style.display='none';hq.value='';if(r.type==='token')jumpToken(r.sym);else if(r.type==='mini')openMini(r.ca,r.info);else openProfileByAddr(r.addr)};
+ const paint=rs=>{drop.innerHTML=rs.map((r,i)=>`<button data-i="${i}">${r.label}${r.sub?` <small>· ${r.sub}</small>`:''}</button>`).join('')+(rs.some(r=>r.pending)?'<button disabled style="color:var(--dim)">⏳ checking if this is a token…</button>':'');drop.style.display='block';drop.querySelectorAll('button[data-i]').forEach(b=>b.onclick=()=>go(rs[+b.dataset.i]))};
  hq.oninput=()=>{clearTimeout(tmr);tmr=setTimeout(async()=>{const rs=await searchAll(hq.value);
    if(!rs.length){drop.style.display=hq.value.trim().length>1?'block':'none';drop.innerHTML='<button disabled style="color:var(--dim)">no match in tracked top-100s</button>';return}
-   drop.innerHTML=rs.map((r,i)=>`<button data-i="${i}">${r.label}${r.sub?` <small>· ${r.sub}</small>`:''}</button>`).join('');
-   drop.style.display='block';
-   drop.querySelectorAll('button[data-i]').forEach(b=>b.onclick=()=>go(rs[+b.dataset.i]));
+   paint(rs);
+   const pr=rs.find(r=>r.pending);if(pr){const v=hq.value;pr.pending.then(info=>{if(hq.value!==v||!info)return;delete pr.pending;
+     if(info.tracked){const t2=TOKENS.find(t=>t.sym===info.sym);if(t2)rs.unshift({type:'token',sym:t2.sym,label:'$'+t2.sym+' — open aquarium'})}
+     else if(info.isToken)rs.unshift({type:'mini',ca:pr.addr.toLowerCase(),info,label:`$${esc(info.sym)} — ${esc(info.name)} · <b>preview top holders</b>`,sub:'not tracked yet'});
+     paint(rs)})}
  },220)};
- hq.onkeydown=e=>{if(e.key==='Enter'){searchAll(hq.value).then(rs=>{if(rs.length)go(rs[0])})}if(e.key==='Escape'){drop.style.display='none';hq.blur()}};
+ hq.onkeydown=e=>{if(e.key==='Enter'){const first=drop.querySelector('button[data-i]');if(first){first.click();return}searchAll(hq.value).then(rs=>{if(rs.length)go(rs[0])})}if(e.key==='Escape'){drop.style.display='none';hq.blur()}};
  document.addEventListener('click',e=>{if(!e.target.closest('.hsearch'))drop.style.display='none'});}
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{if(b.querySelector('.soon'))return toastMsg(`<b>${b.querySelector('span').textContent}</b> isn't ready. The prophecy says soon.`,'var(--dim)');closeCard();setView(b.dataset.view)});
 document.getElementById('viewAll').onclick=()=>setView('holders');
@@ -1303,7 +1326,7 @@ async function trackMini(ca){
   }catch(e){toastMsg(esc(e.message),'var(--coral)')}
 }
 /* ---- Flows view: where the top-100's money is moving ---- */
-let flowWin='7d',FLOWSNAPS={};// window: '1d' | '7d' | '30d' | 'all'; snapshots cache per token (client-side windowed maths)
+let flowWin='7d',FLOWSNAPS={},FLOWPTS=null;// window: '1d' | '7d' | '30d' | 'all'; snapshots cache per token (client-side windowed maths)
 const FLOW_WINS=[['1d','24h',1],['7d','7 days',7],['30d','30 days',30],['all','All time',3650]];
 async function flowSnaps(sym){
   if(FLOWSNAPS[sym]&&Date.now()-FLOWSNAPS[sym].at<3e5)return FLOWSNAPS[sym].snaps;
@@ -1318,7 +1341,11 @@ function flowCalc(snaps,F,days){
   let ref=snaps[0];for(const s of snaps){if(s.ts<=target)ref=s;else break}
   if(days<3650&&now.ts-ref.ts<days*864e5*0.5&&ref===snaps[0])return{tooShort:true,span:(now.ts-ref.ts)/864e5};
   const tot=s=>{let a=0;for(const k in s.h){const o=s.h[k];if(o.r<=100){const v=snapAmt(o,s,F);if(v==null)return null;a+=v}}return a};
-  const nowA=tot(now),refA=tot(ref),price=cur.price||0;
+  const price=cur.price||0;let nowA=tot(now),refA=tot(ref);
+  if(refA==null){ // reference snapshot can't be valued (no stored amount/price): use the oldest valued snapshot inside the window
+    for(const sn of snaps){if(sn.ts<=target||sn===now)continue;const v=tot(sn);if(v!=null){ref=sn;refA=v;break}}
+    if(refA!=null&&days<3650&&(now.ts-ref.ts)<days*864e5*0.5)return{noPrice:true,span:(now.ts-ref.ts)/864e5};
+  }
   if(nowA==null||refA==null)return{noPrice:true,span:(now.ts-ref.ts)/864e5};
   const movers=[],entries=[],exits=[];
   const curH=now.h,refH=ref.h;
@@ -1344,7 +1371,14 @@ async function renderFlows(){
   if((!C||C.noPrice)&&flowWin==='7d')C=pipe(F.net7,true)||C;
   if((!C||C.noPrice)&&flowWin==='30d')C=pipe(F.net30,false)||C;
   if(C&&C.noPrice)C={tooShort:true,span:C.span};
-  const series=days>=3650?F.series:F.series.filter(p=>p.ts>=Date.now()-days*864e5-36e5);
+  // chart points: every snapshot in the window (~2h apart) when we can value them, else the pipeline's daily series
+  FLOWPTS=null;
+  if(snaps&&snaps.length>=2){const tot=sn=>{let a=0;for(const k in sn.h){const o=sn.h[k];if(o.r<=100){const v=snapAmt(o,sn,F);if(v==null)return null;a+=v}}return a};
+    const from=days>=3650?0:Date.now()-days*864e5-36e5;let pts=[];
+    for(const sn of snaps){if(sn.ts<from)continue;const a=tot(sn);if(a==null)continue;pts.push({ts:sn.ts,amt:Math.round(a),p:sn.p||0,snap:sn})}
+    if(days>=3650&&pts.length>200){const keep=[];let last=0;for(const q of pts){if(q.ts-last>=864e5*0.9||q===pts[pts.length-1]){keep.push(q);last=q.ts}}pts=keep}
+    if(pts.length>=2)FLOWPTS=pts}
+  const series=FLOWPTS||(days>=3650?F.series:F.series.filter(p=>p.ts>=Date.now()-days*864e5-36e5));
   const tile=(t2,big,sub,cls)=>`<div style="flex:1;min-width:170px;border:1px solid var(--line);padding:12px 14px;background:var(--panel)"><div style="color:var(--dim);font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;font-weight:700">${t2}</div><div class="mono ${cls||''}" style="font-size:19px;font-weight:800;margin-top:4px">${big}</div><div style="color:var(--muted);font-size:11px;margin-top:3px">${sub}</div></div>`;
   const acc=C&&!C.tooShort&&C.amt>=0;
   const spanTxt=C&&!C.tooShort?(C.span<1.5?`${Math.max(1,Math.round(C.span*24))}h`:`${Math.round(C.span)}d`):'';
@@ -1365,11 +1399,11 @@ async function renderFlows(){
     <div style="border-left:3px solid ${!ok?'var(--dim)':acc?'var(--teal)':'var(--coral)'};background:var(--panel);padding:12px 14px;font-size:13px;line-height:1.5">${story}</div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       ${ok?tile(`Net ${W[1]} · top 100`,`${tokAmt(C.amt,true)} ${esc(sym)}`,`${acc?'accumulated':'distributed'} ~${usd(Math.abs(C.usd))} (${C.pct>=0?'+':''}${C.pct.toFixed(2)}%) over ${spanTxt}`,acc?'up':'down'):tile(`Net ${W[1]}`,'—','not enough history yet')}
-      ${tile('Top 100 hold now',`${tokAmt(C?C.nowAmt:F.series[F.series.length-1].amt)} ${esc(sym)}`,`~${usd((C?C.nowAmt:F.series[F.series.length-1].amt)*(cur.price||0))} · ${(data.topShare*100).toFixed(1)}% of supply`)}
+      ${tile('Top 100 hold now',`${tokAmt(C&&C.nowAmt!=null?C.nowAmt:F.series[F.series.length-1].amt)} ${esc(sym)}`,`~${usd((C&&C.nowAmt!=null?C.nowAmt:F.series[F.series.length-1].amt)*(cur.price||0))} · ${(data.topShare*100).toFixed(1)}% of supply`)}
       ${tile(`Top-100 turnover · ${W[1]}`,ok?`<span class="up">${C.nEntries} in</span> · <span class="down">${C.nExits} out</span>`:'—','wallets entering / leaving the top 100')}
       ${cex.n?tile('CEX flow · 7d observed',`<span class="up">${usd(cex.in)} in</span> · <span class="down">${usd(cex.out)} out</span>`,`${cex.n} labeled exchange transfer${cex.n===1?'':'s'} among top wallets`):tile('CEX flow · 7d observed','—','no labeled exchange transfers observed')}
     </div>
-    ${box(`How much $${esc(sym)} the top 100 hold, day by day`,`<div style="display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-bottom:6px"><span><i style="display:inline-block;width:14px;height:3px;background:#0000FF;vertical-align:middle;margin-right:5px"></i>Combined balance (${esc(sym)})</span><span><i style="display:inline-block;width:14px;height:0;border-top:2px dashed #9AA0A6;vertical-align:middle;margin-right:5px"></i>Price (USD)</span><span style="color:var(--dim)">↑ line going up = they're accumulating · ↓ going down = distributing · hover for exact values</span></div><canvas id="fchart" style="width:100%;height:220px;display:block"></canvas>`)}
+    ${box(`How much $${esc(sym)} the top 100 hold, day by day`,`<div style="display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-bottom:6px"><span><i style="display:inline-block;width:14px;height:3px;background:#0000FF;vertical-align:middle;margin-right:5px"></i>Combined balance (${esc(sym)})</span><span><i style="display:inline-block;width:14px;height:0;border-top:2px dashed #9AA0A6;vertical-align:middle;margin-right:5px"></i>Price (USD)</span><span style="color:var(--dim)">↑ up = accumulating · ↓ down = distributing · hover a point for that moment · <b>click a point</b> to see who moved</span></div><canvas id="fchart" style="width:100%;height:220px;display:block;cursor:crosshair"></canvas><div id="fday" style="margin-top:8px"></div>`)}
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px">
       ${box(`Biggest accumulators · ${W[1]}`,ok&&C.moversUp.length?C.moversUp.map(moveRow).join(''):'<div style="padding:8px 2px;color:var(--dim);font-size:11.5px">no significant adds</div>')}
       ${box(`Biggest distributors · ${W[1]}`,ok&&C.moversDown.length?C.moversDown.map(moveRow).join(''):'<div style="padding:8px 2px;color:var(--dim);font-size:11.5px">no significant sells</div>')}
@@ -1411,14 +1445,38 @@ function drawFlowChart(cv2,series,hoverI){
   x.fillStyle='#0000FF';x.beginPath();x.arc(X(li),Y(lp.amt),6,0,6.28);x.fill();
   if(hoverI!=null){x.strokeStyle='rgba(10,11,13,.25)';x.lineWidth=1;x.beginPath();x.moveTo(X(li),top);x.lineTo(X(li),H2-bot);x.stroke()}
   // readout
-  const d0=series[0].amt,delta=lp.amt-d0;
+  const d0=series[0].amt,delta=lp.amt-d0,prev=li>0?series[li-1]:null,dPrev=prev?lp.amt-prev.amt:0;
+  const fine=series.length>1&&(series[series.length-1].ts-series[0].ts)/series.length<20*36e5; // sub-daily points → show time too
+  const when=new Date(lp.ts).toLocaleDateString(undefined,{month:'short',day:'numeric'})+(fine?' '+new Date(lp.ts).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'}):'');
   x.textAlign='right';x.textBaseline='alphabetic';x.fillStyle='#0A0B0D';x.font='700 21px Roboto Mono';
-  x.fillText(`${tokAmt(lp.amt)} ${cur.sym}${lp.p?` · $${lp.p>=1?lp.p.toFixed(2):lp.p.toPrecision(3)}`:''} · ${new Date(lp.ts).toLocaleDateString()}`,W2-padR,30);
+  x.fillText(`${tokAmt(lp.amt)} ${cur.sym}${lp.p?` · $${lp.p>=1?lp.p.toFixed(2):lp.p.toPrecision(3)}`:''} · ${when}${prev?`  (${tokAmt(dPrev,true)} vs prev)`:''}`,W2-padR,30);
   x.textAlign='left';x.fillStyle=delta>=0?'#0000FF':'#E5484D';x.font='700 18px Roboto Mono';x.fillText(`${tokAmt(delta,true)} since ${new Date(series[0].ts).toLocaleDateString(undefined,{month:'short',day:'numeric'})}`,padL,30);
   cv2.onmousemove=e=>{const r2=cv2.getBoundingClientRect();const fx=(e.clientX-r2.left)/r2.width*W2;
     let bi=0,bd=1e18;series.forEach((p,i)=>{const d2=Math.abs(X(i)-fx);if(d2<bd){bd=d2;bi=i}});
     if(bi!==hoverI)drawFlowChart(cv2,series,bi)};
   cv2.onmouseleave=()=>drawFlowChart(cv2,series);
+  cv2.onclick=e=>{const r2=cv2.getBoundingClientRect();const fx=(e.clientX-r2.left)/r2.width*W2;let bi=0,bd=1e18;series.forEach((p,i)=>{const d2=Math.abs(X(i)-fx);if(d2<bd){bd=d2;bi=i}});flowMoves(series,bi)};
+}
+/* who moved between two chart points — the seed of the per-day flow diagram */
+function flowMoves(series,i){
+  const el=document.getElementById('fday');if(!el)return;
+  const cur2=series[i],prev=i>0?series[i-1]:null;
+  if(!prev||!cur2.snap||!prev.snap){el.innerHTML=`<div style="padding:8px 0;color:var(--dim);font-size:11.5px">${!prev?'First point in the window — pick a later one.':'Per-wallet detail needs snapshot data (available for recent points).'}</div>`;return}
+  const F=cur.flows,price=cur.price||0,rows=[];let ent=0,ex=0;
+  for(const k in cur2.snap.h){const o=cur2.snap.h[k];if(o.r>100)continue;const a1=snapAmt(o,cur2.snap,F);const r0=prev.snap.h[k];
+    if(!r0){ent++;rows.push({addr:k,amt:a1||0,usd:(a1||0)*price,kind:'entry'});continue}
+    const a0=snapAmt(r0,prev.snap,F);if(a1==null||a0==null)continue;const d=a1-a0;if(Math.abs(d*price)>=250)rows.push({addr:k,amt:d,usd:d*price,kind:d>0?'buy':'sell'})}
+  for(const k in prev.snap.h){const o=prev.snap.h[k];if(o.r<=100&&!cur2.snap.h[k]){ex++;const a0=snapAmt(o,prev.snap,F)||0;rows.push({addr:k,amt:-a0,usd:-a0*price,kind:'exit'})}}
+  rows.sort((a,b)=>Math.abs(b.usd)-Math.abs(a.usd));
+  const fmtT=ts=>new Date(ts).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  const buys=rows.filter(r=>r.usd>0),sells=rows.filter(r=>r.usd<0);
+  const sum=l=>l.reduce((t,r)=>t+r.usd,0);
+  const row=r=>`<button class="flowrow" onclick="openProfileByAddr('${r.addr}')"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.kind==='entry'?'🎣 ':r.kind==='exit'?'🏃 ':''}${esc(flowName(r.addr))}</span><b class="mono ${r.usd>=0?'up':'down'}">${tokAmt(r.amt,true)} <small style="color:var(--dim);font-weight:400">~${usd(Math.abs(r.usd))}</small></b></button>`;
+  el.innerHTML=`<div style="border:1px solid var(--teal);background:var(--panel2);padding:12px 14px">
+    <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px"><b style="font-size:12px">Movements · ${fmtT(prev.ts)} → ${fmtT(cur2.ts)}</b><span style="color:var(--muted);font-size:11.5px">${rows.length?`<span class="up">${buys.length} added ${usd(sum(buys))}</span> · <span class="down">${sells.length} reduced ${usd(Math.abs(sum(sells)))}</span>${ent?` · ${ent} entered`:''}${ex?` · ${ex} left`:''}`:'no balance changes ≥$250 between these two points'}</span><button onclick="document.getElementById('fday').innerHTML=''" style="margin-left:auto;color:var(--dim);font-size:11px">close ✕</button></div>
+    ${rows.length?`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0 18px">${rows.slice(0,30).map(row).join('')}</div>${rows.length>30?`<div style="color:var(--dim);font-size:11px;padding-top:6px">+${rows.length-30} smaller moves</div>`:''}`:''}
+    <div style="color:var(--dim);font-size:11px;padding-top:8px">Balance changes of the top 100 between two snapshots. Where the coins went (sold on a DEX / sent to an exchange / moved to another wallet) comes in the flow-diagram phase.</div></div>`;
+  el.scrollIntoView({block:'nearest',behavior:'smooth'});
 }
 async function loadSchools(){try{const r=await fetch('data/schools.json?t='+Date.now(),{cache:'no-store'});if(r.ok){SCHOOLS=(await r.json()).schools||[];SCHOOLS.forEach((s,i)=>s.color=`hsl(${(i*137.508)%360} 90% 64%)`)}}catch(e){}}
 function schoolColor(id){const s=schoolOf(id);return (s&&s.color)||'rgba(120,150,255,1)'}
@@ -1567,7 +1625,7 @@ async function legacyDrawerProfile(h){
   const d=document.getElementById('drawer');
   const t=TIER[h.tier]||TIER.small;
   const head=`<div class="dh"><button class="x" id="dx">✕</button>
-    <div class="tier" style="color:${t.c}"><i style="background:${t.c}"></i>${t.n} wallet · rank #${h.rank} · $${cur.sym}</div>
+    <div class="tier" style="color:${t.c}"><i style="background:${t.c}"></i>${h.infra?`${(KIND[h.kind]||KIND.contract).n} · excluded from ranking`:`${t.n} wallet · rank #${h.rank}`} · $${cur.sym}</div>
     ${h.entity?`<div class="ent">${h.entity}</div>`:''}
     <h4>${h.addr}</h4>
     <div class="lbls">${lblChips(h,4)}</div></div>`;

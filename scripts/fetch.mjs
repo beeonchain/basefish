@@ -1100,6 +1100,9 @@ for (const t of cfg.tokens) {
         const dprices = await cgDailyPrices(t, 33);
         const todayD = new Date().toISOString().slice(0, 10);
         const priceAt = (ts2) => { const d2 = new Date(ts2).toISOString().slice(0, 10); return d2 === todayD ? usd : (priceNear(dprices, d2) || usd); };
+        // backfill: older snapshots stored no price — attach the day's CoinGecko price so the site can value them safely
+        { let fixed = 0; for (const s2 of snapsF) if (!s2.p) { const p2 = priceAt(s2.ts); if (p2) { s2.p = +Number(p2).toPrecision(6); fixed++; } }
+          if (fixed) { fs.writeFileSync(spathF, JSON.stringify(snapsF)); console.log(`  ${t.sym}: backfilled price on ${fixed} snapshots`); } }
         const byDayF = new Map(); // last snapshot of each UTC day
         for (const s of snapsF) byDayF.set(new Date(s.ts).toISOString().slice(0, 10), s);
         const daily = [...byDayF.values()].sort((a, b) => a.ts - b.ts);

@@ -46,18 +46,15 @@ export default async (req) => {
       ]);
       try { supply = Number(formatUnits(await client.readContract({ address: ca, abi: ERC20, functionName: 'totalSupply' }), decimals)); } catch {}
     } catch { return new Response(JSON.stringify({ tracked: false, isToken: false, kind: 'contract' }), { headers: { 'content-type': 'application/json', ...H } }); }
-    // 3) price / mcap from CoinGecko by contract (public endpoint, may be absent for tiny tokens)
-    let price = 0, mcap = null, cgId = null, logo = null, chg = null;
-    try {
-      const g = await fetch(`https://api.coingecko.com/api/v3/coins/base/contract/${ca}`, { headers: { accept: 'application/json' } });
-      if (g.ok) { const j = await g.json(); cgId = j.id || null; logo = (j.image && (j.image.small || j.image.thumb)) || null; const m = j.market_data || {}; price = (m.current_price && m.current_price.usd) || 0; mcap = (m.market_cap && m.market_cap.usd) || null; chg = (m.price_change_percentage_24h != null) ? m.price_change_percentage_24h : null; }
-    } catch {}
-    if (!price) { // DexScreener fallback (no key)
-      try { const d = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${ca}`).then((r) => r.json()); const p = (d.pairs || []).filter((x) => x.chainId === 'base').sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0]; if (p) { price = Number(p.priceUsd) || 0; mcap = mcap || p.marketCap || p.fdv || null; chg = chg == null && p.priceChange ? p.priceChange.h24 : chg; logo = logo || (p.info && p.info.imageUrl) || null; } } catch {}
-    }
-    // 4) holders as of yesterday
+    // 3) price (CoinGecko by contract + DexScreener, in parallel) and 4) holders — all at once
     const yday = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
-    const hb = await bqHolders(ca, yday, 120);
+    const cgP = fetch(`https://api.coingecko.com/api/v3/coins/base/contract/${ca}`, { headers: { accept: 'application/json' } }).then((g) => (g.ok ? g.json() : null)).catch(() => null);
+    const dsP = fetch(`https://api.dexscreener.com/latest/dex/tokens/${ca}`).then((r) => r.json()).catch(() => null);
+    const hbP = bqHolders(ca, yday, 120).catch((e) => ({ error: String(e.message || e).slice(0, 100) }));
+    const [j, d, hb] = await Promise.all([cgP, dsP, hbP]);
+    let price = 0, mcap = null, cgId = null, logo = null, chg = null;
+    if (j) { cgId = j.id || null; logo = (j.image && (j.image.small || j.image.thumb)) || null; const m = j.market_data || {}; price = (m.current_price && m.current_price.usd) || 0; mcap = (m.market_cap && m.market_cap.usd) || null; chg = (m.price_change_percentage_24h != null) ? m.price_change_percentage_24h : null; }
+    if (!price && d) { const p = (d.pairs || []).filter((x) => x.chainId === 'base').sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0]; if (p) { price = Number(p.priceUsd) || 0; mcap = mcap || p.marketCap || p.fdv || null; chg = chg == null && p.priceChange ? p.priceChange.h24 : chg; logo = logo || (p.info && p.info.imageUrl) || null; } }
     const holders = (hb.rows || []).filter((h) => !BURN.has(h.addr) && h.addr !== ca).slice(0, 100)
       .map((h, i) => ({ rank: i + 1, addr: h.addr, amount: h.amount, pct: supply ? (h.amount / supply) * 100 : null, usd: h.amount * price }));
     const out = { tracked: false, isToken: true, contract: ca, sym: String(sym), name: String(name), decimals: Number(decimals), supply, price, mcap, chg, cgId, logo, asOf: yday, holders, holdersError: hb.error || null, topShare: supply && holders.length ? holders.reduce((s, h) => s + h.amount, 0) / supply * 100 : null };
