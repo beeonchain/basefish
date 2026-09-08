@@ -169,17 +169,6 @@
       "rank": 10
     },
     {
-      "sym": "KSGD",
-      "name": "K Singapore Dollar",
-      "color": "#F59E0B",
-      "contract": "0x713e7af0c03a6c75267e3c52c8a8bfe496c80dac",
-      "exclude": [],
-      "auto": true,
-      "cap": 63570732,
-      "tier": "hot",
-      "rank": 11
-    },
-    {
       "sym": "OMI",
       "name": "OMI Token",
       "color": "#EF4444",
@@ -204,17 +193,6 @@
       "logoUrl": "https://coin-images.coingecko.com/coins/images/53022/large/bio.jpg?1735011002",
       "tier": "hot",
       "rank": 13
-    },
-    {
-      "sym": "KTWD",
-      "name": "K New Taiwan Dollar",
-      "color": "#10B981",
-      "contract": "0x7f423e8c9a3e4f2f82e6461bc9f6c3fae9c8f2ea",
-      "exclude": [],
-      "auto": true,
-      "cap": 50743863,
-      "tier": "hot",
-      "rank": 16
     },
     {
       "sym": "BIM",
@@ -254,17 +232,6 @@
       "logoUrl": "https://coin-images.coingecko.com/coins/images/37869/large/New_Logo_SQD_Icon.png?1720048443",
       "tier": "daily",
       "rank": 19
-    },
-    {
-      "sym": "KMXN",
-      "name": "K Mexican Peso",
-      "color": "#A3E635",
-      "contract": "0x0102d2c860abdc8e2d1df04cdc42b593d5a198e3",
-      "exclude": [],
-      "auto": true,
-      "cap": 40028460,
-      "tier": "daily",
-      "rank": 20
     },
     {
       "sym": "ZORA",

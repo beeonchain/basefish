@@ -63,7 +63,8 @@ export async function discover({ pages = 12 } = {}) {
   const rows = [];
   for (const [a, c] of cand) {
     const t = info.get(a); if (!t || !t.sym) continue;
-    if (/usd|eur|gbp|chf|jpy/i.test(t.sym) && !/^(usduc)$/i.test(t.sym)) continue; // any stable-ish symbol
+    if (/usd|eur|gbp|chf|jpy|sgd|twd|mxn|krw|brl|inr|cad|aud|try|php|idr|ngn/i.test(t.sym) && !/^(usduc)$/i.test(t.sym)) continue; // any stable-ish symbol (incl. Kinetic K-fiat tokens)
+    if (/^k[a-z]{3}$/i.test(t.sym) && /kinetic|stable|fiat/i.test(t.name || '')) continue;
     const cap = t.mcap || t.fdv; if (!cap) continue;
     if (EXCL_SYM.test(t.sym) || EXCL_NAME.test(t.name || '') || EXCL_NAME.test(t.sym)) continue;
     if (t.liq && t.liq < (c.trending ? MIN.liqTrending : MIN.liq)) continue; // liq unknown (CG fallback) → judged by volume instead
