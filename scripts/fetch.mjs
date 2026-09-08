@@ -13,6 +13,7 @@ const cfg = JSON.parse(fs.readFileSync('tokens.config.json', 'utf8'));
 // Tiered runs: TIER=hot (every 2h) refreshes the tokens marked tier:'hot'; TIER=all (daily) does everything.
 // Tokens skipped this run keep their previous data files and stay in index.json.
 const TIER = (process.env.TIER || 'all').toLowerCase();
+const RUNLOG = { started: new Date().toISOString(), tier: TIER, tokens: {}, errors: [] }; // data/run_log.json — readable from the site/raw
 const RUN_TOKENS = TIER === 'hot' ? cfg.tokens.filter(t => (t.tier || 'hot') === 'hot') : cfg.tokens;
 const SKIPPED = cfg.tokens.filter(t => !RUN_TOKENS.includes(t));
 console.log(`run tier=${TIER}: ${RUN_TOKENS.length} of ${cfg.tokens.length} tokens${SKIPPED.length ? ` (${SKIPPED.length} kept from last run)` : ''}`);
@@ -744,10 +745,15 @@ async function bqHoldersAt(contract, date, limit = 110, verbose = false) {
       limit: {count: ${limit}} orderBy: {descending: Balance_Amount}
     ) { Holder { Address } Balance { Amount } } } }`;
   try {
-    const r = await fetch('https://streaming.bitquery.io/graphql', { method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + BQ_TOKEN, 'X-API-KEY': BQ_TOKEN },
-      body: JSON.stringify({ query: q }) });
-    if (!r.ok) { if (verbose) console.log('  bq[holders] http', r.status, (await r.text()).slice(0, 120)); return null; }
+    let r = null;
+    for (let i = 0; i < 4; i++) { // rate limits / transient 5xx: back off and retry
+      r = await fetch('https://streaming.bitquery.io/graphql', { method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + BQ_TOKEN, 'X-API-KEY': BQ_TOKEN },
+        body: JSON.stringify({ query: q }) });
+      if (r.status === 429 || r.status >= 500) { if (verbose) console.log('  bq[holders] http', r.status, '— retrying'); await new Promise(s => setTimeout(s, 12000 * (i + 1))); continue; }
+      break;
+    }
+    if (!r.ok) { if (verbose) console.log('  bq[holders] http', r.status, (await r.text()).slice(0, 120)); RUNLOG.errors.push(`bq ${r.status}`); return null; }
     const d = await r.json();
     if (d.errors) { if (verbose) console.log('  bq[holders] err:', JSON.stringify(d.errors).slice(0, 300)); return null; }
     const rows = d.data && d.data.EVM && d.data.EVM.Holders;
@@ -916,6 +922,7 @@ async function backfillPositions(t, top) {
 for (const t of RUN_TOKENS) {
   const c = t.contract.toLowerCase();
   console.log(`\n== ${t.sym} ${c}`);
+  if (RUN_TOKENS.length > 10) await new Promise(s => setTimeout(s, 2500)); // pace external APIs across many tokens
   try {
     // market data: CoinGecko first (one call for all tokens), Moralis fallback
     let usd = 0, chg = 0, supply = 0, mcap = 0, vol = 0;
@@ -1106,38 +1113,42 @@ for (const t of RUN_TOKENS) {
       if (snapsF.length >= 2) {
         const dprices = await cgDailyPrices(t, 33);
         const todayD = new Date().toISOString().slice(0, 10);
-        const priceAt = (ts2) => { const d2 = new Date(ts2).toISOString().slice(0, 10); return d2 === todayD ? usd : (priceNear(dprices, d2) || usd); };
+        // price for a past day: the snapshot's own stored price, else CoinGecko's daily close; NEVER today's price for an old day
+        const priceAt = (ts2, s2) => { if (s2 && s2.p) return s2.p; const d2 = new Date(ts2).toISOString().slice(0, 10); return d2 === todayD ? usd : (priceNear(dprices, d2) || null); };
         // backfill: older snapshots stored no price — attach the day's CoinGecko price so the site can value them safely
-        { let fixed = 0; for (const s2 of snapsF) if (!s2.p) { const p2 = priceAt(s2.ts); if (p2) { s2.p = +Number(p2).toPrecision(6); fixed++; } }
+        { let fixed = 0; for (const s2 of snapsF) if (!s2.p) { const p2 = priceAt(s2.ts, null); if (p2) { s2.p = +Number(p2).toPrecision(6); fixed++; } }
           if (fixed) { fs.writeFileSync(spathF, JSON.stringify(snapsF)); console.log(`  ${t.sym}: backfilled price on ${fixed} snapshots`); } }
         const byDayF = new Map(); // last snapshot of each UTC day
         for (const s of snapsF) byDayF.set(new Date(s.ts).toISOString().slice(0, 10), s);
         const daily = [...byDayF.values()].sort((a, b) => a.ts - b.ts);
-        const totAmt = (s) => { const p2 = priceAt(s.ts) || 1; let a2 = 0; for (const k in s.h) { const o = s.h[k]; if (o.r <= 100) a2 += (o.a != null ? o.a : o.u / p2); } return a2; };
+        // null when a snapshot can't be valued (no stored amounts and no price for that day) — callers skip it
+        const totAmt = (s) => { const p2 = priceAt(s.ts, s); let a2 = 0; for (const k in s.h) { const o = s.h[k]; if (o.r > 100) continue; if (o.a != null) a2 += o.a; else if (p2) a2 += o.u / p2; else return null; } return a2; };
         // series carries the day's price too, so the site can overlay price and value balances without re-fetching
-        const series = daily.map(s => { const p2 = s.p || priceAt(s.ts) || usd; const amt = Math.round(totAmt(s)); return { ts: s.ts, amt, p: +Number(p2).toPrecision(6), usd: Math.round(amt * p2) }; });
+        const series = daily.map(s => { const p2 = priceAt(s.ts, s); const a = totAmt(s); if (a == null) return null; const amt = Math.round(a); return { ts: s.ts, amt, p: p2 ? +Number(p2).toPrecision(6) : null, usd: p2 ? Math.round(amt * p2) : null }; }).filter(Boolean);
         const nowS = snapsF[snapsF.length - 1], nowAmt = totAmt(nowS);
+        if (nowAmt == null || series.length < 2) throw new Error('flows: current snapshot not valuable');
         const nearestS = (target) => daily.reduce((b, s) => Math.abs(s.ts - target) < Math.abs(b.ts - target) ? s : b);
         const net = (daysN) => {
           const ref2 = nearestS(Date.now() - daysN * 864e5);
           const span2 = (nowS.ts - ref2.ts) / 864e5;
           if (span2 < daysN * 0.6) return null;
-          const refAmt = totAmt(ref2);
+          const refAmt = totAmt(ref2); if (refAmt == null) return null;
           return { days: Math.round(span2), amt: Math.round(nowAmt - refAmt), pct: refAmt ? +((100 * (nowAmt - refAmt)) / refAmt).toFixed(2) : 0, usd: Math.round((nowAmt - refAmt) * usd) };
         };
         // per-wallet movers / entries / exits vs the ~7d reference
         const ref7s = nearestS(Date.now() - 7 * 864e5);
         let movers = [], entries = [], exits = [];
         if ((nowS.ts - ref7s.ts) / 864e5 > 4) {
-          const refPrice = priceAt(ref7s.ts) || 1;
+          const refPrice = priceAt(ref7s.ts, ref7s); // null → wallets without stored amounts are skipped (no guessing)
           const curSet = new Set(top.map(h => h.addr.toLowerCase()));
           for (const h of top) {
             const o = ref7s.h[h.addr.toLowerCase()];
             if (!o) { entries.push({ addr: h.addr, usd: Math.round(h.usd || 0) }); continue; }
+            if (o.a == null && !refPrice) continue;
             const dAmt = (h.amount || 0) - (o.a != null ? o.a : o.u / refPrice);
             if (Math.abs(dAmt * usd) >= 500) movers.push({ addr: h.addr, amt: Math.round(dAmt), usd: Math.round(dAmt * usd) });
           }
-          for (const k in ref7s.h) { const o = ref7s.h[k]; if (o.r <= 100 && !curSet.has(k)) exits.push({ addr: k, usd: Math.round(o.u), amt: Math.round(o.a != null ? o.a : o.u / refPrice) }); }
+          for (const k in ref7s.h) { const o = ref7s.h[k]; if (o.r <= 100 && !curSet.has(k)) exits.push({ addr: k, usd: Math.round(o.u), amt: Math.round(o.a != null ? o.a : (refPrice ? o.u / refPrice : 0)) }); }
           movers.sort((a, b) => b.usd - a.usd);
           entries.sort((a, b) => b.usd - a.usd); exits.sort((a, b) => b.usd - a.usd);
         }
@@ -1203,8 +1214,10 @@ for (const t of RUN_TOKENS) {
     ALLTOPS[t.sym] = top;
     index.tokens.push({ sym: t.sym, name: t.name, color: t.color, contract: t.contract, logo, price: usd, chg, mcap, vol, holders });
     console.log(`  ok: price=$${usd} mcap=$${Math.round(mcap).toLocaleString()} holders=${holders}`);
+    RUNLOG.tokens[t.sym] = { ok: true, src: HOLDERS_SRC[t.sym], top: top.length, infra: infra.length, price: usd };
   } catch (e) {
     console.error(`  FAILED ${t.sym}:`, e.message.slice(0, 160));
+    RUNLOG.tokens[t.sym] = { ok: false, err: e.message.slice(0, 160) };
     // Moralis down (quota etc): keep previous data, but Arkham + logos still work
     const p = path.join('data', `${t.sym.toLowerCase()}.json`);
     if (fs.existsSync(p)) {
@@ -1285,6 +1298,8 @@ try {
 } catch (e) { console.log('schools build failed:', e.message.slice(0, 120)); }
 fs.writeFileSync('data/logos.json', JSON.stringify(logoCache));
 fs.writeFileSync('data/index.json', JSON.stringify(index));
+RUNLOG.finished = new Date().toISOString(); RUNLOG.budgets = { arkham: arkhamBudget, profile: profileBudget, frontrun: frBudget, rpc: rpcBudget, funding: fundBudget };
+fs.writeFileSync('data/run_log.json', JSON.stringify(RUNLOG, null, 1));
 console.log(`\nWrote data/index.json with ${index.tokens.length} tokens. Label cache: ${Object.keys(labelCache).length} addresses${ARKHAM_KEY ? '' : ' (no ARKHAM_API_KEY — enrichment skipped)'}.`);
 
 // ---- Alchemy Address Activity webhook: keep its address list = every tracked top-100 + every custom watch ----

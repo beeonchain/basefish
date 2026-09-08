@@ -15,10 +15,10 @@ const PALETTE = ['#4C8DFF', '#F2C14E', '#A78BFA', '#22C55E', '#F97316', '#EC4899
 const colorFor = (sym) => PALETTE[[...sym].reduce((a, c) => a + c.charCodeAt(0), 0) % PALETTE.length];
 
 const GT = 'https://api.geckoterminal.com/api/v2';
-async function gt(u) {
-  for (let i = 0; i < 3; i++) {
+async function gt(u) { // GitHub runners share IPs → GT 429s are common: back off hard, retry patiently
+  for (let i = 0; i < 6; i++) {
     const r = await fetch(GT + u, { headers: { accept: 'application/json;version=20230302' } });
-    if (r.status === 429) { await new Promise((s) => setTimeout(s, 2500 * (i + 1))); continue; }
+    if (r.status === 429) { await new Promise((s) => setTimeout(s, 15000 * (i + 1))); continue; }
     if (!r.ok) throw new Error(`geckoterminal ${r.status} ${u}`);
     return r.json();
   }
@@ -26,7 +26,8 @@ async function gt(u) {
 }
 const num = (v) => (v == null ? 0 : Number(v) || 0);
 
-export async function discover({ pages = 20 } = {}) {
+export async function discover({ pages = 12 } = {}) {
+  const cgInfo = new Map(); // fallback facts from CoinGecko category rows when GeckoTerminal is rate-limited
   const cand = new Map(); // addr -> { addr, vol, trending, src:Set }
   const note = (id, vol, trending, src) => { const a = String(id || '').replace(/^base_/, '').toLowerCase(); if (!/^0x[0-9a-f]{40}$/.test(a) || EXCL_ADDR.has(a)) return; const c = cand.get(a) || { addr: a, vol: 0, trending: false, src: new Set() }; c.vol += vol || 0; c.src.add(src); if (trending) c.trending = true; cand.set(a, c); };
   // 1) GeckoTerminal: pools by 24h volume (Base-native activity) + trending pools
@@ -43,10 +44,11 @@ export async function discover({ pages = 20 } = {}) {
     const plat = new Map(); for (const c of list) if (c.platforms && c.platforms.base) plat.set(c.id, { base: String(c.platforms.base).toLowerCase(), n: Object.keys(c.platforms).length });
     await new Promise((s) => setTimeout(s, 2500));
     const meme = await cg('/coins/markets?vs_currency=usd&category=base-meme-coins&order=market_cap_desc&per_page=100&page=1');
-    for (const c of meme) { const p = plat.get(c.id); if (p) note(p.base, c.total_volume, false, 'cg-meme'); }
+    const remember = (c, p) => cgInfo.set(p.base, { sym: c.symbol, name: c.name, mcap: num(c.market_cap), fdv: num(c.fully_diluted_valuation), liq: 0, vol: num(c.total_volume), logo: c.image || null, cg: c.id, price: num(c.current_price) });
+    for (const c of meme) { const p = plat.get(c.id); if (p) { note(p.base, c.total_volume, false, 'cg-meme'); remember(c, p); } }
     await new Promise((s) => setTimeout(s, 2500));
     const eco = await cg('/coins/markets?vs_currency=usd&category=base-ecosystem&order=market_cap_desc&per_page=250&page=1');
-    for (const c of eco) { const p = plat.get(c.id); if (p && p.n <= 3) note(p.base, c.total_volume, false, 'cg-eco'); } // ≤3 chains ≈ Base-native, not a bridged major
+    for (const c of eco) { const p = plat.get(c.id); if (p && p.n <= 3) { note(p.base, c.total_volume, false, 'cg-eco'); remember(c, p); } } // ≤3 chains ≈ Base-native, not a bridged major
   } catch (e) { console.log('  coingecko categories skipped:', e.message.slice(0, 80)); }
   // 3) token facts from GeckoTerminal, 30 per call
   const addrs = [...cand.keys()], info = new Map();
@@ -56,12 +58,16 @@ export async function discover({ pages = 20 } = {}) {
     } catch (e) { console.log('  token info batch', i, e.message.slice(0, 60)); }
     await new Promise((s) => setTimeout(s, 2100));
   }
+  let fromCg = 0; for (const [a, t] of cgInfo) if (!info.has(a)) { info.set(a, t); fromCg++; }
+  if (fromCg) console.log(`  token facts: ${info.size - fromCg} from geckoterminal, ${fromCg} from coingecko fallback`);
   const rows = [];
   for (const [a, c] of cand) {
     const t = info.get(a); if (!t || !t.sym) continue;
+    if (/usd|eur|gbp|chf|jpy/i.test(t.sym) && !/^(usduc)$/i.test(t.sym)) continue; // any stable-ish symbol
     const cap = t.mcap || t.fdv; if (!cap) continue;
     if (EXCL_SYM.test(t.sym) || EXCL_NAME.test(t.name || '') || EXCL_NAME.test(t.sym)) continue;
-    if (t.liq < (c.trending ? MIN.liqTrending : MIN.liq)) continue;
+    if (t.liq && t.liq < (c.trending ? MIN.liqTrending : MIN.liq)) continue; // liq unknown (CG fallback) → judged by volume instead
+    if (!t.liq && (t.vol || 0) < 50_000) continue;
     if (cap < MIN.mcap && !c.trending) continue;
     rows.push({ addr: a, sym: t.sym.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12) || 'TOKEN', name: t.name, cap, liq: t.liq, vol: t.vol || c.vol, trending: c.trending, logo: t.logo, cg: t.cg, src: [...c.src] });
   }
