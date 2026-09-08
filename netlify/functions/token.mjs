@@ -61,7 +61,8 @@ export default async (req) => {
     const holders = (hb.rows || []).filter((h) => !BURN.has(h.addr) && h.addr !== ca).slice(0, 100)
       .map((h, i) => ({ rank: i + 1, addr: h.addr, amount: h.amount, pct: supply ? (h.amount / supply) * 100 : null, usd: h.amount * price }));
     const out = { tracked: false, isToken: true, contract: ca, sym: String(sym), name: String(name), decimals: Number(decimals), supply, price, mcap, chg, cgId, logo, asOf: yday, holders, holdersError: hb.error || null, topShare: supply && holders.length ? holders.reduce((s, h) => s + h.amount, 0) / supply * 100 : null };
-    return new Response(JSON.stringify(out), { headers: { 'content-type': 'application/json', ...H } });
+    // don't let a holder-fetch failure (missing key, Bitquery hiccup) sit in the CDN cache for an hour
+    return new Response(JSON.stringify(out), { headers: { 'content-type': 'application/json', ...(hb.error ? { 'cache-control': 'no-store' } : H) } });
   } catch (e) { return json({ error: String(e.message || e).slice(0, 200) }, 500); }
 };
 export const config = { path: '/api/token' };
