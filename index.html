@@ -1269,11 +1269,15 @@ function markAlertsSeen(){try{localStorage.setItem('bf_alertSeen',String(Date.no
 function updateAlertBadge(){const b=document.getElementById('alertBadge');if(!b)return;const n=ALERTS.filter(a=>a.ts>alertSeenTs()).length;b.style.display=n?'':'none';b.textContent=n>9?'9+':n}
 let alertOpen=new Set(); // expanded wallet rows
 let NAMES_CACHE=null;
-async function alertNames(){ // addr -> best display name across every tracked token (cached 5 min)
-  if(NAMES_CACHE&&Date.now()-NAMES_CACHE.at<3e5)return NAMES_CACHE.m;
-  const m={};NAMES_CACHE={at:Date.now(),m};
-  for(const tk of TOKENS){const d=REAL?await tokData(tk.sym):null;(d&&d.holdersTop||[]).forEach(h=>{const n=h.entity||h.basename;if(n&&!m[h.addr.toLowerCase()])m[h.addr.toLowerCase()]=n})}
-  return m;
+/* addr -> best display name across every tracked token. Never blocks the view: returns what's known now,
+   loads the 64 token files in parallel once (cached 5 min) and re-renders the alerts when done. */
+const NAMES={at:0,m:{},loading:null};
+function alertNames(){
+  if(!REAL)return NAMES.m;
+  if(!NAMES.loading&&Date.now()-NAMES.at>3e5){
+    NAMES.loading=Promise.all(TOKENS.map(tk=>tokData(tk.sym).catch(()=>null))).then(ds=>{const m={};ds.forEach(d=>(d&&d.holdersTop||[]).forEach(h=>{const n=h.entity||h.basename;if(n&&!m[h.addr.toLowerCase()])m[h.addr.toLowerCase()]=n}));NAMES.m=m;NAMES.at=Date.now();NAMES.loading=null;if(view==='alerts')renderAlerts()}).catch(()=>{NAMES.loading=null});
+  }
+  return NAMES.m;
 }
 async function renderAlerts(){
   const el=document.getElementById('alertsView');
@@ -1281,7 +1285,7 @@ async function renderAlerts(){
   if(!ALERTS.length)await fetchAlerts();
   const seenTs=alertSeenTs();
   markAlertsSeen();
-  const names=await alertNames();
+  const names=alertNames();
   const toks=['ALL',...TOKENS.map(t=>t.sym)];
   const rows=ALERTS.filter(a=>alertTokFilter==='ALL'||a.sym===alertTokFilter);
   // group by actor: wallet address, or school id
