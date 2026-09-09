@@ -760,7 +760,7 @@ let schoolsForAlerts = [];
 // Bitquery's Base archive tables don't exist server-side (ClickHouse UNKNOWN_TABLE, confirmed 2026-08-30
 // from the account's own IDE session), so instead we read exact historical balanceOf() from Base archive
 // state via Alchemy batched eth_call: 100 balances per HTTP request, ~26 CU each on the free tier.
-const ALCH_KEY = process.env.ALCHEMY_API_KEY || '';
+const ALCH_KEY = process.env.ALCHEMY_API_KEY || 'alch_XrAYuto21vrOGXzYZX9OP'; // app "audit-base" (same key the site's functions use)
 const ALCH_URL = 'https://base-mainnet.g.alchemy.com/v2/' + ALCH_KEY;
 async function alchBatch(calls) { // [{to,data,block}] -> [hexResult|null] (order preserved)
   const body = calls.map((c2, i) => ({ jsonrpc: '2.0', id: i, method: 'eth_call', params: [{ to: c2.to, data: c2.data }, c2.block] }));
@@ -1078,6 +1078,22 @@ for (const t of RUN_TOKENS) {
       }
       if (!kept.length) throw new Error('no holders source available (moralis + bitquery both failed)');
     }
+    // LIVE BALANCES: the Bitquery Holders cube is day-old. Re-read the current balance of every kept + infra wallet
+    // straight from the chain (one batched eth_call) so $ values, ranks and alerts move intraday even with Moralis down.
+    if (ALCH_KEY && /^bq-holders/.test(HOLDERS_SRC[t.sym] || '')) {
+      try {
+        let dec = 18; try { const [dh] = await alchBatch([{ to: c, data: '0x313ce567', block: 'latest' }]); if (dh && dh !== '0x') dec = parseInt(dh, 16); } catch {}
+        if (!(dec >= 0 && dec <= 36)) dec = 18;
+        const rows = [...kept, ...infra];
+        const calls = rows.map(h => ({ to: c, data: '0x70a08231' + h.addr.toLowerCase().slice(2).padStart(64, '0'), block: 'latest' }));
+        let got = 0;
+        for (let i = 0; i < calls.length; i += 100) {
+          const res = await alchBatch(calls.slice(i, i + 100));
+          res.forEach((hex, j) => { if (!hex || hex === '0x') return; const h = rows[i + j]; const amt = Number(BigInt(hex)) / 10 ** dec; if (!Number.isFinite(amt)) return; h.amount = amt; h.usd = amt * usd; h.pct = supply ? amt / supply * 100 : h.pct; got++; });
+        }
+        if (got) { HOLDERS_SRC[t.sym] = 'bq-holders+live'; console.log(`  live balances: ${got}/${rows.length} wallets re-read on-chain`); }
+      } catch (e) { console.log('  live balances skipped:', e.message.slice(0, 80)); }
+    }
     kept.sort((a, b) => b.usd - a.usd);
     // Arkham enrichment for the head of the list (cache-first, budgeted)
     if (ARKHAM_KEY || Object.keys(labelCache).length) {
@@ -1336,12 +1352,23 @@ fs.writeFileSync(FUND_PATH, JSON.stringify(fundCache));
 
 // ---- schools: build the cross-token graph and annotate token files ----
 // tokens not refreshed this run: keep their last data in the index (config order) and in the schools graph
+let repriced = 0;
 for (const t of SKIPPED) {
   try { const old = JSON.parse(fs.readFileSync(path.join('data', `${t.sym.toLowerCase()}.json`), 'utf8'));
+    // cheap reprice: daily-tier tokens keep yesterday's balances but get today's price on every hot run
+    try { const mk = await cgMarketFor(t); const p2 = mk && mk.current_price;
+      if (p2 && old.price && Math.abs(p2 / old.price - 1) > 0.002) {
+        const f = p2 / old.price; old.price = p2; old.chg = mk.price_change_percentage_24h || old.chg; old.mcap = mk.market_cap || old.mcap * f; old.vol = mk.total_volume || old.vol;
+        for (const h of old.holdersTop || []) { h.usd = (h.amount || 0) * p2; }
+        for (const x of old.infra || []) { x.usd = (x.amount || 0) * p2; }
+        old.repriced_at = new Date().toISOString();
+        fs.writeFileSync(path.join('data', `${t.sym.toLowerCase()}.json`), JSON.stringify(old)); repriced++;
+      } } catch {}
     if (!index.tokens.some(x => x.sym === old.sym)) index.tokens.push({ sym: old.sym, name: old.name, color: old.color, contract: old.contract, logo: old.logo, price: old.price, chg: old.chg, mcap: old.mcap, vol: old.vol, holders: old.holders, stale: old.generated_at || null });
     if (!ALLTOPS[old.sym]) ALLTOPS[old.sym] = old.holdersTop || [];
   } catch (e) {}
 }
+if (repriced) console.log(`repriced ${repriced} daily-tier tokens at current prices`);
 { const order = new Map(cfg.tokens.map((t, i) => [t.sym, i])); index.tokens.sort((a, b) => (order.get(a.sym) ?? 999) - (order.get(b.sym) ?? 999)); }
 index.tiers = { hot: cfg.tokens.filter(t => (t.tier || 'hot') === 'hot').map(t => t.sym), run: TIER };
 try {
