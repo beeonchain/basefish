@@ -135,7 +135,7 @@ export default async (req) => {
         : fromCex ? `${name} pulled ${musd(usd)} of $${tok.sym} off ${cex[from]}`
         : `${name} ${dir} ${musd(usd)} of $${tok.sym}`;
       const sub = toCex ? 'exchange inflow — possible sell pressure · live' : fromCex ? 'exchange outflow · live' : 'live on-chain move';
-      const alert = { id: kind + ':' + hash, ts: Date.now(), kind, sym: tok.sym, addr: whale, hash, usd: toCex ? -usd : usd, title, sub };
+      const alert = { id: kind + ':' + hash, ts: Date.now(), kind, sym: tok.sym, addr: whale, hash, usd: dir === 'sent' ? -usd : usd, title, sub }; // negative = coins left the wallet
       feed.push(alert);
       for (const [chat, p] of Object.entries(subs.chats || {})) {
         if (p.muted || !allowed(chat)) continue;

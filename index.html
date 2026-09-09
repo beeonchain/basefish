@@ -1242,8 +1242,22 @@ const tokCache={};
 let SCHOOLS=[];
 /* ---- Alerts: pipeline-detected events, live popups + feed ---- */
 const TG_BOT='aquariumtest_bot';
-const AICON={whale:'🐋',entry:'🎣',exit:'🏃',cex:'🏦',school:'🕸',watch:'👁'};
-let ALERTS=[],alertTokFilter='ALL';
+/* alert kinds → pixel glyph + colour + plain-English meaning (also the legend) */
+const AKIND={
+  whale:{n:'Whale move',c:'#0000FF',t:'a top-100 wallet moved a large amount (≥ the token\'s whale threshold)'},
+  entry:{n:'New in top 20',c:'#0E9F8A',t:'a wallet climbed into the top 20 holders'},
+  exit:{n:'Top-10 exit',c:'#E5484D',t:'a top-10 holder sold or moved out'},
+  cex:{n:'Exchange flow',c:'#F76B15',t:'a top wallet sent to / received from a labeled exchange'},
+  school:{n:'School swing',c:'#8E4EC6',t:'a group of connected wallets moved together'},
+  watch:{n:'Your watch',c:'#0A0B0D',t:'a wallet you follow made a transaction'}};
+GLYPH.whale=GLYPH.WHALE;GLYPH.exit=G10('<rect x="0" y="4" width="6" height="2"/><rect x="5" y="2" width="2" height="2"/><rect x="5" y="6" width="2" height="2"/><rect x="7" y="4" width="2" height="2"/><rect x="0" y="0" width="2" height="10"/>');
+GLYPH.entry=G10('<rect x="0" y="4" width="6" height="2"/><rect x="4" y="2" width="2" height="2"/><rect x="4" y="6" width="2" height="2"/><rect x="6" y="4" width="2" height="2"/><rect x="8" y="0" width="2" height="10"/>');
+GLYPH.school=G10('<rect x="0" y="0" width="3" height="3"/><rect x="7" y="0" width="3" height="3"/><rect x="0" y="7" width="3" height="3"/><rect x="7" y="7" width="3" height="3"/><rect x="4" y="4" width="2" height="2"/><rect x="3" y="3" width="1" height="1"/><rect x="6" y="3" width="1" height="1"/><rect x="3" y="6" width="1" height="1"/><rect x="6" y="6" width="1" height="1"/>');
+GLYPH.watch=G10('<rect x="2" y="2" width="6" height="1"/><rect x="0" y="4" width="10" height="2"/><rect x="2" y="7" width="6" height="1"/><rect x="1" y="3" width="1" height="1"/><rect x="8" y="3" width="1" height="1"/><rect x="1" y="6" width="1" height="1"/><rect x="8" y="6" width="1" height="1"/><rect x="4" y="4" width="2" height="2" fill="#fff"/>');
+const AICON=new Proxy({},{get:(_,k)=>{const K=AKIND[k];return `<span class="tg" style="color:${K?K.c:'var(--dim)'};display:inline-flex;vertical-align:-1px">${GLYPH[k]||GLYPH.TAG}</span>`}});
+const akindChip=k=>{const K=AKIND[k]||{n:k,c:'#5B616E',t:''};return `<span class="pill tagp" style="color:${K.c};border-color:${K.c}99;height:18px;font-size:9.5px;padding:0 5px;gap:4px" title="${esc(K.t)}">${GLYPH[k]||GLYPH.TAG}${esc(K.n)}</span>`};
+let ALERTS=[],alertTokFilter='ALL',alertMode='feed';
+const aUsd=a=>(a.usd!=null&&a.usd>0&&/\bsent\b/.test(a.title||''))?-a.usd:a.usd; // older feed entries stored sends as positive // feed = newest first · wallet = grouped by actor
 const FEED_RAW='https://raw.githubusercontent.com/beeonchain/basefish/main/data/alerts.json';
 async function fetchAlerts(){
   for(const u of [FEED_RAW+'?t='+Date.now(),'data/alerts.json?t='+Date.now()]){
@@ -1254,13 +1268,16 @@ function alertSeenTs(){try{return +localStorage.getItem('bf_alertSeen')||0}catch
 function markAlertsSeen(){try{localStorage.setItem('bf_alertSeen',String(Date.now()))}catch(e){}updateAlertBadge()}
 function updateAlertBadge(){const b=document.getElementById('alertBadge');if(!b)return;const n=ALERTS.filter(a=>a.ts>alertSeenTs()).length;b.style.display=n?'':'none';b.textContent=n>9?'9+':n}
 let alertOpen=new Set(); // expanded wallet rows
-async function alertNames(){ // addr -> best display name across every tracked token
-  const m={};
+let NAMES_CACHE=null;
+async function alertNames(){ // addr -> best display name across every tracked token (cached 5 min)
+  if(NAMES_CACHE&&Date.now()-NAMES_CACHE.at<3e5)return NAMES_CACHE.m;
+  const m={};NAMES_CACHE={at:Date.now(),m};
   for(const tk of TOKENS){const d=REAL?await tokData(tk.sym):null;(d&&d.holdersTop||[]).forEach(h=>{const n=h.entity||h.basename;if(n&&!m[h.addr.toLowerCase()])m[h.addr.toLowerCase()]=n})}
   return m;
 }
 async function renderAlerts(){
   const el=document.getElementById('alertsView');
+  if(!el.innerHTML)el.innerHTML='<div style="padding:30px;color:var(--muted)">Loading alerts…</div>';
   if(!ALERTS.length)await fetchAlerts();
   const seenTs=alertSeenTs();
   markAlertsSeen();
@@ -1272,21 +1289,21 @@ async function renderAlerts(){
   for(const a of rows){
     const key=a.addr?a.addr.toLowerCase():(a.school?'school:'+a.school:'misc');
     if(!groups.has(key))groups.set(key,{key,addr:a.addr?a.addr.toLowerCase():null,school:a.school||null,items:[],syms:new Set(),kinds:new Set(),net:0,last:0,unread:0});
-    const g=groups.get(key);g.items.push(a);g.syms.add(a.sym);g.kinds.add(a.kind);g.net+=(a.usd||0);g.last=Math.max(g.last,a.ts);if(a.ts>seenTs)g.unread++;
+    const g=groups.get(key);g.items.push(a);g.syms.add(a.sym);g.kinds.add(a.kind);g.net+=(aUsd(a)||0);g.last=Math.max(g.last,a.ts);if(a.ts>seenTs)g.unread++;
   }
   const list=[...groups.values()].sort((x,y)=>y.last-x.last);
   const wallets=list.filter(g=>g.addr),schools=list.filter(g=>g.school);
-  const nameOf=g=>g.addr?(names[g.addr]||cpa(g.addr)):`School ${String(g.school).slice(0,6)}`;
+  const nameOf=g=>g.addr?(names[g.addr]?esc(names[g.addr]):cpa(g.addr)):`School ${esc(String(g.school).slice(0,6))}`;
   const latest=[...rows].sort((x,y)=>y.ts-x.ts).slice(0,3);
   const item=a=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:12px">
-      <span style="display:flex;gap:8px;min-width:0"><span>${AICON[a.kind]||'🔔'}</span><span style="min-width:0"><b>${a.kind==='cex'?cexIcon(a.title):''}${esc(a.title)}</b><br><small style="color:var(--muted)">${esc(a.sub||'')}</small></span></span>
+      <span style="display:flex;gap:8px;min-width:0;align-items:flex-start"><span style="padding-top:1px">${akindChip(a.kind)}</span><span style="min-width:0"><b>${a.kind==='cex'?cexIcon(a.title):''}${esc(a.title)}</b><br><small style="color:var(--muted)">${esc(a.sub||'')}</small></span></span>
       <span style="white-space:nowrap;color:var(--dim);font-size:11px;text-align:right">${tokTag(a.sym)}<br>${agoStr(a.ts)} ago${a.hash?` · <a href="https://basescan.org/tx/${a.hash}" target="_blank" rel="noopener" style="color:var(--dim);font-weight:700">tx ↗</a>`:''}</span></div>`;
-  const row=g=>{const open=alertOpen.has(g.key);const kindsIc=[...g.kinds].map(k=>AICON[k]||'🔔').join('');
+  const row=g=>{const open=alertOpen.has(g.key);const kindsIc=[...g.kinds].map(k=>AICON[k]).join('');
     return `<div style="border-bottom:1px solid var(--line)">
       <button class="flowrow" style="padding:11px 14px;border:0" onclick="alertOpen.has('${g.key}')?alertOpen.delete('${g.key}'):alertOpen.add('${g.key}');renderAlerts()">
         <span style="display:flex;gap:10px;align-items:center;min-width:0">
           <span style="color:var(--dim);font-size:10px;width:10px">${open?'▾':'▸'}</span>
-          <span style="min-width:0"><b>${esc(nameOf(g))}</b>${g.unread?` <i style="display:inline-block;width:7px;height:7px;background:var(--coral);vertical-align:middle;margin-left:4px" title="${g.unread} new"></i>`:''}<br>
+          <span style="min-width:0"><b>${nameOf(g)}</b>${g.unread?` <i style="display:inline-block;width:7px;height:7px;background:var(--coral);vertical-align:middle;margin-left:4px" title="${g.unread} new"></i>`:''}<br>
             <small style="color:var(--muted)">${kindsIc} ${g.items.length} alert${g.items.length===1?'':'s'} · ${[...g.syms].map(tokTag).join(' ')} · last ${agoStr(g.last)} ago</small></span></span>
         <b class="mono ${g.net>=0?'up':'down'}" style="white-space:nowrap">${g.net>=0?'+':'−'}${usd(Math.abs(g.net))}<br><small style="color:var(--dim);font-weight:400">net</small></b>
       </button>
@@ -1297,19 +1314,30 @@ async function renderAlerts(){
         ${g.items.length>25&&!alertOpen.has(g.key+':all')?`<button onclick="alertOpen.add('${g.key}:all');renderAlerts()" style="margin-top:8px;font-size:11px;font-weight:700;color:var(--teal)">show all ${g.items.length} →</button>`:''}
       </div>`:''}
     </div>`};
+  const feedRow=a=>{const who=a.addr?(names[a.addr.toLowerCase()]?esc(names[a.addr.toLowerCase()]):cpa(a.addr)):(a.school?`School ${esc(String(a.school).slice(0,6))}`:'');
+    return `<div class="flowrow" style="display:grid;grid-template-columns:110px 1fr auto;gap:12px;align-items:center;padding:9px 14px;border-bottom:1px solid var(--line);font-size:12px">
+      <span class="mono" style="color:var(--dim);font-size:11px;white-space:nowrap">${agoStr(a.ts)} ago${a.ts>seenTs?' <i style="display:inline-block;width:6px;height:6px;background:var(--coral);vertical-align:middle;margin-left:3px" title="new"></i>':''}</span>
+      <span style="min-width:0;display:flex;gap:8px;align-items:center;flex-wrap:wrap">${akindChip(a.kind)}${tokTag(a.sym)}<b style="min-width:0">${a.kind==='cex'?cexIcon(a.title):''}${esc(a.title)}</b>${a.sub?`<small style="color:var(--muted)">${esc(a.sub)}</small>`:''}</span>
+      <span style="white-space:nowrap;text-align:right;display:flex;gap:10px;align-items:center">${a.usd!=null?`<b class="mono ${aUsd(a)>=0?'up':'down'}">${aUsd(a)>=0?'+':'−'}${usd(Math.abs(aUsd(a)))}</b>`:''}${a.addr?`<button onclick="openProfileByAddr('${a.addr.toLowerCase()}')" style="border:1px solid var(--line);padding:3px 8px;font-size:10.5px;font-weight:700;color:var(--teal)">${who} →</button>`:''}${a.hash?`<a href="https://basescan.org/tx/${a.hash}" target="_blank" rel="noopener" style="color:var(--dim);font-weight:700;font-size:11px">tx ↗</a>`:''}</span></div>`};
+  const feed=[...rows].sort((x,y)=>y.ts-x.ts);const feedN=alertOpen.has('feed:all')?9999:60;
   const section=(title,gs)=>gs.length?`<div style="border:1px solid var(--line);background:var(--panel)">
       <div style="padding:9px 14px;font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)">${title} <span style="color:var(--dim);font-weight:400">· ${gs.length}</span></div>${gs.map(row).join('')}</div>`:'';
   el.innerHTML=`<div style="padding:16px;display:flex;flex-direction:column;gap:14px">
-    <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><h3 style="margin:0;font-size:16px">Alerts</h3><span style="color:var(--dim);font-size:11.5px">instant on-chain + refresh digest · grouped by wallet, click to expand</span></div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap">${toks.map(s=>`<button onclick="alertTokFilter='${s}';renderAlerts()" style="padding:5px 10px;border:1px solid ${alertTokFilter===s?'var(--teal)':'var(--line)'};color:${alertTokFilter===s?'var(--teal)':'var(--muted)'};font-weight:700;font-size:11px">${s==='ALL'?'All tokens':'$'+s}</button>`).join('')}</div>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <h3 style="margin:0;font-size:16px">Alerts</h3>
+      <span style="color:var(--muted);font-size:12px">What the biggest wallets of every tracked token just did — detected instantly on-chain and at every refresh.</span>
+      <span style="margin-left:auto;display:flex;gap:8px;align-items:center">
+        <select onchange="alertTokFilter=this.value;renderAlerts()" style="height:28px;padding:0 8px;font-size:12px;font-weight:700">${toks.map(s=>`<option value="${s}" ${alertTokFilter===s?'selected':''}>${s==='ALL'?'All tokens':'$'+s}</option>`).join('')}</select>
+        <span style="display:inline-flex;border:1px solid var(--line)">${[['feed','Latest first'],['wallet','By wallet']].map(([m,l])=>`<button onclick="alertMode='${m}';renderAlerts()" style="padding:0 10px;height:26px;font-size:11px;font-weight:700;${alertMode===m?'background:var(--text);color:#fff':'color:var(--muted)'}">${l}</button>`).join('')}</span>
+      </span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:11px;color:var(--dim)">${Object.keys(AKIND).map(akindChip).join('')}<span style="margin-left:4px">· hover a kind for what it means · $ = size of the move at current prices</span></div>
     ${latest.length?`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">${latest.map(a=>`<button class="flowrow" style="border:1px solid var(--line);background:var(--panel);padding:10px 12px;display:block;text-align:left" ${a.addr?`onclick="openProfileByAddr('${a.addr}')"`:''}>
-        <small style="color:var(--dim);font-size:10px;letter-spacing:.4px;text-transform:uppercase">${AICON[a.kind]||'🔔'} latest · ${agoStr(a.ts)} ago</small><br><b style="font-size:12px">${esc(a.title)}</b></button>`).join('')}</div>`:''}
+        <small style="color:var(--dim);font-size:10px;letter-spacing:.4px;text-transform:uppercase">${AICON[a.kind]} latest · ${agoStr(a.ts)} ago</small><br><b style="font-size:12px">${esc(a.title)}</b></button>`).join('')}</div>`:''}
     ${acctPanel()}
-    ${TG_BOT?`<div style="border:1px solid var(--line);background:var(--panel2);padding:10px 14px;font-size:12px">📲 Instant alerts in Telegram → <a href="https://t.me/${TG_BOT}" target="_blank" rel="noopener" style="color:var(--teal);font-weight:800">@${TG_BOT}</a> — /start subscribes, /watch 0x… TOKEN follows any wallet live</div>`:''}
-    ${section('Wallets',wallets)}
-    ${section('Schools',schools)}
+    ${TG_BOT?`<div style="border:1px solid var(--line);background:var(--panel2);padding:10px 14px;font-size:12px">Instant alerts in Telegram → <a href="https://t.me/${TG_BOT}" target="_blank" rel="noopener" style="color:var(--teal);font-weight:800">@${TG_BOT}</a> — /start subscribes, /watch 0x… TOKEN follows any wallet live</div>`:''}
+    ${alertMode==='feed'?(feed.length?`<div style="border:1px solid var(--line);background:var(--panel)"><div style="padding:9px 14px;font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)">Latest <span style="color:var(--dim);font-weight:400">· ${feed.length}</span></div>${feed.slice(0,feedN).map(feedRow).join('')}${feed.length>feedN?`<button onclick="alertOpen.add('feed:all');renderAlerts()" style="padding:10px 14px;font-size:11px;font-weight:700;color:var(--teal)">show all ${feed.length} →</button>`:''}</div>`:''):`${section('Wallets',wallets)}${section('Schools',schools)}`}
     ${!list.length?'<div style="padding:26px;color:var(--dim);border:1px solid var(--line)">No alerts in this window yet. Calm waters.</div>':''}
-    <div style="color:var(--dim);font-size:11px">🐋 whale move · 🎣 entered top 20 · 🏃 top-10 exit · 🏦 exchange flow · 🕸 school swing · 👁 custom watch · net = sum of the wallet's alerted moves at current prices · not financial advice</div>
+    <div style="color:var(--dim);font-size:11px">"By wallet" folds every alert of the same wallet into one row (net = sum of its alerted moves at current prices) · not financial advice</div>
   </div>`;
 }
 /* live popups: poll the feed; toast anything new while the user is on the site */
@@ -1318,7 +1346,7 @@ async function renderAlerts(){
     const seen=new Set(ALERTS.map(a=>a.id));
     await fetchAlerts();
     const fresh=ALERTS.filter(a=>!seen.has(a.id));
-    fresh.slice(0,3).forEach(a=>toastMsg(`${AICON[a.kind]||'🔔'} <b>${esc(a.title)}</b>`,a.usd>=0?'var(--teal)':'var(--coral)'));
+    fresh.slice(0,3).forEach(a=>toastMsg(`${AICON[a.kind]} <b>${esc(a.title)}</b>`,aUsd(a)>=0?'var(--teal)':'var(--coral)'));
     const mine=await acctRefresh();
     if(view==='alerts'&&(fresh.length||mine))renderAlerts();else updateAlertBadge();
   },60000);
@@ -1548,6 +1576,7 @@ async function renderFlows(){
     <div style="color:var(--dim);font-size:11px">Daily snapshots of exact on-chain balances · $ values at the current price · CEX flow counts only transfers with a labeled exchange counterparty, so it understates the true total · not financial advice.</div>
   </div>`;
   drawFlowChart(document.getElementById('fchart'),series.length>=2?series:F.series);
+  if(FLOWPTS&&FLOWPTS.length>=2)flowMoves(FLOWPTS,FLOWPTS.length-1); // open on the newest interval by default
   annotateVia(el,sym,Date.now()-days*864e5,Date.now());
 }
 function drawFlowChart(cv2,series,hoverI){
@@ -1607,11 +1636,11 @@ function flowMoves(series,i){
   const fmtT=ts=>new Date(ts).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
   const buys=rows.filter(r=>r.usd>0),sells=rows.filter(r=>r.usd<0);
   const sum=l=>l.reduce((t,r)=>t+r.usd,0);
-  const row=r=>`<button class="flowrow" onclick="openProfileByAddr('${r.addr}')"><span style="min-width:0"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.kind==='entry'?'🎣 ':r.kind==='exit'?'🏃 ':''}${esc(flowName(r.addr))}</div><div data-via="${r.addr}|${r.usd>=0?'in':'out'}" style="display:flex;gap:3px;flex-wrap:wrap;margin-top:2px"></div></span><b class="mono ${r.usd>=0?'up':'down'}">${tokAmt(r.amt,true)} <small style="color:var(--dim);font-weight:400">~${usd(Math.abs(r.usd))}</small></b></button>`;
+  const row=r=>`<button class="flowrow" onclick="openProfileByAddr('${r.addr}')"><span style="min-width:0"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.kind==='entry'?'<span class="pill tagp" style="height:16px;font-size:9px;padding:0 4px;margin-right:4px;color:var(--teal);border-color:var(--teal)">new</span>':r.kind==='exit'?'<span class="pill tagp" style="height:16px;font-size:9px;padding:0 4px;margin-right:4px;color:var(--coral);border-color:var(--coral)">left</span>':''}${esc(flowName(r.addr))}</div><div data-via="${r.addr}|${r.usd>=0?'in':'out'}" style="display:flex;gap:3px;flex-wrap:wrap;margin-top:2px"></div></span><b class="mono ${r.usd>=0?'up':'down'}">${tokAmt(r.amt,true)} <small style="color:var(--dim);font-weight:400">~${usd(Math.abs(r.usd))}</small></b></button>`;
   el.innerHTML=`<div style="border:1px solid var(--teal);background:var(--panel2);padding:12px 14px">
-    <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px"><b style="font-size:12px">Movements · ${fmtT(prev.ts)} → ${fmtT(cur2.ts)}</b><span style="color:var(--muted);font-size:11.5px">${rows.length?`<span class="up">${buys.length} added ${usd(sum(buys))}</span> · <span class="down">${sells.length} reduced ${usd(Math.abs(sum(sells)))}</span>${ent?` · ${ent} entered`:''}${ex?` · ${ex} left`:''}`:'no balance changes ≥$250 between these two points'}</span><button onclick="document.getElementById('fday').innerHTML=''" style="margin-left:auto;color:var(--dim);font-size:11px">close ✕</button></div>
+    <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px"><span style="display:inline-flex;gap:4px;align-items:center"><button onclick="flowMoves(FLOWPTS,${i-1})" ${i<=1?'disabled style="opacity:.3"':''} title="earlier interval" style="border:1px solid var(--line);width:22px;height:22px;font-weight:700">‹</button><button onclick="flowMoves(FLOWPTS,${i+1})" ${i>=series.length-1?'disabled style="opacity:.3"':''} title="later interval" style="border:1px solid var(--line);width:22px;height:22px;font-weight:700">›</button></span><b style="font-size:12px">Movements · ${fmtT(prev.ts)} → ${fmtT(cur2.ts)}${i>=series.length-1?' <span style="color:var(--teal)">· newest</span>':''}</b><span style="color:var(--dim);font-size:11px">${i} / ${series.length-1}</span><span style="color:var(--muted);font-size:11.5px">${rows.length?`<span class="up">${buys.length} added ${usd(sum(buys))}</span> · <span class="down">${sells.length} reduced ${usd(Math.abs(sum(sells)))}</span>${ent?` · ${ent} entered`:''}${ex?` · ${ex} left`:''}`:'no balance changes ≥$250 between these two points'}</span><button onclick="document.getElementById('fday').innerHTML=''" style="margin-left:auto;color:var(--dim);font-size:11px">close ✕</button></div>
     ${rows.length?`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0 18px">${rows.slice(0,30).map(row).join('')}</div>${rows.length>30?`<div style="color:var(--dim);font-size:11px;padding-top:6px">+${rows.length-30} smaller moves</div>`:''}`:''}
-    <div style="color:var(--dim);font-size:11px;padding-top:8px">Balance changes of the top 100 between two snapshots · badges show where the coins went (🔁 DEX trade · 🏦 exchange · 🌉 bridge · ↔ other wallet) for wallets with enriched transfer history.</div></div>`;
+    <div style="color:var(--dim);font-size:11px;padding-top:8px">Balance changes of the top 100 between two snapshots · badges show where the coins went (DEX trade · exchange · bridge · other wallet) for wallets with enriched transfer history · ‹ › steps through snapshots (~every 2h for hot tokens, daily otherwise).</div></div>`;
   annotateVia(el,cur.sym,prev.ts-36e5,cur2.ts+36e5);
   el.scrollIntoView({block:'nearest',behavior:'smooth'});
 }
