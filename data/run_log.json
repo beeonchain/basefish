@@ -1,221 +1,225 @@
 {
- "started": "2026-09-09T09:37:44.736Z",
+ "started": "2026-09-09T10:36:08.778Z",
  "tier": "hot",
  "tokens": {
   "BRETT": {
    "ok": true,
-   "src": "bq-holders-2026-09-08",
+   "src": "bq-holders+live",
    "top": 100,
    "infra": 44,
-   "price": 0.0054995
+   "price": 0.00540572
   },
   "TOSHI": {
    "ok": true,
-   "src": "bq-holders-2026-09-08",
+   "src": "bq-holders+live",
    "top": 100,
    "infra": 73,
-   "price": 0.00012282
+   "price": 0.00011961
   },
   "BASECAT": {
    "ok": true,
-   "src": "bq-holders-2026-09-08",
+   "src": "bq-holders+live",
    "top": 100,
    "infra": 9,
-   "price": 0.03837726
+   "price": 0.03981863
   },
   "AERO": {
    "ok": true,
-   "src": "bq-holders-2026-09-08",
+   "src": "bq-holders+live",
    "top": 100,
-   "infra": 79,
-   "price": 0.606289
+   "infra": 80,
+   "price": 0.596474
   },
   "VIRTUAL": {
    "ok": true,
-   "src": "bq-holders-2026-09-08",
+   "src": "bq-holders+live",
    "top": 100,
-   "infra": 83,
-   "price": 0.717312
+   "infra": 85,
+   "price": 0.713181
   },
   "VVV": {
    "ok": true,
-   "src": "bq-holders-2026-09-08",
+   "src": "bq-holders+live",
    "top": 100,
    "infra": 70,
-   "price": 26.23
+   "price": 25.63
+  },
+  "GHST": {
+   "ok": false,
+   "err": "401 https://deep-index.moralis.io/api/v2.2/erc20/0xac780b6e4ee50585df265c7766cc2bed51e43fb8/price?chain=base&include=percent_change :: {\"message\":\"Your Moralis "
   },
   "TIBBIR": {
    "ok": true,
-   "src": "bq-holders-2026-09-08",
+   "src": "bq-holders+live",
    "top": 100,
    "infra": 7,
-   "price": 0.208982
+   "price": 0.207211
   },
   "AWE": {
    "ok": true,
-   "src": "bq-holders-2026-09-08",
+   "src": "bq-holders+live",
    "top": 100,
    "infra": 45,
-   "price": 0.060299
+   "price": 0.060033
   },
   "CHIP": {
    "ok": true,
-   "src": "bq-holders-2026-09-08",
+   "src": "bq-holders+live",
    "top": 100,
    "infra": 22,
-   "price": 0.059488
-  },
-  "MAG7SSI": {
-   "ok": true,
-   "src": "bq-holders-2026-09-08",
-   "top": 100,
-   "infra": 14,
-   "price": 0.53136
-  },
-  "O": {
-   "ok": true,
-   "src": "bq-holders-2026-09-08",
-   "top": 100,
-   "infra": 22,
-   "price": 0.532712
+   "price": 0.060089
   },
   "DIEM": {
    "ok": true,
-   "src": "bq-holders-2026-09-08",
+   "src": "bq-holders+live",
    "top": 100,
    "infra": 27,
-   "price": 2329
+   "price": 2291.01
+  },
+  "MAG7SSI": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 14,
+   "price": 0.529522
+  },
+  "O": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 22,
+   "price": 0.528116
   },
   "NOCK": {
    "ok": true,
-   "src": "bq-holders-2026-09-08",
+   "src": "bq-holders+live",
    "top": 100,
    "infra": 9,
-   "price": 0.03399693
+   "price": 0.03397632
   },
   "OMI": {
    "ok": true,
-   "src": "bq-holders-2026-09-08",
+   "src": "bq-holders+live",
    "top": 100,
    "infra": 17,
-   "price": 0.00022326
+   "price": 0.00022103
   },
   "BIO": {
    "ok": true,
-   "src": "bq-holders-2026-09-08",
+   "src": "bq-holders+live",
    "top": 100,
    "infra": 35,
-   "price": 0.02734885
-  },
-  "BIM": {
-   "ok": true,
-   "src": "bq-holders-2026-09-08",
-   "top": 100,
-   "infra": 6,
-   "price": 1.64
+   "price": 0.02712306
   },
   "KTA": {
    "ok": true,
-   "src": "bq-holders-2026-09-08",
+   "src": "bq-holders+live",
    "top": 100,
    "infra": 29,
-   "price": 0.0908
+   "price": 0.089001
+  },
+  "BIM": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 6,
+   "price": 1.63
   },
   "SQD": {
    "ok": true,
-   "src": "bq-holders-2026-09-08",
+   "src": "bq-holders+live",
    "top": 100,
    "infra": 38,
-   "price": 0.03426828
+   "price": 0.03375622
   },
-  "BNKR": {
+  "ZORA": {
    "ok": true,
-   "src": "bq-holders-2026-09-08",
+   "src": "bq-holders+live",
    "top": 100,
-   "infra": 26,
-   "price": 0.00022608
+   "infra": 68,
+   "price": 0.00847933
+  },
+  "CP": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 35,
+   "price": 0.01578204
   },
   "DRB": {
    "ok": true,
-   "src": "bq-holders-2026-09-08",
+   "src": "bq-holders+live",
    "top": 100,
    "infra": 11,
-   "price": 0.00020454
+   "price": 0.00019511
   },
   "POD": {
    "ok": true,
-   "src": "bq-holders-2026-09-08",
+   "src": "bq-holders+live",
    "top": 100,
    "infra": 13,
-   "price": 0.396843
+   "price": 0.386179
   },
   "STONKEX": {
    "ok": true,
-   "src": "bq-holders-2026-09-08",
+   "src": "bq-holders+live",
    "top": 100,
    "infra": 7,
-   "price": 0.01170446
+   "price": 0.01079942
   },
   "DOT": {
    "ok": true,
-   "src": "bq-holders-2026-09-08",
+   "src": "bq-holders+live",
    "top": 100,
    "infra": 9,
-   "price": 0.00721174
+   "price": 0.00688548
+  },
+  "SURPLUS": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 4,
+   "price": 0.00006172
+  },
+  "BSTONK": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 6,
+   "price": 0.0050211
   },
   "STFY": {
    "ok": false,
    "err": "401 https://deep-index.moralis.io/api/v2.2/erc20/0xc6405d7a226e1c18e559be2f335f74c01ad07bf5/price?chain=base&include=percent_change :: {\"message\":\"Your Moralis "
   },
-  "SURPLUS": {
-   "ok": true,
-   "src": "bq-holders-2026-09-08",
-   "top": 100,
-   "infra": 4,
-   "price": 0.00006926
-  },
-  "BSTONK": {
-   "ok": true,
-   "src": "bq-holders-2026-09-08",
-   "top": 100,
-   "infra": 8,
-   "price": 0.00001792
-  },
-  "GITLAWB": {
-   "ok": true,
-   "src": "bq-holders-2026-09-08",
-   "top": 100,
-   "infra": 29,
-   "price": 0.0000183
-  },
   "FLOWER": {
    "ok": true,
-   "src": "bq-holders-2026-09-08",
+   "src": "bq-holders+live",
    "top": 100,
    "infra": 5,
-   "price": 0.246192
+   "price": 0.250443
   }
  },
  "errors": [],
  "tags": {
-  "WHALE": 856,
-  "OG": 308,
-  "CT": 39,
+  "WHALE": 814,
+  "OG": 294,
+  "CT": 40,
   "SNIPE": 21,
-  "DIAMOND": 86
+  "DIAMOND": 87
  },
- "finished": "2026-09-09T09:47:03.701Z",
+ "finished": "2026-09-09T10:47:35.019Z",
  "budgets": {
-  "arkham": 291,
+  "arkham": 60,
   "profile": 2,
-  "frontrun": -12,
-  "rpc": 400,
-  "funding": 115
+  "frontrun": -15,
+  "rpc": 261,
+  "funding": 0
  },
  "webhook": {
-  "have": 6000,
-  "want": 6202,
-  "added": 676,
-  "removed": 474
+  "have": 6202,
+  "want": 6017,
+  "added": 471,
+  "removed": 656
  }
 }
