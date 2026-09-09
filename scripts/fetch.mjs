@@ -187,6 +187,16 @@ const FUND_PATH = 'data/funding.json';
 let fundCache = {}; try { fundCache = JSON.parse(fs.readFileSync(FUND_PATH, 'utf8')); } catch {}
 let fundBudget = FULL ? 400 : 150;
 const CEX_RX = /coinbase|binance|kraken|okx|bybit|upbit|bithumb|\bgate\b|kucoin|mexc|bitget|htx|crypto\.com|bitpanda|bitvavo|bitstamp|gemini|robinhood|exchange|deposit/i;
+// where did a transfer go / come from? (label-based; pools & routers = DEX trade, exchanges = CEX, else another wallet)
+const DEX_RX = /uniswap|aerodrome|pancake|sushi|baseswap|alien.?base|velodrome|curve|balancer|\bpool\b|liquidity|\blp\b|router|swap|1inch|0x protocol|paraswap|kyber|odos|matcha|dex|universal router|permit2|clanker|virtuals|bonding|zora/i;
+function flowDest(tr2, poolSet) { // -> 'dex' | 'cex' | 'bridge' | 'wallet'
+  const l = String(tr2.cpLabel || ''), cp = String(tr2.cp || '').toLowerCase();
+  if (CEX_RX.test(l)) return 'cex';
+  if (poolSet && poolSet.has(cp)) return 'dex';
+  if (DEX_RX.test(l)) return 'dex';
+  if (BRIDGE_RX.test(l)) return 'bridge';
+  return 'wallet';
+}
 const BRIDGE_RX = /bridge|stargate|across|hop protocol|wormhole|layerzero|relay|orbiter|debridge|synapse|portal/i;
 let fundUpgradeBudget = 30;
 // ---- token launch times (GeckoTerminal, once per token) + first-buy / outflow facts (Arkham, budgeted) for SNIPE / DIAMOND ----
@@ -1221,25 +1231,35 @@ for (const t of RUN_TOKENS) {
           movers.sort((a, b) => b.usd - a.usd);
           entries.sort((a, b) => b.usd - a.usd); exits.sort((a, b) => b.usd - a.usd);
         }
-        // observed CEX flow (7d): cached wallet transfers with CEX-labeled counterparties (partial coverage by design)
+        // observed flows (7d): where the top wallets' coins went / came from, from cached transfers (partial coverage by design —
+        // only wallets with an enriched profile have transfer history). dest7 = totals by destination; via = per-mover breakdown.
         let cexIn = 0, cexOut = 0, cexN = 0;
+        const poolSet = new Set(infra.filter(x => x.kind === 'pool').map(x => x.addr.toLowerCase()));
+        const dest7 = { out: { dex: 0, cex: 0, bridge: 0, wallet: 0 }, in: { dex: 0, cex: 0, bridge: 0, wallet: 0 }, n: 0, wallets: 0 };
+        const viaOf = {};
         for (const h of top) {
           try {
             const pw = JSON.parse(fs.readFileSync(path.join(WALLET_DIR, h.addr.toLowerCase() + '.json'), 'utf8'));
+            let any = false;
             for (const tr2 of (pw.transfers || [])) {
               if (tr2.token !== t.sym) continue;
               if (Date.now() - new Date(tr2.ts).getTime() > 7 * 864e5) continue;
-              if (!CEX_RX.test(tr2.cpLabel || '')) continue;
-              cexN++;
-              if (tr2.dir === 'in') cexIn += tr2.usd || 0; else cexOut += tr2.usd || 0;
+              const d2 = flowDest(tr2, poolSet), side = tr2.dir === 'in' ? 'in' : 'out', u2 = tr2.usd || 0;
+              dest7[side][d2] += u2; dest7.n++; any = true;
+              const v = viaOf[h.addr.toLowerCase()] = viaOf[h.addr.toLowerCase()] || { in: {}, out: {} }; v[side][d2] = (v[side][d2] || 0) + u2;
+              if (d2 === 'cex') { cexN++; if (side === 'in') cexIn += u2; else cexOut += u2; }
             }
+            if (any) dest7.wallets++;
           } catch (e) {}
         }
+        for (const k of ['in', 'out']) for (const d2 of Object.keys(dest7[k])) dest7[k][d2] = Math.round(dest7[k][d2]);
+        const withVia = (m) => { const v = viaOf[m.addr.toLowerCase()]; if (!v) return m; const side = m.usd >= 0 ? 'in' : 'out'; const o = {}; for (const [k, u2] of Object.entries(v[side])) o[k] = Math.round(u2); return { ...m, via: o }; };
+        movers = movers.map(withVia);
         flows = { updated: Date.now(), series, net7: net(7), net30: net(30), refTs7: ref7s.ts,
           moversUp: movers.filter(m => m.usd > 0).slice(0, 6),
           moversDown: movers.filter(m => m.usd < 0).slice(-6).reverse(),
           entries: entries.slice(0, 8), exits: exits.slice(0, 8),
-          cex7: { in: Math.round(cexIn), out: Math.round(cexOut), n: cexN } };
+          cex7: { in: Math.round(cexIn), out: Math.round(cexOut), n: cexN }, dest7 };
       }
     } catch (e) { console.log('  flows err', e.message.slice(0, 80)); }
     if (ARKHAM_KEY) {
