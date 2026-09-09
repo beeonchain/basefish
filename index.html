@@ -6,7 +6,7 @@
 <title>WALLETSEA</title>
 <meta name="description" content="WALLETSEA — the top holders of every Base token, as a living sea of wallets. Whales, schools, flows and live alerts.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230000FF'/%3E%3C/svg%3E">
-<meta name="theme-color" content="#0A0F1E">
+<meta name="theme-color" content="#0000FF">
 <meta property="og:title" content="WALLETSEA — see who really holds the token">
 <meta property="og:description" content="Top holders of Base tokens as a living sea: whales, schools, flows, instant alerts. Live on-chain. NFA.">
 <meta property="og:image" content="https://basefish.netlify.app/assets/og.png">
@@ -18,45 +18,46 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Doto:wght@700;900&family=Inter+Tight:wght@400;500;600;700;800;900&family=Roboto+Mono:wght@400;500;700&display=swap">
 <style>
   :root{
-    /* WALLETSEA design tokens v2 — dark-first "deep sea" UI. One accent (blue) for actions + accumulating,
-       coral for distributing, amber for warnings/trending; everything else is the grey ramp. */
-    --abyss:#0A0F1E;            /* page ground */
-    --panel:#111827;            /* cards, rails, tables */
-    --panel2:#172033;           /* hover rows, inset fields, chips */
-    --panel3:#1F2A44;           /* stronger insets */
-    --line:#233048;             /* hairlines */
-    --line2:#34446A;            /* stronger borders (focus rings, card edges) */
-    --text:#EEF2FF; --muted:#A6B1CB; --dim:#6E7A99;
-    --brand:#0000FF;            /* wordmark / mascot fill only */
-    --teal:#4D7CFF;             /* accent on dark: actions, links, "accumulating" (kept as --teal for legacy inline styles) */
-    --accent:#4D7CFF; --accent-soft:rgba(77,124,255,.14); --accent-line:rgba(77,124,255,.45);
-    --coral:#FF5C63; --coral-soft:rgba(255,92,99,.14);
-    --gold:#F2C14E; --gold-soft:rgba(242,193,78,.14);
+    /* Walletsea brand kit v1 — one blue, black/white/gray, square corners, hairline borders (unchanged) */
+    --abyss:#FFFFFF; --panel:#FFFFFF; --panel2:#EEF0F3; --panel3:#DEE1E7;
+    --line:#DEE1E7; --line2:#B1B7C3;
+    --text:#0A0B0D; --muted:#5B616E; --dim:#8A91A0;
+    --brand:#0000FF; --teal:#0000FF; --accent:#0000FF; --accent-soft:rgba(0,0,255,.06); --accent-line:rgba(0,0,255,.35);
+    --coral:#E5484D; --coral-soft:rgba(229,72,77,.08); --gold:#F2C14E; --gold-soft:rgba(242,193,78,.14);
     --whale:#6FB2FF; --violet:#A78BFA; --small:#7FD3FF;
-    --glass:rgba(10,15,30,.55); --glass-line:rgba(255,255,255,.14);
+    --glass:rgba(10,11,13,.78); --glass-line:rgba(255,255,255,.2);
     --font-pixel:'Doto',monospace; --font-display:'Inter Tight',system-ui,sans-serif; --font-body:'Inter Tight',system-ui,sans-serif; --font-mono:'Roboto Mono',ui-monospace,Menlo,monospace;
-    /* type scale: 12 meta · 14 body · 16 title · 24/28 hero numbers */
-    --fs-meta:12px; --fs-body:14px; --fs-title:16px; --fs-num:24px; --fs-hero:28px;
-    --r:6px; --r-sm:4px;
+    /* type scale: 11 chip · 12 meta · 13 body · 15 title · 22 number */
+    --fs-meta:12px; --fs-body:13px; --fs-title:15px; --fs-num:22px; --fs-hero:28px;
+    --r:0; --r-sm:0;
     --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-6:24px;
-    color-scheme:dark;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{margin:0;background:var(--abyss);color:var(--text);font-family:var(--font-body);font-size:var(--fs-body);line-height:1.45;-webkit-font-smoothing:antialiased;overflow:hidden}
   a{color:var(--accent)}
-  ::selection{background:var(--accent-soft)}
   /* ---- component sheet ---- */
   .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border:1px solid var(--line2);border-radius:var(--r);font-weight:700;font-size:13px;color:var(--text);background:var(--panel);line-height:1;white-space:nowrap}
   .btn:hover{background:var(--panel2);border-color:var(--accent-line)}
   .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}.btn.primary:hover{filter:brightness(1.1)}
   .btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}.btn.ghost:hover{background:var(--panel2);color:var(--text);border-color:transparent}
   .btn.sm{padding:5px 10px;font-size:12px}
-  /* chips: three jobs, three silhouettes */
-  .pill{display:inline-flex;align-items:center;gap:4px;font-size:11px;line-height:1;padding:4px 8px;border-radius:var(--r-sm);font-weight:700;letter-spacing:.03em;text-transform:uppercase;border:1px solid var(--line);background:var(--panel2);color:var(--muted);white-space:nowrap;vertical-align:middle}
-  .pill.id{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-line);font-weight:800;text-transform:none;letter-spacing:0;font-size:12px}
-  .pill.cls{background:transparent}
-  .pill.ctx{background:transparent;border-style:dashed;color:var(--dim);font-weight:600;text-transform:none;letter-spacing:0}
+  /* chips — one hierarchy, read by silhouette before colour:
+       1 identity  (who)        filled block, 12px, sentence case      → the loudest thing on a row
+       2 tag       (what kind)  outlined, 10.5px caps, pixel glyph      → coloured, but hollow
+       3 fact      (descriptive) hairline, 11px, muted                  → quiet
+       4 context   (provenance) bare text, 11px, dim, ↳ prefix           → almost silent          */
+  .pill,.lbls span{display:inline-flex;align-items:center;gap:5px;height:22px;font-size:11px;line-height:1;padding:0 7px;border-radius:0;font-weight:500;letter-spacing:0;text-transform:none;border:1px solid var(--line);background:transparent;color:var(--muted);white-space:nowrap;vertical-align:middle;font-family:var(--font-body)}
+  .pill.id,.lbls span.id{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-line);font-weight:700;font-size:12px;padding:0 8px;height:24px}
+  .pill.cls{font-weight:700;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-family:var(--font-mono)}
+  .pill.tagp,.lbls span.tagp{font-weight:700;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-family:var(--font-mono);background:transparent}
+  .pill.ctx,.lbls span.ctx{border-color:transparent;background:transparent;color:var(--dim);padding:0 2px;font-weight:500}
+  .pill.ctx::before,.lbls span.ctx::before{content:'↳';font-family:var(--font-mono);font-size:10px;opacity:.7}
+  .pill svg,.lbls span svg{flex:none}
+  .tg{display:inline-block;width:10px;height:10px;flex:none}
+  /* tier — a swatch and a word, never a block: the fish size is a fact, not an identity */
+  .tierc{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap;letter-spacing:.02em}
+  .tierc i{width:7px;height:7px;flex:none;display:inline-block}
   .card-ui{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);padding:var(--sp-4)}
   .card-ui h5,.wbox>h5{font:700 11px var(--font-body);letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
   .num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
@@ -67,7 +68,7 @@
   .mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
   .app{display:grid;grid-template-columns:220px 1fr 300px;grid-template-rows:64px 1fr 40px;height:100vh;gap:0}
   /* ---------- sidebar ---------- */
-  .side{grid-row:1/3;border-right:1px solid var(--line);background:var(--abyss);display:flex;flex-direction:column;padding:16px 12px;gap:6px}
+  .side{grid-row:1/3;border-right:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;padding:16px 12px;gap:6px}
   .cexi{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:14px;padding:0 3px;margin-right:4px;font:800 8.5px/1 var(--font-mono);color:#fff;vertical-align:middle;letter-spacing:.3px;border-radius:0;font-style:normal}
   .cpa{cursor:copy;border-bottom:1px dotted var(--dim)}.cpa:hover{color:var(--teal);border-bottom-color:var(--teal)}
   .brand{display:flex;align-items:center;gap:10px;padding:6px 8px 18px}
@@ -75,13 +76,12 @@
   .bmark{width:42px;height:42px;background:var(--brand);border-radius:var(--r);display:flex;align-items:center;justify-content:center;flex:0 0 42px}.bmark svg{width:26px;height:26px;fill:#fff}
   .brand h1{font:900 19px/1 var(--font-pixel);margin:0;letter-spacing:.02em;text-transform:uppercase}
   .brand small{display:block;color:var(--dim);font-size:10px;letter-spacing:.12em;text-transform:uppercase;margin-top:3px;font-weight:600}
-  .nav button{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:var(--r);color:var(--muted);font-weight:600;text-align:left;font-size:14px}
+  .nav button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border-radius:0;color:var(--muted);font-weight:600;text-align:left;font-size:13px}
   .nav button svg{width:15px;height:15px;flex:none;fill:currentColor;shape-rendering:crispEdges}
   .nav button:hover{background:var(--panel2);color:var(--text)}
-  .nav button.on{background:var(--accent-soft);color:var(--text)}
-  .nav button.on svg{fill:var(--accent)}
+  .nav button.on{background:var(--panel2);color:var(--teal);box-shadow:inset 3px 0 0 var(--teal)}
   .nav .soon{margin-left:auto;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);border:1px solid var(--line);padding:1px 5px;border-radius:0}
-  .nav .navbadge{margin-left:auto;font-size:11px;font-weight:800;padding:2px 7px;border-radius:999px;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-line);font-style:normal;font-family:var(--font-mono)}
+  .nav .navbadge{margin-left:auto;font-size:10px;font-weight:800;padding:2px 6px;background:var(--text);color:#fff;font-style:normal;font-family:var(--font-mono)}
   .tracked{margin-top:auto;border:1px solid var(--line);border-radius:var(--r);padding:12px;background:var(--panel)}
   .tracked .lbl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:700}
   .tracked .tok{display:flex;align-items:center;gap:9px;margin:8px 0 10px}
@@ -94,16 +94,16 @@
   .disclaimer{font-size:12px;color:var(--dim);line-height:1.4;padding:10px 6px 0}
   /* ---------- header ---------- */
   .head{grid-column:2/4;display:flex;align-items:center;gap:16px;padding:0 20px;border-bottom:1px solid var(--line)}
-  .head h2{font:800 18px/1 var(--font-display);margin:0;letter-spacing:-.01em;white-space:nowrap}
+  .head h2{font:900 21px/1 var(--font-pixel);margin:0;letter-spacing:.02em;white-space:nowrap;text-transform:uppercase}
   .head h2 em{font-style:normal;color:var(--accent)}
   .head h2 .by{font-size:12px;letter-spacing:.04em;color:var(--dim);font-family:var(--font-mono);text-transform:none;font-weight:500;margin-left:2px}
   .head .sub{color:var(--dim);font-size:12px;margin-top:3px;white-space:nowrap}
   @media (max-width:1500px){.head .sub{display:none}}
   .hsearch{position:relative;margin-left:8px}
-  .hsearch input{width:230px;border:1px solid var(--line2);background:var(--panel);padding:9px 12px;font:500 13px var(--font-mono);color:var(--text);outline:none;border-radius:var(--r)}
+  .hsearch input{width:220px;border:1px solid var(--line);background:var(--panel);padding:8px 10px;font:500 12px var(--font-mono);color:var(--text);outline:none}
   .hsearch input::placeholder{color:var(--dim)}
-  .hsearch input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-  #hqDrop{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:30;background:var(--panel);border:1px solid var(--line2);border-radius:var(--r);display:none;max-height:300px;overflow:auto;box-shadow:0 12px 32px rgba(0,0,0,.45)}
+  .hsearch input:focus{border-color:var(--teal)}
+  #hqDrop{position:absolute;top:100%;left:0;right:0;z-index:30;background:var(--panel);border:1px solid var(--line2);display:none;max-height:300px;overflow:auto;box-shadow:0 10px 30px rgba(10,11,13,.12)}
   #hqDrop button{display:block;width:100%;text-align:left;padding:9px 12px;font-size:13px;border-bottom:1px solid var(--line);cursor:pointer;color:var(--text)}
   #hqDrop button:hover{background:var(--panel2)}
   #hqDrop small{color:var(--dim)}
@@ -114,7 +114,7 @@
   .tokall{position:relative;margin-left:6px}
   .tokall>button{padding:8px 12px;border:1px solid var(--line2);background:var(--panel);font-weight:700;font-size:12px;font-family:var(--font-mono);color:var(--muted);white-space:nowrap;border-radius:var(--r)}
   .tokall>button:hover{color:var(--text);border-color:var(--accent-line)}
-  .tokmenu{position:absolute;top:calc(100% + 4px);right:0;z-index:30;width:400px;max-height:70vh;overflow:auto;background:var(--panel);border:1px solid var(--line2);border-radius:var(--r);box-shadow:0 12px 32px rgba(0,0,0,.45);display:none}
+  .tokmenu{position:absolute;top:100%;right:0;z-index:30;width:400px;max-height:70vh;overflow:auto;background:var(--panel);border:1px solid var(--line2);box-shadow:0 10px 30px rgba(10,11,13,.12);display:none}
   .tokmenu.open{display:block}
   .tokmenu input{width:100%;box-sizing:border-box;padding:10px 12px;border:0;border-bottom:1px solid var(--line);font:600 13px var(--font-mono);background:var(--panel2);border-radius:0}
   .tokmenu .trow{display:flex;align-items:center;gap:9px;width:100%;padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}
@@ -123,17 +123,15 @@
   .tokpick button{padding:7px 11px;border-radius:var(--r-sm);font-weight:700;color:var(--muted);font-size:12px;font-family:var(--font-mono);display:flex;align-items:center;gap:6px}
   .tokpick button:hover{color:var(--text)}
   .tokpick button i{width:8px;height:8px;border-radius:2px;display:inline-block}
-  .tokpick button.on{background:var(--accent);color:#fff}
+  .tokpick button.on{background:var(--text);color:#fff}
   /* Wallets view aggregates all 5 tokens — no single token is "selected" there */
   .app.wview .tokpick button.on{background:transparent;color:var(--muted)}
   .app.wview .tracked{display:none}
   .app.wview .stats{display:none}
-  .lblmore{font-size:11px;padding:3px 8px;border-radius:var(--r-sm);background:var(--panel2);color:var(--accent);border:1px solid var(--line);cursor:pointer;font-weight:700;font-family:var(--font-mono)}
-  td .lbls{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
-  .lbls span{display:inline-flex;align-items:center;gap:4px;font-size:11px;line-height:1;padding:4px 8px;border-radius:var(--r-sm);background:var(--panel2);color:var(--muted);border:1px solid var(--line);white-space:nowrap}
-  .lbls span.id{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-line);font-weight:800;font-size:12px}
-  .lbls span.ctx{background:transparent;border-style:dashed;color:var(--dim);font-weight:500}
-  .lbls span.tagp,.pill.tagp{background:transparent}
+  .lblmore{height:22px;font-size:10.5px;padding:0 7px;border-radius:0;background:transparent;color:var(--accent);border:1px solid var(--accent-line);cursor:pointer;font-weight:700;font-family:var(--font-mono);letter-spacing:.04em}
+  .lblmore:hover{background:var(--accent-soft)}
+  .lbls{display:flex;gap:4px 5px;flex-wrap:wrap;align-items:center}
+  .lbls .cexi{margin-right:0}
   .stats{margin-left:auto;display:flex;flex:none;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--panel)}
   .stats div{padding:7px 12px;border-left:1px solid var(--line);white-space:nowrap}
   .stats div:first-child{border-left:0}
@@ -142,12 +140,12 @@
   .live{display:inline-flex;align-items:center;gap:6px}
   .live i{width:7px;height:7px;border-radius:0;background:var(--teal);animation:pulse 2s infinite}
   @keyframes pulse{0%{}100%{}}
-  .share{padding:8px 14px;border-radius:var(--r);background:transparent;border:1px solid var(--line2);color:var(--muted);font-weight:700;font-size:13px;display:flex;gap:6px;align-items:center;white-space:nowrap}
-  .share:hover{color:var(--text);border-color:var(--accent-line);background:var(--panel2)}
+  .share{padding:8px 14px;background:var(--teal);color:#fff;font-weight:800;font-size:12px;display:flex;gap:6px;align-items:center;white-space:nowrap}
+  .share:hover{filter:brightness(1.08)}
   /* ---------- main ---------- */
   .main{position:relative;padding:14px 14px 14px 20px;display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0}
-  .tank{position:relative;flex:1;border-radius:var(--r);overflow:hidden;border:1px solid var(--line2);box-shadow:inset 0 0 80px rgba(0,0,0,.45),0 20px 60px rgba(0,0,0,.35);background:#061426;min-height:0}
-  .tank::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),transparent);z-index:2;opacity:.8}
+  .tank{position:relative;flex:1;overflow:hidden;border:2px solid var(--text);box-shadow:inset 0 0 80px rgba(0,0,0,.45);background:#061426;min-height:0}
+  .tank::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--teal);z-index:2}
   .tankid{position:absolute;right:12px;bottom:10px;z-index:3;font:500 9.5px var(--font-mono);letter-spacing:.14em;color:rgba(255,255,255,.55);text-transform:uppercase}
   .tierkey{position:absolute;left:12px;bottom:10px;z-index:3;display:flex;gap:10px;font:500 9.5px var(--font-mono);color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.06em}
   .tierkey i{display:inline-block;width:7px;height:7px;margin-right:4px}
@@ -171,7 +169,7 @@
   .tip{position:absolute;z-index:4;pointer-events:none;background:var(--panel);color:var(--text);border:1px solid var(--line2);border-radius:var(--r-sm);padding:6px 10px;font-size:13px;display:none;backdrop-filter:blur(6px);white-space:nowrap}
   .tip b{font-family:var(--font-mono);font-weight:600}
   /* wallet card */
-  .card{position:absolute;z-index:5;width:300px;background:var(--panel);border:1px solid var(--line2);border-radius:var(--r);padding:16px;display:none;backdrop-filter:blur(10px);box-shadow:0 16px 48px rgba(0,0,0,.5)}
+  .card{position:absolute;z-index:5;width:300px;background:var(--panel);border:1px solid var(--text);padding:16px;display:none;backdrop-filter:blur(10px);box-shadow:0 12px 32px rgba(10,11,13,.18)}
   .card.show{display:block;animation:rise .25s ease-out}
   .card{cursor:grab;touch-action:none}
   .card.dragging{cursor:grabbing;animation:none;opacity:.96}
@@ -189,8 +187,7 @@
   .card .acts button{flex:1;padding:8px;border-radius:var(--r-sm);border:1px solid var(--line2);font-weight:700;font-size:13px}
   .card .acts button.p{background:var(--accent);color:#FFFFFF;border-color:transparent}
   .card .acts button:hover{filter:brightness(1.1)}
-  .card .lbls{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
-  .card .lbls span{font-size:11px}
+  .card .lbls{margin-bottom:8px}
   /* legend bar */
   .bar{display:flex;align-items:center;gap:18px;padding:10px 16px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel)}
   .bar .t{font-weight:800;text-transform:uppercase;font-size:11px;letter-spacing:.08em;color:var(--dim)} .bar .t small{display:block;color:var(--dim);font-weight:500;font-size:11px;text-transform:none;letter-spacing:0}
@@ -284,8 +281,6 @@
   .wp .txrow:hover td{background:var(--panel2);cursor:pointer}
   .wp .empty2{padding:18px 14px;color:var(--dim);font-size:12px}
   .wp canvas.hist{display:block;width:100%;height:190px}
-  .wp .lbls{display:flex;gap:4px;flex-wrap:wrap}
-  .wp .lbls span{font-weight:700}
   /* ---------- footer ---------- */
   .foot{grid-column:1/4;border-top:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 20px;font-size:12px;color:var(--dim)}
   .foot b{color:var(--muted);font-weight:600}
@@ -442,7 +437,7 @@ let TOKENS=DEMO_TOKENS;
 const TIER={small:{c:'#AFCBE8',n:'Small'},medium:{c:'#53C7F0',n:'Medium'},large:{c:'#F2C14E',n:'Large'},whale:{c:'#3B6BFF',n:'Whale'}};
 const LABELS=['','','','','Smart money','Early buyer','Airdrop farmer','Bridged from ETH','LP provider','DAO treasury','Long-term holder'];
 /* canvas/SVG colours follow the CSS tokens (charts must not hardcode light-theme greys) */
-const CH={text:'#EEF2FF',muted:'#A6B1CB',dim:'#6E7A99',grid:'rgba(255,255,255,.07)',axis:'rgba(255,255,255,.18)',accent:'#4D7CFF',accentFill:'rgba(77,124,255,.10)',coral:'#FF5C63',panel:'#111827',panel2:'#172033',line2:'#34446A'};
+const CH={text:'#0A0B0D',muted:'#5B616E',dim:'#8A91A0',grid:'rgba(10,11,13,.08)',axis:'rgba(10,11,13,.25)',accent:'#0000FF',accentFill:'rgba(0,0,255,.06)',coral:'#E5484D',panel:'#FFFFFF',panel2:'#EEF0F3',line2:'#B1B7C3'};
 const TYPE_COLORS={cex:'#E5484D',exchange:'#E5484D',dex:'#E5484D',bridge:'#E5484D',fund:'#A78BFA',vc:'#A78BFA',institution:'#A78BFA','market maker':'#F2C14E',mm:'#F2C14E',individual:'#0000FF',kol:'#0000FF',influencer:'#0000FF','smart contract':'#717886',protocol:'#34A0E8',dao:'#34A0E8'};
 function typeColor(t){return TYPE_COLORS[String(t||'').toLowerCase()]||CH.dim}
 function typePill(t){if(!t)return'';const c=typeColor(t);return `<span class="pill cls" style="color:${c};border-color:${c}55">${t}</span>`}
@@ -456,7 +451,7 @@ function lblChips(h,max=3){
   const ty=h.entityType||h.type||null,tc=typeColor(ty);
   const type=ty?`<span style="color:${tc};border-color:${tc}55">${esc(ty)}</span>`:'';
   const ls=wlabels(h).sort((x,y)=>labelRank(x)-labelRank(y)),vis=ls.slice(0,max),hid=ls.slice(max),id='lb'+(++LBL_UID);
-  const more=hid.length?`<span id="${id}" style="display:none;padding:0;border:0;background:none">${hid.map(labelChip).join('')}</span><button class="lblmore" title="Show all ${ls.length} labels" onclick="event.stopPropagation();document.getElementById('${id}').style.display='contents';this.remove()">+${hid.length}</button>`:'';
+  const more=hid.length?`<span id="${id}" style="display:none;padding:0;border:0;background:none;height:auto;gap:inherit">${hid.map(labelChip).join('')}</span><button class="lblmore" title="Show all ${ls.length} labels" onclick="event.stopPropagation();document.getElementById('${id}').style.display='contents';this.remove()">+${hid.length}</button>`:'';
   return type+vis.map(labelChip).join('')+more+(h.isContract?'<span>contract</span>':'')}
 /* label priority — identity first and loud, provenance last and quiet:
    1 identity: @handle, basename/ENS, a known entity name (incl. exchanges → their brand colour)
@@ -766,11 +761,15 @@ function drawOneFishInner(f,t){
 function fishLabel(f,t,force){
   const s=f.size*zoom;
   ctx.save();ctx.globalAlpha=force==='soft'?.7:force?1:(f.h.rank<=6?.92:Math.max(f.glow,f===selected?1:0));
-  ctx.font=`500 ${f.h.tier==='whale'?11:10}px JetBrains Mono, monospace`;const lbl=(f.h.infra?(KIND[f.h.kind]||KIND.contract).n+' · ':'')+((f.h.tags||[]).map(t=>(TAGS[t]||{ic:''}).ic).join('')+' ').trim()+((f.h.tags||[]).length?' ':'')+(f.h.entity||f.h.label||short(f.h.addr)).slice(0,24);const tw=ctx.measureText(lbl).width+14;
+  ctx.font=`500 ${f.h.tier==='whale'?11:10}px Roboto Mono, monospace`;
+  const tags=(f.h.tags||[]).slice(0,4);                       // tags = coloured pixel squares, never emoji
+  const lbl=(f.h.infra?(KIND[f.h.kind]||KIND.contract).n+' · ':'')+(f.h.entity||f.h.label||short(f.h.addr)).slice(0,24);
+  const sq=tags.length?tags.length*8+4:0,tw=ctx.measureText(lbl).width+14+sq;
   const sel=f===selected||f===hovered;
   const ly=Math.max(4,f.y-s*.62-22); // never clipped above the tank
-  ctx.fillStyle=sel?CH.accent:(f.h.infra?(KIND[f.h.kind]||KIND.contract).c:'rgba(10,15,30,.72)');roundRect(f.x-tw/2,ly,tw,18,0);ctx.fill();if(!sel){ctx.strokeStyle='rgba(255,255,255,.25)';ctx.stroke()}
-  ctx.fillStyle='#FFFFFF';ctx.textAlign='center';ctx.fillText(lbl,f.x,ly+13);ctx.restore();
+  ctx.fillStyle=sel?CH.accent:(f.h.infra?(KIND[f.h.kind]||KIND.contract).c:'rgba(10,11,13,.78)');roundRect(f.x-tw/2,ly,tw,18,0);ctx.fill();if(!sel){ctx.strokeStyle='rgba(255,255,255,.25)';ctx.stroke()}
+  let x0=f.x-tw/2+7;tags.forEach(tg=>{ctx.fillStyle=sel?'#FFFFFF':(TAGS[tg]||{c:'#fff'}).c;if(!sel&&tg==='CT')ctx.fillStyle='#FFFFFF';ctx.fillRect(x0,ly+6,6,6);x0+=8});
+  ctx.fillStyle='#FFFFFF';ctx.textAlign='left';ctx.fillText(lbl,f.x-tw/2+7+sq,ly+13);ctx.restore();
 }
 function drawFishes(t){
   const order=fish.filter(fishVisible).sort((a,b)=>a.size-b.size);
@@ -901,7 +900,7 @@ function renderChrome(){
   document.getElementById('stTop').textContent=(data.topShare*100).toFixed(1)+'%';
   document.getElementById('stWhales').textContent=L.filter(h=>h.tier==='whale').length;
   const th=t.th;document.getElementById('thSmall').textContent='< '+usd(th[0]);document.getElementById('thMed').textContent=usd(th[0])+' – '+usd(th[1]);document.getElementById('thLarge').textContent=usd(th[1])+' – '+usd(th[2]);document.getElementById('thWhale').textContent='> '+usd(th[2]);
-  document.getElementById('holdList').innerHTML=L.slice(0,7).map((h,i)=>`<button data-i="${i}"><span class="n">${h.rank}</span><span style="width:26px;height:19px;flex:none"><img src="assets/tank/${h.rank===1?'king':h.tier}.webp" style="width:26px;height:19px;object-fit:contain" onerror="this.style.display='none'"></span><span><div class="a">${short(h.addr)}</div>${(h.entity||h.label)?`<div style="font-size:9.5px;color:var(--teal);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc((h.entity||h.label).slice(0,26))}</div>`:''}<div class="bar2"><i style="width:${Math.min(100,h.pct/L[0].pct*100)}%"></i></div></span><span class="p mono">${h.pct.toFixed(2)}%<small>${usd(h.value)}</small></span></button>`).join('');
+  document.getElementById('holdList').innerHTML=L.slice(0,7).map((h,i)=>`<button data-i="${i}"><span class="n">${h.rank}</span><span style="width:26px;height:19px;flex:none"><img src="assets/tank/${h.rank===1?'king':h.tier}.webp" style="width:26px;height:19px;object-fit:contain" onerror="this.style.display='none'"></span><span><div class="a">${short(h.addr)}</div>${(h.entity||h.label)?`<div style="font-size:10px;font-weight:600;color:${cexOf(h.entity)?cexOf(h.entity)[1]:'var(--muted)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc((h.entity||h.label).slice(0,26))}</div>`:''}<div class="bar2"><i style="width:${Math.min(100,h.pct/L[0].pct*100)}%"></i></div></span><span class="p mono">${h.pct.toFixed(2)}%<small>${usd(h.value)}</small></span></button>`).join('');
   document.querySelectorAll('#holdList button').forEach(b=>b.onclick=()=>{setView('aquarium');select(fish[+b.dataset.i])});
   drawMinis();drawDonut();renderTable();freshTick();if(view==='flows')renderFlows();
   if(![...document.querySelectorAll('#tokpick button')].some(b=>b.dataset.sym===t.sym))buildPicker();
@@ -960,8 +959,18 @@ const CEXES=[['coinbase','#0052FF','CB'],['binance','#F0B90B','BN'],['okx','#000
 function cexOf(label){const l=String(label||'').toLowerCase();return CEXES.find(c=>l.includes(c[0]))||null}
 function cexIcon(label){const c=cexOf(label);return c?`<i class="cexi" style="background:${c[1]}" title="${c[0]}">${c[2]}</i>`:''}
 /* wallet tags (computed by the pipeline; evidence in h.tagInfo) */
-const TAGS={WHALE:{ic:'🐋',c:'#4D7CFF',t:'Whale — ≥$250K held across tracked top-100s'},OG:{ic:'🏛',c:'#B8860B',t:'OG — whale with 1y+ on-chain history'},CT:{ic:'𝕏',c:'#0A0B0D',t:'CT — known X account'},DIAMOND:{ic:'💎',c:'#0891B2',t:'Diamond hands — held 90d+ without sending any out'},SNIPE:{ic:'🎯',c:'#E5484D',t:'Sniper — bought within 30 min of launch'}};
-function tagPills(h,small){const tg=(h&&h.tags)||[];if(!tg.length)return'';return tg.map(t=>{const T=TAGS[t]||{ic:'🏷',c:'#5B616E',t:t};const info=(h.tagInfo&&h.tagInfo[t])||T.t;return `<span class="pill cls tagp" style="color:${T.c};border-color:${T.c}66;${small?'font-size:10.5px;padding:3px 6px':''}" title="${esc(info)}">${T.ic} ${esc(t)}</span>`}).join('')}
+/* 10×10 pixel glyphs (same family as the Doto wordmark) — currentColor, crisp edges, no emoji */
+const G10=(r)=>`<svg class="tg" viewBox="0 0 10 10" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true">${r}</svg>`;
+const GLYPH={
+  WHALE:G10('<rect x="0" y="4" width="7" height="4"/><rect x="7" y="2" width="2" height="2"/><rect x="7" y="6" width="2" height="2"/><rect x="2" y="2" width="1" height="2"/>'),
+  OG:G10('<rect x="0" y="7" width="10" height="3"/><rect x="0" y="3" width="2" height="4"/><rect x="4" y="1" width="2" height="6"/><rect x="8" y="3" width="2" height="4"/>'),
+  CT:G10('<rect x="0" y="0" width="2" height="2"/><rect x="2" y="2" width="2" height="2"/><rect x="4" y="4" width="2" height="2"/><rect x="6" y="6" width="2" height="2"/><rect x="8" y="8" width="2" height="2"/><rect x="8" y="0" width="2" height="2"/><rect x="6" y="2" width="2" height="2"/><rect x="2" y="6" width="2" height="2"/><rect x="0" y="8" width="2" height="2"/>'),
+  DIAMOND:G10('<rect x="2" y="1" width="6" height="2"/><rect x="0" y="3" width="10" height="2"/><rect x="1" y="5" width="8" height="1"/><rect x="2" y="6" width="6" height="1"/><rect x="3" y="7" width="4" height="1"/><rect x="4" y="8" width="2" height="1"/>'),
+  SNIPE:G10('<rect x="4" y="0" width="2" height="3"/><rect x="4" y="7" width="2" height="3"/><rect x="0" y="4" width="3" height="2"/><rect x="7" y="4" width="3" height="2"/><rect x="4" y="4" width="2" height="2"/>'),
+  TAG:G10('<rect x="0" y="0" width="6" height="6"/><rect x="6" y="6" width="4" height="4"/>')};
+const TAGS={WHALE:{c:'#0000FF',t:'Whale — ≥$250K held across tracked top-100s'},OG:{c:'#B8860B',t:'OG — whale with 1y+ on-chain history'},CT:{c:'#0A0B0D',t:'CT — known X account'},DIAMOND:{c:'#0891B2',t:'Diamond hands — held 90d+ without sending any out'},SNIPE:{c:'#E5484D',t:'Sniper — bought within 30 min of launch'}};
+const tagGlyph=(t)=>GLYPH[t]||GLYPH.TAG;
+function tagPills(h,small){const tg=(h&&h.tags)||[];if(!tg.length)return'';return tg.map(t=>{const T=TAGS[t]||{c:'#5B616E',t:t};const info=(h.tagInfo&&h.tagInfo[t])||T.t;return `<span class="pill tagp" style="color:${T.c};border-color:${T.c}99;${small?'height:20px;font-size:10px;padding:0 6px':''}" title="${esc(info)}">${tagGlyph(t)}${esc(t)}</span>`}).join('')}
 function tokTag(sym){const t=TOKENS.find(x=>x.sym===sym);const c=t?t.color:'#888';return `<span class="pill cls" style="color:${c};border-color:${c}66;text-transform:none">${t&&t.logo?`<img src="${t.logo}" style="width:10px;height:10px;vertical-align:-1px;margin-right:3px" onerror="this.style.display='none'">`:''}$${esc(sym)}</span>`}
 function kindTag(k){const K=KIND[k]||KIND.contract;return `<span class="pill cls" style="color:${K.c};border-color:${K.c}66">${K.n}</span>`}
 function rankChip(h,k='rankChange'){
@@ -1002,9 +1011,9 @@ function renderTable(){
     <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="infraTog" ${hideInfra?'checked':''}> Hide contracts &amp; exchange deposits</label>
     ${exl.length?`<label style="display:flex;gap:6px;align-items:center;cursor:pointer" title="Exchanges, liquidity pools, bridges and lockers are excluded from the ranking. Show them where they would sit."><input type="checkbox" id="exclTog" ${showExcluded?'checked':''}> Show excluded infrastructure <span style="color:var(--dim)">(${exl.length}: ${[...new Set(exl.map(x=>x.kind))].map(k=>(KIND[k]||KIND.contract).n).join(', ').toLowerCase()})</span></label>`:''}
     ${hidden?`<span style="color:var(--dim)">${hidden} infrastructure wallet${hidden>1?'s':''} hidden · ranks unchanged</span>`:''}${merged?`<span style="color:var(--dim)">merged ranking · (#n) = rank among real holders</span>`:''}
-    ${Object.keys(tagCounts).length?`<span style="display:flex;gap:5px;flex-wrap:wrap;align-items:center"><span style="color:var(--dim)">tags:</span>${Object.keys(TAGS).filter(t=>tagCounts[t]).map(t=>`<button onclick="tagFilter=tagFilter==='${t}'?'':'${t}';renderTable()" class="pill" style="background:${tagFilter===t?TAGS[t].c:TAGS[t].c+'14'};color:${tagFilter===t?'#fff':TAGS[t].c};border:1px solid ${TAGS[t].c}66;font-weight:800;cursor:pointer" title="${esc(TAGS[t].t)}">${TAGS[t].ic} ${t} · ${tagCounts[t]}</button>`).join('')}</span>`:''}
+    ${Object.keys(tagCounts).length?`<span style="display:flex;gap:5px;flex-wrap:wrap;align-items:center"><span style="color:var(--dim)">tags:</span>${Object.keys(TAGS).filter(t=>tagCounts[t]).map(t=>`<button onclick="tagFilter=tagFilter==='${t}'?'':'${t}';renderTable()" class="pill tagp" style="background:${tagFilter===t?TAGS[t].c:'transparent'};color:${tagFilter===t?'#fff':TAGS[t].c};border-color:${TAGS[t].c}${tagFilter===t?'':'99'};cursor:pointer" title="${esc(TAGS[t].t)}">${tagGlyph(t)}${t}<span style="opacity:.6;font-weight:500">${tagCounts[t]}</span></button>`).join('')}</span>`:''}
     <button id="csvBtn" style="margin-left:auto;border:1px solid var(--line);padding:3px 10px;color:var(--muted);cursor:pointer;font-size:10.5px;font-family:var(--font-mono)">EXPORT CSV</button></div>`:''}
-  <table><thead><tr>${sTh('rank','#')}<th>Wallet</th><th>Tier</th><th>Labels</th>${sTh('chg',refH,1)}${has7?sTh('chg7',ref7,1):''}${sTh('amount','Amount',1)}${sTh('pct','% supply',1)}${sTh('value','Value',1)}<th class="r">Type</th></tr></thead><tbody>${rows.map(h=>h.infra?`<tr data-a="${h.addr}" style="background:var(--panel2);opacity:.85"><td class="mono" style="color:var(--dim);white-space:nowrap">${h._m||h.rank}</td><td class="mono">${cpa(h.addr)} <span style="color:var(--muted)">${esc(h.label||'')}</span></td><td>${kindTag(h.kind)}</td><td><span style="color:var(--dim);font-size:11px">excluded from ranking</span></td><td class="r"></td>${has7?'<td></td>':''}<td class="r mono">${num(h.amount)}</td><td class="r mono">${(h.pct||0).toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:${(KIND[h.kind]||KIND.contract).c}">${(KIND[h.kind]||KIND.contract).n.toLowerCase()}</td></tr>`:`<tr data-i="${h.rank-1}"><td class="mono" style="color:var(--dim);white-space:nowrap">${merged?`${h._m} <small title="rank among real holders">(#${h.rank})</small>`:h.rank} ${rankChip(h)}</td><td class="mono">${cpa(h.addr)}${(h.entity||h.basename)?` <span style="color:${cexOf(h.entity)?cexOf(h.entity)[1]:'var(--teal)'};font-weight:700">${cexOf(h.entity)?cexIcon(h.entity):''}${esc(h.entity||h.basename)}</span>`:''}</td><td><span class="pill" style="background:${TIER[h.tier].c}22;color:${TIER[h.tier].c}">${TIER[h.tier].n}</span></td><td><div class="lbls">${tagPills(h,true)}${lblChips(h,2)||(h.tags&&h.tags.length?'':'<span style="border:0;background:none;padding:0;color:var(--dim)">—</span>')}</div></td><td class="r">${usdChip(h)}</td>${has7?`<td class="r" style="white-space:nowrap">${rankChip(h,'rankChange7')} ${usdChip(h,'usdChange7')}</td>`:''}<td class="r mono">${num(h.amount)}</td><td class="r mono">${h.pct.toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:${typeOf(h)==='wallet'?'var(--muted)':typeColor(h.entityType)}">${typeOf(h)}</td></tr>`).join('')}</tbody></table>`;
+  <table><thead><tr>${sTh('rank','#')}<th>Wallet</th><th>Tier</th><th>Labels</th>${sTh('chg',refH,1)}${has7?sTh('chg7',ref7,1):''}${sTh('amount','Amount',1)}${sTh('pct','% supply',1)}${sTh('value','Value',1)}<th class="r">Type</th></tr></thead><tbody>${rows.map(h=>h.infra?`<tr data-a="${h.addr}" style="background:var(--panel2);opacity:.85"><td class="mono" style="color:var(--dim);white-space:nowrap">${h._m||h.rank}</td><td class="mono">${cpa(h.addr)} <span style="color:var(--muted)">${esc(h.label||'')}</span></td><td>${kindTag(h.kind)}</td><td><span style="color:var(--dim);font-size:11px">excluded from ranking</span></td><td class="r"></td>${has7?'<td></td>':''}<td class="r mono">${num(h.amount)}</td><td class="r mono">${(h.pct||0).toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:${(KIND[h.kind]||KIND.contract).c}">${(KIND[h.kind]||KIND.contract).n.toLowerCase()}</td></tr>`:`<tr data-i="${h.rank-1}"><td class="mono" style="color:var(--dim);white-space:nowrap">${merged?`${h._m} <small title="rank among real holders">(#${h.rank})</small>`:h.rank} ${rankChip(h)}</td><td class="mono">${cpa(h.addr)}${(h.entity||h.basename)?` <span style="color:${cexOf(h.entity)?cexOf(h.entity)[1]:'var(--teal)'};font-weight:700">${cexOf(h.entity)?cexIcon(h.entity):''}${esc(h.entity||h.basename)}</span>`:''}</td><td><span class="tierc"><i style="background:${TIER[h.tier].c}"></i>${TIER[h.tier].n}</span></td><td><div class="lbls">${tagPills(h,true)}${lblChips(h,2)||(h.tags&&h.tags.length?'':'<span style="border:0;background:none;padding:0;color:var(--dim)">—</span>')}</div></td><td class="r">${usdChip(h)}</td>${has7?`<td class="r" style="white-space:nowrap">${rankChip(h,'rankChange7')} ${usdChip(h,'usdChange7')}</td>`:''}<td class="r mono">${num(h.amount)}</td><td class="r mono">${h.pct.toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:${typeOf(h)==='wallet'?'var(--muted)':typeColor(h.entityType)}">${typeOf(h)}</td></tr>`).join('')}</tbody></table>`;
   document.querySelectorAll('#holdersView tr[data-i]').forEach(r=>r.onclick=()=>{setView('aquarium');select(fish[+r.dataset.i])});
   document.querySelectorAll('#holdersView th[data-sort]').forEach(th=>th.onclick=()=>{const k=th.dataset.sort;if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=1}renderTable()});
   const tog=document.getElementById('infraTog');if(tog)tog.onchange=()=>{hideInfra=tog.checked;renderTable()};
@@ -1432,12 +1441,17 @@ function flowCalc(snaps,F,days){
     moversUp:movers.filter(m=>m.usd>0).slice(0,6),moversDown:movers.filter(m=>m.usd<0).slice(-6).reverse(),entries:entries.slice(0,8),exits:exits.slice(0,8),nEntries:entries.length,nExits:exits.length};
 }
 /* where coins went / came from — same rules as the pipeline (labels: exchanges → CEX, pools/routers → DEX, bridges, else wallet) */
-const DEST={dex:{n:'DEX',ic:'🔁',c:'#8E4EC6',t:'traded on a DEX (pool / router)'},cex:{n:'CEX',ic:'🏦',c:'#E5484D',t:'exchange deposit / withdrawal'},bridge:{n:'BRIDGE',ic:'🌉',c:'#F76B15',t:'bridged to / from another chain'},wallet:{n:'WALLET',ic:'↔',c:'#5B616E',t:'moved to / from another wallet'}};
+const DEST={dex:{n:'DEX',c:'#8E4EC6',t:'traded on a DEX (pool / router)'},cex:{n:'CEX',c:'#E5484D',t:'exchange deposit / withdrawal'},bridge:{n:'BRIDGE',c:'#F76B15',t:'bridged to / from another chain'},wallet:{n:'WALLET',c:'#5B616E',t:'moved to / from another wallet'}};
+GLYPH.dex=G10('<rect x="0" y="2" width="7" height="2"/><rect x="6" y="0" width="2" height="6"/><rect x="3" y="6" width="7" height="2"/><rect x="2" y="4" width="2" height="6"/>');
+GLYPH.cex=G10('<rect x="0" y="0" width="10" height="2"/><rect x="1" y="3" width="2" height="5"/><rect x="4" y="3" width="2" height="5"/><rect x="7" y="3" width="2" height="5"/><rect x="0" y="8" width="10" height="2"/>');
+GLYPH.bridge=G10('<rect x="0" y="4" width="2" height="6"/><rect x="8" y="4" width="2" height="6"/><rect x="2" y="2" width="6" height="2"/><rect x="1" y="3" width="2" height="1"/><rect x="7" y="3" width="2" height="1"/><rect x="0" y="8" width="10" height="2"/>');
+GLYPH.wallet=G10('<rect x="2" y="4" width="6" height="2"/><rect x="1" y="3" width="1" height="4"/><rect x="0" y="4" width="1" height="2"/><rect x="8" y="3" width="1" height="4"/><rect x="9" y="4" width="1" height="2"/>');
+Object.keys(DEST).forEach(k=>DEST[k].ic=GLYPH[k]);
 const DEX_RX=/uniswap|aerodrome|pancake|sushi|baseswap|alien.?base|velodrome|curve|balancer|\bpool\b|liquidity|\blp\b|router|swap|1inch|0x protocol|paraswap|kyber|odos|matcha|dex|universal router|permit2|clanker|virtuals|bonding|zora/i;
 const CEX_RX_F=/coinbase|binance|kraken|okx|bybit|upbit|bithumb|\bgate\b|kucoin|mexc|bitget|htx|crypto\.com|bitpanda|bitvavo|bitstamp|gemini|robinhood|exchange|deposit/i;
 const BRIDGE_RX_F=/bridge|stargate|across|hop protocol|wormhole|layerzero|relay|orbiter|debridge|synapse|portal/i;
 function flowDest(tr){const l=String(tr.cpLabel||''),cp=String(tr.cp||'').toLowerCase();if(CEX_RX_F.test(l))return'cex';if((cur.infra||[]).some(x=>x.kind==='pool'&&x.addr.toLowerCase()===cp))return'dex';if(DEX_RX.test(l))return'dex';if(BRIDGE_RX_F.test(l))return'bridge';return'wallet'}
-function viaBadges(via){if(!via)return'';const tot=Object.values(via).reduce((a,b)=>a+Math.abs(b),0);if(!tot)return'';return Object.entries(via).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).slice(0,2).map(([k,v])=>{const D=DEST[k]||DEST.wallet;return `<span class="pill" style="background:${D.c}14;color:${D.c};border:1px solid ${D.c}55;font-size:9.5px;padding:1px 5px" title="${D.t} · ${usd(Math.abs(v))}">${D.ic} ${D.n}${Object.keys(via).length>1?' '+Math.round(100*Math.abs(v)/tot)+'%':''}</span>`}).join('')}
+function viaBadges(via){if(!via)return'';const tot=Object.values(via).reduce((a,b)=>a+Math.abs(b),0);if(!tot)return'';return Object.entries(via).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])).slice(0,2).map(([k,v])=>{const D=DEST[k]||DEST.wallet;return `<span class="pill tagp" style="color:${D.c};border-color:${D.c}99;height:18px;font-size:9.5px;padding:0 5px;gap:4px" title="${D.t} · ${usd(Math.abs(v))}">${D.ic}${D.n}${Object.keys(via).length>1?' '+Math.round(100*Math.abs(v)/tot)+'%':''}</span>`}).join('')}
 const VIA_CACHE={};
 async function viaFor(addr,sym,fromTs,toTs,side){ // classify this wallet's cached transfers of <sym> inside a window → {dex,cex,bridge,wallet} usd
   const a=addr.toLowerCase();let pw=VIA_CACHE[a];
@@ -1449,9 +1463,10 @@ async function annotateVia(container,sym,fromTs,toTs){ // rows carry data-via="a
   const els=[...container.querySelectorAll('[data-via]')].slice(0,24);
   await Promise.all(els.map(async el=>{const [a,side]=el.dataset.via.split('|');const via=await viaFor(a,sym,fromTs,toTs,side||null);const b=viaBadges(via);el.innerHTML=b||'<span style="color:var(--dim);font-size:9.5px" title="no enriched transfer history for this wallet yet">· no tx detail</span>'}))}
 /* ---- school diagram: members as nodes, evidence as edges (funded → solid teal, co-funded ↔ dashed purple, transfer → coral, width by $) ---- */
-const EDGE_STYLE={funded:{c:'#4D7CFF',dash:'',w:1.6,n:'first-funded'},'co-funded':{c:'#8E4EC6',dash:'4 4',w:1.2,n:'same funder'},transfer:{c:'#E5484D',dash:'',w:2,n:'direct transfer'}};
+const EDGE_STYLE={funded:{c:'#0000FF',dash:'',w:1.6,n:'first-funded'},'co-funded':{c:'#8E4EC6',dash:'4 4',w:1.2,n:'same funder'},transfer:{c:'#E5484D',dash:'',w:2,n:'direct transfer'}};
 function schoolNames(sc){const m={};(sc.members||[]).forEach(x=>{if(x.name)m[x.addr]=x.name});if(data&&data.list)data.list.forEach(h=>{const a=h.addr.toLowerCase();if(!m[a]&&(h.entity||h.basename))m[a]=h.entity||h.basename});return m}
-function schoolTags(a){const h=data&&data.list.find(x=>x.addr.toLowerCase()===a);return h&&h.tags?h.tags.map(t=>(TAGS[t]||{ic:''}).ic).join(''):''}
+/* tag squares next to a school node (SVG) — same pixel language as the chips */
+function schoolTags(a,x,y){const h=data&&data.list.find(x=>x.addr.toLowerCase()===a);return h&&h.tags?h.tags.slice(0,4).map((t,i)=>`<rect x="${(x+i*7).toFixed(1)}" y="${y.toFixed(1)}" width="5" height="5" fill="${(TAGS[t]||{c:'#888'}).c}"><title>${t}</title></rect>`).join(''):''}
 function renderSchoolSvg(sc,focus,opts={}){
   const W=opts.w||560,Hh=opts.h||360,cx=W/2,cy=Hh/2;
   const mem=(sc.members||[]).map(m=>m.addr.toLowerCase());if(!mem.length)return'';
@@ -1468,9 +1483,9 @@ function renderSchoolSvg(sc,focus,opts={}){
   const edges=(sc.evidence||[]).filter(e=>pos[e.a]&&pos[e.b]).map(e=>{const st=EDGE_STYLE[e.type]||EDGE_STYLE.transfer;const u=amt(e);const w=e.type==='transfer'?Math.min(6,st.w+Math.log10(Math.max(1,u))/1.5):st.w;
     const hi=focus&&(e.a===focus||e.b===focus);
     return `<line x1="${pos[e.a].x.toFixed(1)}" y1="${pos[e.a].y.toFixed(1)}" x2="${pos[e.b].x.toFixed(1)}" y2="${pos[e.b].y.toFixed(1)}" stroke="${st.c}" stroke-width="${w}" stroke-dasharray="${st.dash}" opacity="${focus?(hi?.95:.25):.75}"><title>${esc(st.n)}: ${esc(e.detail||'')}</title></line>`}).join('');
-  const node=a=>{const p=pos[a],isM=mem.includes(a),isF=a===focus;const nm=names[a]||short(a);const r=isF?15:isM?11:7;const tg=isM?schoolTags(a):'';
+  const node=a=>{const p=pos[a],isM=mem.includes(a),isF=a===focus;const nm=names[a]||short(a);const r=isF?15:isM?11:7;const tg=isM?schoolTags(a,p.x+r+3,p.y-r):'';
     return `<g class="snode" style="cursor:pointer" onclick="openProfileByAddr('${a}')"><circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${r}" fill="${isM?(isF?CH.accent:CH.panel2):CH.panel}" stroke="${isM?CH.accent:CH.dim}" stroke-width="${isF?3:1.5}"${isM?'':' stroke-dasharray="3 2"'}><title>${esc(nm)}${isM?'':' (outside the top-100s — shared funder / counterparty)'}</title></circle>
-      <text x="${p.x.toFixed(1)}" y="${(p.y+r+13).toFixed(1)}" text-anchor="middle" font-size="${isM?11:9.5}" font-weight="${isF?800:isM?700:500}" fill="${isM?CH.text:CH.dim}" font-family="Roboto Mono, monospace">${tg?tg+' ':''}${esc(nm.slice(0,18))}</text></g>`};
+      <text x="${p.x.toFixed(1)}" y="${(p.y+r+13).toFixed(1)}" text-anchor="middle" font-size="${isM?11:9.5}" font-weight="${isF?800:isM?700:500}" fill="${isM?CH.text:CH.dim}" font-family="Roboto Mono, monospace">${esc(nm.slice(0,18))}</text>${tg}</g>`};
   return `<svg viewBox="0 0 ${W} ${Hh}" style="width:100%;height:auto;max-height:${Hh}px;display:block;background:var(--panel)" xmlns="http://www.w3.org/2000/svg">${edges}${nodes.map(node).join('')}</svg>
     <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:10.5px;color:var(--muted);padding:6px 2px 0">${Object.entries(EDGE_STYLE).map(([k,v])=>`<span><i style="display:inline-block;width:16px;border-top:2px ${v.dash?'dashed':'solid'} ${v.c};vertical-align:middle;margin-right:5px"></i>${v.n}</span>`).join('')}<span><i style="display:inline-block;width:9px;height:9px;border:1.5px dashed #9AA0A6;border-radius:50%;vertical-align:middle;margin-right:5px"></i>outside wallet</span><span style="margin-left:auto">${sc.members.length} wallets · confidence ${esc(String(sc.confidence||'').toUpperCase())} · click a node to open it</span></div>`;
 }
@@ -1521,7 +1536,7 @@ async function renderFlows(){
       ${cex.n?tile('CEX flow · 7d observed',`<span class="up">${usd(cex.in)} in</span> · <span class="down">${usd(cex.out)} out</span>`,`${cex.n} labeled exchange transfer${cex.n===1?'':'s'} among top wallets`):tile('CEX flow · 7d observed','—','no labeled exchange transfers observed')}
     </div>
     ${(()=>{const D=F.dest7;if(!D||!D.n)return'';const bar=(o,label)=>{const tot=Object.values(o).reduce((a,b)=>a+b,0);if(!tot)return`<div style="font-size:11.5px;color:var(--dim)">${label}: none observed</div>`;const segs=Object.entries(o).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
-        return `<div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:4px"><b>${label}</b><span class="mono" style="color:var(--muted)">${usd(tot)}</span></div><div style="display:flex;height:14px;border:1px solid var(--line);background:var(--panel2)">${segs.map(([k,v])=>`<span title="${DEST[k].t} · ${usd(v)} (${Math.round(100*v/tot)}%)" style="width:${100*v/tot}%;background:${DEST[k].c}"></span>`).join('')}</div><div style="display:flex;gap:10px;flex-wrap:wrap;font-size:11px;margin-top:5px">${segs.map(([k,v])=>`<span><i style="display:inline-block;width:9px;height:9px;background:${DEST[k].c};vertical-align:middle;margin-right:4px"></i>${DEST[k].ic} ${label.startsWith('Out')?({dex:'sold on a DEX',cex:'sent to exchanges',bridge:'bridged out',wallet:'moved to other wallets'})[k]:({dex:'bought on a DEX',cex:'withdrawn from exchanges',bridge:'bridged in',wallet:'received from wallets'})[k]} <b class="mono">${usd(v)}</b> <span style="color:var(--dim)">${Math.round(100*v/tot)}%</span></span>`).join('')}</div>`};
+        return `<div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:4px"><b>${label}</b><span class="mono" style="color:var(--muted)">${usd(tot)}</span></div><div style="display:flex;height:14px;border:1px solid var(--line);background:var(--panel2)">${segs.map(([k,v])=>`<span title="${DEST[k].t} · ${usd(v)} (${Math.round(100*v/tot)}%)" style="width:${100*v/tot}%;background:${DEST[k].c}"></span>`).join('')}</div><div style="display:flex;gap:10px;flex-wrap:wrap;font-size:11px;margin-top:5px">${segs.map(([k,v])=>`<span><i style="display:inline-block;width:9px;height:9px;background:${DEST[k].c};vertical-align:middle;margin-right:4px"></i>${label.startsWith('Out')?({dex:'sold on a DEX',cex:'sent to exchanges',bridge:'bridged out',wallet:'moved to other wallets'})[k]:({dex:'bought on a DEX',cex:'withdrawn from exchanges',bridge:'bridged in',wallet:'received from wallets'})[k]} <b class="mono">${usd(v)}</b> <span style="color:var(--dim)">${Math.round(100*v/tot)}%</span></span>`).join('')}</div>`};
         return box(`Where the coins went · 7d observed`,`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">${bar(D.out,'Outflows')}${bar(D.in,'Inflows')}</div><div style="color:var(--dim);font-size:11px;margin-top:8px">Based on ${D.n} transfer${D.n===1?'':'s'} across ${D.wallets} top wallets with enriched history — the biggest movers first; coverage grows each refresh.</div>`)})()}
     ${box(`How much $${esc(sym)} the top 100 hold, day by day`,`<div style="display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-bottom:6px"><span><i style="display:inline-block;width:14px;height:3px;background:var(--accent);vertical-align:middle;margin-right:5px"></i>Combined balance (${esc(sym)})</span><span><i style="display:inline-block;width:14px;height:0;border-top:2px dashed var(--dim);vertical-align:middle;margin-right:5px"></i>Price (USD)</span><span style="color:var(--dim)">↑ up = accumulating · ↓ down = distributing · hover a point for that moment · <b>click a point</b> to see who moved</span></div><canvas id="fchart" style="width:100%;height:220px;display:block;cursor:crosshair"></canvas><div id="fday" style="margin-top:8px"></div>`)}
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px">
@@ -1632,7 +1647,7 @@ async function openProfile(h){
   const ark=`https://intel.arkm.com/explorer/address/${h.addr}`;
   el.innerHTML=`<div class="whead"><div class="fishic"><img src="assets/tank/${h.rank===1?'king':h.tier}.webp" style="width:40px;height:32px;object-fit:contain" onerror="this.style.display='none'"></div>
     <div><h3 id="wpname">${h.entity||short(h.addr)}</h3><div class="addr">${cpa(h.addr,h.addr)}</div>
-      <div class="lbls" id="wplbls" style="margin-top:6px">${[tagPills(h),h.rank?`<span style="color:${t.c}">${t.n} · rank #${h.rank} in $${h.tokSym||cur.sym}</span>`:`<span>free swimmer · not in a tracked top 100</span>`,lblChips(h,5)].join('')}</div></div>
+      <div class="lbls" id="wplbls" style="margin-top:6px">${[tagPills(h),h.rank?`<span><i class="tg" style="background:${t.c};width:7px;height:7px"></i>rank #${h.rank} in $${h.tokSym||cur.sym} · ${t.n.toLowerCase()}</span>`:`<span class="ctx">free swimmer · not in a tracked top 100</span>`,lblChips(h,5)].join('')}</div></div>
     <div class="val"><small id="wpvlabel">Tracked positions · Base</small><b class="mono" id="wpval">—</b></div>
     <div class="wbtns"><button onclick="setView('aquarium')">← Aquarium</button><button id="wpcopy">Copy address</button><button id="wpshare">Share wallet</button><button id="wpwatch"></button><button onclick="acctWatchPrefill('${h.addr.toLowerCase()}')" title="get an alert on every tx of this wallet">🔔 Alert me</button><span id="wpsocials" style="display:contents"></span><a href="${ark}" target="_blank" rel="noopener">Arkham ↗</a><a href="${scan}" target="_blank" rel="noopener">Basescan ↗</a></div></div>
   <div class="wgrid" id="wpgrid"><div class="empty2">Loading. Trust the fish.</div></div>`;
@@ -1655,8 +1670,8 @@ async function openProfile(h){
   // profile JSON may carry more labels than the holders list — re-render the chip row with the union
   if(p&&p.entity&&((p.entity.labels||[]).length||p.entity.type||p.entity.label)){
     const m2={...h,entity:h.entity||p.entity.name,entityType:h.entityType||p.entity.type,label:h.label||p.entity.label,labels:[...(h.labels||[]),...(p.entity.labels||[])]};
-    const rk=h.rank?`<span style="color:${t.c}">${t.n} · rank #${h.rank} in $${h.tokSym||cur.sym}</span>`:`<span>free swimmer · not in a tracked top 100</span>`;
-    const ld=document.getElementById('wplbls');if(ld)ld.innerHTML=rk+lblChips(m2,5);
+    const rk=h.rank?`<span><i class="tg" style="background:${t.c};width:7px;height:7px"></i>rank #${h.rank} in $${h.tokSym||cur.sym} · ${t.n.toLowerCase()}</span>`:`<span class="ctx">free swimmer · not in a tracked top 100</span>`;
+    const ld=document.getElementById('wplbls');if(ld)ld.innerHTML=tagPills(h)+rk+lblChips(m2,5);
   }
   if(p&&p.entity){const so=document.getElementById('wpsocials');const parts=[];
     if(p.entity.twitter){const tw=String(p.entity.twitter).replace(/^@/,'').replace(/^https?:\/\/(x|twitter)\.com\//,'').replace(/\/$/,'');parts.push(`<a href="https://x.com/${tw}" target="_blank" rel="noopener" title="@${tw} on X" style="display:inline-flex;align-items:center;gap:6px">${ICON_X} @${tw}</a>`)}
