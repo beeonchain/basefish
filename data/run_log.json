@@ -1,221 +1,484 @@
 {
- "started": "2026-09-09T04:45:37.144Z",
- "tier": "hot",
+ "started": "2026-09-09T09:15:24.062Z",
+ "tier": "all",
  "tokens": {
   "BRETT": {
    "ok": true,
    "src": "bq-holders-2026-09-08",
    "top": 100,
    "infra": 44,
-   "price": 0.00536472
+   "price": 0.00552636
   },
   "TOSHI": {
    "ok": true,
    "src": "bq-holders-2026-09-08",
    "top": 100,
    "infra": 73,
-   "price": 0.00012165
+   "price": 0.00012294
   },
   "BASECAT": {
    "ok": true,
    "src": "bq-holders-2026-09-08",
    "top": 100,
    "infra": 9,
-   "price": 0.04201742
+   "price": 0.03752628
   },
   "AERO": {
    "ok": true,
    "src": "bq-holders-2026-09-08",
    "top": 100,
    "infra": 79,
-   "price": 0.619042
+   "price": 0.606019
   },
   "VIRTUAL": {
    "ok": true,
    "src": "bq-holders-2026-09-08",
    "top": 100,
    "infra": 83,
-   "price": 0.706671
+   "price": 0.722132
   },
   "VVV": {
    "ok": true,
    "src": "bq-holders-2026-09-08",
    "top": 100,
    "infra": 70,
-   "price": 25.73
+   "price": 26.77
+  },
+  "GHST": {
+   "ok": false,
+   "err": "401 https://deep-index.moralis.io/api/v2.2/erc20/0xac780b6e4ee50585df265c7766cc2bed51e43fb8/price?chain=base&include=percent_change :: {\"message\":\"Your Moralis "
   },
   "TIBBIR": {
    "ok": true,
    "src": "bq-holders-2026-09-08",
    "top": 100,
    "infra": 7,
-   "price": 0.203848
+   "price": 0.210513
   },
   "AWE": {
    "ok": true,
    "src": "bq-holders-2026-09-08",
    "top": 100,
    "infra": 45,
-   "price": 0.060524
+   "price": 0.060573
   },
   "CHIP": {
    "ok": true,
    "src": "bq-holders-2026-09-08",
    "top": 100,
    "infra": 22,
-   "price": 0.053654
-  },
-  "MAG7SSI": {
-   "ok": true,
-   "src": "bq-holders-2026-09-08",
-   "top": 100,
-   "infra": 14,
-   "price": 0.529874
-  },
-  "O": {
-   "ok": true,
-   "src": "bq-holders-2026-09-08",
-   "top": 100,
-   "infra": 22,
-   "price": 0.534913
+   "price": 0.058165
   },
   "DIEM": {
    "ok": true,
    "src": "bq-holders-2026-09-08",
    "top": 100,
    "infra": 27,
-   "price": 2290.23
+   "price": 2364.58
+  },
+  "MAG7SSI": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 14,
+   "price": 0.532221
+  },
+  "O": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 22,
+   "price": 0.533693
   },
   "NOCK": {
    "ok": true,
    "src": "bq-holders-2026-09-08",
    "top": 100,
    "infra": 9,
-   "price": 0.03857361
+   "price": 0.03672816
   },
   "OMI": {
    "ok": true,
    "src": "bq-holders-2026-09-08",
    "top": 100,
    "infra": 17,
-   "price": 0.00021907
+   "price": 0.00022405
   },
   "BIO": {
    "ok": true,
    "src": "bq-holders-2026-09-08",
    "top": 100,
    "infra": 35,
-   "price": 0.0273089
-  },
-  "BIM": {
-   "ok": true,
-   "src": "bq-holders-2026-09-08",
-   "top": 100,
-   "infra": 6,
-   "price": 1.63
+   "price": 0.0273954
   },
   "KTA": {
    "ok": true,
    "src": "bq-holders-2026-09-08",
    "top": 100,
    "infra": 29,
-   "price": 0.082295
+   "price": 0.087903
+  },
+  "BIM": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 6,
+   "price": 1.64
   },
   "SQD": {
    "ok": true,
    "src": "bq-holders-2026-09-08",
    "top": 100,
+   "infra": 38,
+   "price": 0.03437526
+  },
+  "DEGEN": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 73,
+   "price": 0.00108497
+  },
+  "AVNT": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 85,
+   "price": 0.109473
+  },
+  "ZORA": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 66,
+   "price": 0.00854009
+  },
+  "MOCA": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 18,
+   "price": 0.00906225
+  },
+  "OETHB": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 7,
+   "price": 2509.44
+  },
+  "VELVET": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
    "infra": 33,
-   "price": 0.03408642
+   "price": 0.07716
+  },
+  "BASEDHYPE": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 17,
+   "price": 0.00327695
+  },
+  "FLOCK": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 60,
+   "price": 0.062088
+  },
+  "LSK": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 32,
+   "price": 0.1092
+  },
+  "ROBO": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 11,
+   "price": 0.01069201
+  },
+  "AIXBT": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 68,
+   "price": 0.02290995
   },
   "BNKR": {
    "ok": true,
    "src": "bq-holders-2026-09-08",
    "top": 100,
    "infra": 26,
-   "price": 0.00023331
+   "price": 0.00022761
+  },
+  "EAT": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 106,
+   "price": 0.00022668
+  },
+  "CP": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 35,
+   "price": 0.01627903
+  },
+  "OPAL": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 1,
+   "price": 0.11027
+  },
+  "OPG": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 37,
+   "price": 0.101499
+  },
+  "AUKI": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 5,
+   "price": 0.00439273
+  },
+  "B3": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 40,
+   "price": 0.00046061
   },
   "DRB": {
    "ok": true,
    "src": "bq-holders-2026-09-08",
    "top": 100,
    "infra": 11,
-   "price": 0.00022505
+   "price": 0.00019968
+  },
+  "TIG": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 7,
+   "price": 0.649841
+  },
+  "FAI": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 19,
+   "price": 0.00240451
+  },
+  "MEY": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 10,
+   "price": 0.059899
+  },
+  "HALO": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 3,
+   "price": 0.064973
+  },
+  "FRENPET": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 1,
+   "price": 2.72
   },
   "POD": {
    "ok": true,
    "src": "bq-holders-2026-09-08",
    "top": 100,
    "infra": 13,
-   "price": 0.309797
+   "price": 0.406656
+  },
+  "EDGE": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 27,
+   "price": 0.069998
+  },
+  "ROLL": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 11,
+   "price": 0.117753
+  },
+  "HUNT": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 2,
+   "price": 0.092727
+  },
+  "TREE": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 2,
+   "price": 0.182385
+  },
+  "MAGIC": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 2,
+   "price": 0.04652941
+  },
+  "UMIA": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 1,
+   "price": 0.622778
+  },
+  "CTR": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 25,
+   "price": 0.0100034
+  },
+  "SERV": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 3,
+   "price": 0.01983364
+  },
+  "RECALL": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 34,
+   "price": 0.04087384
+  },
+  "BALD": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 0,
+   "price": 0.01409474
+  },
+  "REI": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 2,
+   "price": 0.01397803
+  },
+  "CLANKER": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 35,
+   "price": 13.84
+  },
+  "BLUECHIP": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 3,
+   "price": 0.01337904
+  },
+  "DEFISSI": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 4,
+   "price": 0.525353
+  },
+  "PLAY": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 14,
+   "price": 0.0346836
+  },
+  "ALIGN": {
+   "ok": true,
+   "src": "bq-holders-2026-09-08",
+   "top": 100,
+   "infra": 9,
+   "price": 0.00795338
   },
   "STONKEX": {
    "ok": true,
    "src": "bq-holders-2026-09-08",
    "top": 100,
    "infra": 7,
-   "price": 0.01000915
+   "price": 0.01224187
   },
   "DOT": {
    "ok": true,
    "src": "bq-holders-2026-09-08",
    "top": 100,
    "infra": 9,
-   "price": 0.00693589
-  },
-  "STFY": {
-   "ok": false,
-   "err": "401 https://deep-index.moralis.io/api/v2.2/erc20/0xc6405d7a226e1c18e559be2f335f74c01ad07bf5/price?chain=base&include=percent_change :: {\"message\":\"Your Moralis "
+   "price": 0.00750571
   },
   "SURPLUS": {
    "ok": true,
    "src": "bq-holders-2026-09-08",
    "top": 100,
    "infra": 4,
-   "price": 0.00004217
+   "price": 0.00006725
   },
-  "RATSPEAK": {
+  "BSTONK": {
    "ok": true,
    "src": "bq-holders-2026-09-08",
    "top": 100,
-   "infra": 8,
-   "price": 0.00001547
+   "infra": 6,
+   "price": 0.00549372
   },
-  "GITLAWB": {
-   "ok": true,
-   "src": "bq-holders-2026-09-08",
-   "top": 100,
-   "infra": 25,
-   "price": 0.0000163
+  "STFY": {
+   "ok": false,
+   "err": "401 https://deep-index.moralis.io/api/v2.2/erc20/0xc6405d7a226e1c18e559be2f335f74c01ad07bf5/price?chain=base&include=percent_change :: {\"message\":\"Your Moralis "
   },
   "FLOWER": {
    "ok": true,
    "src": "bq-holders-2026-09-08",
    "top": 100,
-   "infra": 4,
-   "price": 0.249248
+   "infra": 5,
+   "price": 0.2459
   }
  },
  "errors": [],
  "tags": {
-  "WHALE": 854,
-  "OG": 307,
-  "CT": 32,
+  "WHALE": 842,
+  "OG": 321,
+  "CT": 34,
   "SNIPE": 21,
-  "DIAMOND": 74
+  "DIAMOND": 101
  },
- "finished": "2026-09-09T04:55:53.364Z",
+ "finished": "2026-09-09T09:37:21.884Z",
  "budgets": {
-  "arkham": 164,
+  "arkham": 0,
   "profile": 2,
-  "frontrun": -17,
-  "rpc": 385,
-  "funding": 52
+  "frontrun": -19,
+  "rpc": 0,
+  "funding": 269
  },
  "webhook": {
-  "have": 6203,
-  "want": 6202,
-  "added": 18,
-  "removed": 19
+  "have": 6202,
+  "want": 6000,
+  "added": 475,
+  "removed": 677
  }
 }
