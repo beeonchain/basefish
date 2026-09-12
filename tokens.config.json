@@ -11,7 +11,7 @@
       "exclude": [
         "0x7061f0B28F5a95AaE717905Bb59AA4e08C165268"
       ],
-      "cap": 49228361,
+      "cap": 49129364,
       "tier": "hot",
       "rank": 14
     },
@@ -22,7 +22,7 @@
       "contract": "0xac1bd2486aaf3b5c0fc3fd868558b082a531b2b4",
       "coingecko": "toshi",
       "exclude": [],
-      "cap": 47474195,
+      "cap": 47573325,
       "tier": "hot",
       "rank": 15
     },
@@ -35,8 +35,8 @@
       "exclude": [],
       "tier": "hot",
       "trending": true,
-      "cap": 24449770,
-      "rank": 24
+      "cap": 24833845,
+      "rank": 25
     },
     {
       "sym": "AERO",
@@ -47,7 +47,7 @@
       "exclude": [],
       "tier": "hot",
       "trending": true,
-      "cap": 568336606,
+      "cap": 574434405,
       "rank": 2
     },
     {
@@ -58,7 +58,7 @@
       "coingecko": "virtual-protocol",
       "exclude": [],
       "tier": "hot",
-      "cap": 420647903,
+      "cap": 421514997,
       "rank": 3
     },
     {
@@ -68,7 +68,7 @@
       "contract": "0xacfe6019ed1a7dc6f7b508c02d1b04ec88cc21bf",
       "exclude": [],
       "auto": true,
-      "cap": 1112155138,
+      "cap": 1119800331,
       "coingecko": "venice-token",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/54023/large/VVV_Token_Transparent.png?1741856877",
       "trending": true,
@@ -82,7 +82,7 @@
       "contract": "0xa4a2e2ca3fbfe21aed83471d28b6f65a233c6e00",
       "exclude": [],
       "auto": true,
-      "cap": 208962286,
+      "cap": 210593125,
       "coingecko": "ribbita-by-virtuals",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/54970/large/Untitled_design.png?1742941268",
       "trending": true,
@@ -96,7 +96,7 @@
       "contract": "0xb095274743941e953c746f9c228da9c18bb6ec29",
       "exclude": [],
       "auto": true,
-      "cap": 129287686,
+      "cap": 131444212,
       "coingecko": "hunter-biden-s-laptop-3",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/102176837/large/Laptop_Logo.png?1788875459",
       "trending": true,
@@ -110,7 +110,7 @@
       "contract": "0x1b4617734c43f6159f3a70b7e06d883647512778",
       "exclude": [],
       "auto": true,
-      "cap": 114732241,
+      "cap": 114758338,
       "coingecko": "stp-network",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/8713/large/awe-network.jpg?1747816016",
       "tier": "hot",
@@ -123,10 +123,9 @@
       "contract": "0x9b5e262cf9bb04869ab40b19af91d2dc85761722",
       "exclude": [],
       "auto": true,
-      "cap": 97428421,
+      "cap": 103020144,
       "coingecko": "nockchain",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/68474/large/GrCcG9N9_400x400.jpg?1755845184",
-      "trending": true,
       "tier": "hot",
       "rank": 7
     },
@@ -137,7 +136,7 @@
       "contract": "0x182fa643e5f29d5eca75e7b9cf9336a3fe4620b2",
       "exclude": [],
       "auto": true,
-      "cap": 87404165,
+      "cap": 88087642,
       "coingecko": "o1-exchange",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/102173974/large/o1.png?1781654491",
       "tier": "hot",
@@ -150,7 +149,7 @@
       "contract": "0x9e6a46f294bb67c20f1d1e7afb0bbef614403b55",
       "exclude": [],
       "auto": true,
-      "cap": 86684366,
+      "cap": 87173030,
       "coingecko": "mag7-ssi",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/52962/large/mag7.png?1734863745",
       "tier": "hot",
@@ -163,24 +162,11 @@
       "contract": "0xf4d97f2da56e8c3098f3a8d538db630a2606a024",
       "exclude": [],
       "auto": true,
-      "cap": 65027333,
+      "cap": 65688484,
       "coingecko": "diem",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/68436/large/DIEM_SeaMid_-_200px.png?1755734213",
       "tier": "hot",
       "rank": 10
-    },
-    {
-      "sym": "OMI",
-      "name": "OMI Token",
-      "color": "#EF4444",
-      "contract": "0x3792dbdd07e87413247df995e692806aa13d3299",
-      "exclude": [],
-      "auto": true,
-      "cap": 58788332,
-      "coingecko": "ecomi",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/4428/large/ECOMI.png?1696505023",
-      "tier": "hot",
-      "rank": 11
     },
     {
       "sym": "KTA",
@@ -189,10 +175,22 @@
       "contract": "0xc0634090f2fe6c6d75e61be2b949464abb498973",
       "exclude": [],
       "auto": true,
-      "cap": 56778856,
+      "cap": 59850728,
       "coingecko": "keeta",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/54723/large/2025-03-05_22.53.06.jpg?1741234207",
-      "trending": true,
+      "tier": "hot",
+      "rank": 11
+    },
+    {
+      "sym": "OMI",
+      "name": "OMI Token",
+      "color": "#EF4444",
+      "contract": "0x3792dbdd07e87413247df995e692806aa13d3299",
+      "exclude": [],
+      "auto": true,
+      "cap": 58983601,
+      "coingecko": "ecomi",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/4428/large/ECOMI.png?1696505023",
       "tier": "hot",
       "rank": 12
     },
@@ -216,7 +214,7 @@
       "contract": "0xd4554bea546efa83c1e6b389ecac40ea999b3e78",
       "exclude": [],
       "auto": true,
-      "cap": 41896941,
+      "cap": 42000689,
       "coingecko": "subsquid",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/37869/large/New_Logo_SQD_Icon.png?1720048443",
       "tier": "hot",
@@ -229,7 +227,7 @@
       "contract": "0x4ed4e862860bed51a9570b96d89af5e1b0efefed",
       "exclude": [],
       "auto": true,
-      "cap": 38004990,
+      "cap": 37859617,
       "coingecko": "degen-base",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/34515/large/android-chrome-512x512.png?1706198225",
       "tier": "hot",
@@ -242,7 +240,7 @@
       "contract": "0x2b11834ed1feaed4b4b3a86a6f571315e25a884d",
       "exclude": [],
       "auto": true,
-      "cap": 37501802,
+      "cap": 37180770,
       "coingecko": "mocaverse",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/37812/large/moca.jpg?1720693068",
       "tier": "hot",
@@ -255,7 +253,7 @@
       "contract": "0xdbfefd2e8460a6ee4955a68582f85708baea60a3",
       "exclude": [],
       "auto": true,
-      "cap": 36914545,
+      "cap": 36993725,
       "coingecko": "super-oeth",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/39828/large/Super_OETH.png?1724208268",
       "tier": "daily",
@@ -268,7 +266,7 @@
       "contract": "0x1111111111166b7fe7bd91427724b487980afc69",
       "exclude": [],
       "auto": true,
-      "cap": 36785374,
+      "cap": 36706781,
       "coingecko": "zora",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/54693/large/zora.jpg?1741094751",
       "tier": "daily",
@@ -281,7 +279,7 @@
       "contract": "0x696f9436b67233384889472cd7cd58a6fb5df4f1",
       "exclude": [],
       "auto": true,
-      "cap": 35902243,
+      "cap": 35784469,
       "coingecko": "avantis",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/68972/large/avnt-token.png?1757134448",
       "tier": "daily",
@@ -301,17 +299,30 @@
       "rank": 22
     },
     {
+      "sym": "FLOCK",
+      "name": "FLock.io",
+      "color": "#EAB308",
+      "contract": "0x5ab3d4c385b400f3abb49e80de2faf6a88a7b691",
+      "exclude": [],
+      "auto": true,
+      "cap": 32905320,
+      "coingecko": "flock-2",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/53178/large/FLock_Token_Logo.png?1735561398",
+      "tier": "daily",
+      "rank": 23
+    },
+    {
       "sym": "VELVET",
       "name": "Velvet",
       "color": "#06B6D4",
       "contract": "0xbf927b841994731c573bdf09ceb0c6b0aa887cdd",
       "exclude": [],
       "auto": true,
-      "cap": 26814017,
+      "cap": 26642786,
       "coingecko": "velvet",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/67194/large/velvet.jpg?1752054592",
       "tier": "daily",
-      "rank": 23
+      "rank": 24
     },
     {
       "sym": "POD",
@@ -320,37 +331,11 @@
       "contract": "0xed664536023d8e4b1640c394777d34abaff1df8f",
       "exclude": [],
       "auto": true,
-      "cap": 24050631,
+      "cap": 23842095,
       "coingecko": "dolphin-2",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/70187/large/1_to_1_Dolphin_imresizer.jpg?1760947185",
       "tier": "daily",
-      "rank": 25
-    },
-    {
-      "sym": "B3",
-      "name": "B3",
-      "color": "#F59E0B",
-      "contract": "0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3",
-      "exclude": [],
-      "auto": true,
-      "cap": 23372636,
-      "coingecko": "b3",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/54287/large/B3.png?1739001374",
-      "tier": "daily",
       "rank": 26
-    },
-    {
-      "sym": "EAT",
-      "name": "WYDE: End Hunger",
-      "color": "#A3E635",
-      "contract": "0x680bc6ed5c7222e2f29bdbc87f8e8f3400d8ce04",
-      "exclude": [],
-      "auto": true,
-      "cap": 23067715,
-      "coingecko": "wyde-end-hunger",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/71098/large/_EAT_cashtag_icon.png?1765790033",
-      "tier": "daily",
-      "rank": 27
     },
     {
       "sym": "OPG",
@@ -359,38 +344,37 @@
       "contract": "0xfbc2051ae2265686a469421b2c5a2d5462fbf5eb",
       "exclude": [],
       "auto": true,
-      "cap": 22887215,
+      "cap": 23419476,
       "coingecko": "opengradient",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/102172863/large/coingecko_logo.png?1776349115",
+      "tier": "daily",
+      "rank": 27
+    },
+    {
+      "sym": "EAT",
+      "name": "WYDE: End Hunger",
+      "color": "#A3E635",
+      "contract": "0x680bc6ed5c7222e2f29bdbc87f8e8f3400d8ce04",
+      "exclude": [],
+      "auto": true,
+      "cap": 23059429,
+      "coingecko": "wyde-end-hunger",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/71098/large/_EAT_cashtag_icon.png?1765790033",
       "tier": "daily",
       "rank": 28
     },
     {
-      "sym": "BNKR",
-      "name": "BankrCoin",
-      "color": "#F2C14E",
-      "contract": "0x22af33fe49fd1fa80c7149773dde5890d3c76f3b",
+      "sym": "B3",
+      "name": "B3",
+      "color": "#F59E0B",
+      "contract": "0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3",
       "exclude": [],
       "auto": true,
-      "cap": 22664076,
-      "coingecko": "bankercoin-2",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/52626/large/bankr-static.png?1736405365",
-      "trending": true,
-      "tier": "hot",
-      "rank": 29
-    },
-    {
-      "sym": "TIG",
-      "name": "The Innovation Game",
-      "color": "#8B5CF6",
-      "contract": "0x0c03ce270b4826ec62e7dd007f0b716068639f7b",
-      "exclude": [],
-      "auto": true,
-      "cap": 22131306,
-      "coingecko": "the-innovation-game",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/50669/large/tiglogo-clean_200x200.png?1739955821",
+      "cap": 23038870,
+      "coingecko": "b3",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/54287/large/B3.png?1739001374",
       "tier": "daily",
-      "rank": 30
+      "rank": 29
     },
     {
       "sym": "OPAL",
@@ -399,11 +383,64 @@
       "contract": "0x119b63b1605be3a8ff4543c7f76f7f1f79eecd1f",
       "exclude": [],
       "auto": true,
-      "cap": 21967598,
+      "cap": 22218066,
       "coingecko": "opal-3",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/69738/large/Opal.jpg?1759477517",
       "tier": "daily",
+      "rank": 30
+    },
+    {
+      "sym": "BNKR",
+      "name": "BankrCoin",
+      "color": "#F2C14E",
+      "contract": "0x22af33fe49fd1fa80c7149773dde5890d3c76f3b",
+      "exclude": [],
+      "auto": true,
+      "cap": 22162848,
+      "coingecko": "bankercoin-2",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/52626/large/bankr-static.png?1736405365",
+      "trending": true,
+      "tier": "hot",
       "rank": 31
+    },
+    {
+      "sym": "TIG",
+      "name": "The Innovation Game",
+      "color": "#8B5CF6",
+      "contract": "0x0c03ce270b4826ec62e7dd007f0b716068639f7b",
+      "exclude": [],
+      "auto": true,
+      "cap": 21557791,
+      "coingecko": "the-innovation-game",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/50669/large/tiglogo-clean_200x200.png?1739955821",
+      "tier": "daily",
+      "rank": 32
+    },
+    {
+      "sym": "CP",
+      "name": "Cluster Protocol",
+      "color": "#EAB308",
+      "contract": "0x001aad84c21a5cd4d696c56d44866e9703c43f77",
+      "exclude": [],
+      "auto": true,
+      "cap": 20934915,
+      "coingecko": "cluster-protocol",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/102176635/large/blue_%281%29_%281%29_%281%29-2.jpg?1788378721",
+      "tier": "daily",
+      "rank": 33
+    },
+    {
+      "sym": "AIXBT",
+      "name": "aixbt by Virtuals",
+      "color": "#0EA5E9",
+      "contract": "0x4f9fd6be4a90f2620860d680c0d4d5fb53d1a825",
+      "exclude": [],
+      "auto": true,
+      "cap": 20718850,
+      "coingecko": "aixbt",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/51784/large/3.png?1731981138",
+      "tier": "daily",
+      "rank": 34
     },
     {
       "sym": "ROBO",
@@ -416,45 +453,6 @@
       "coingecko": "robo-token-2",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/102172005/large/fab.png?1772080701",
       "tier": "daily",
-      "rank": 32
-    },
-    {
-      "sym": "AUKI",
-      "name": "Auki Token",
-      "color": "#A3E635",
-      "contract": "0xf9569cfb8fd265e91aa478d86ae8c78b8af55df4",
-      "exclude": [],
-      "auto": true,
-      "cap": 20670793,
-      "coingecko": "auki-labs",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/39811/large/COINGECKO-200-x-200_%281%29.png?1724166209",
-      "tier": "daily",
-      "rank": 33
-    },
-    {
-      "sym": "AIXBT",
-      "name": "aixbt by Virtuals",
-      "color": "#0EA5E9",
-      "contract": "0x4f9fd6be4a90f2620860d680c0d4d5fb53d1a825",
-      "exclude": [],
-      "auto": true,
-      "cap": 20611658,
-      "coingecko": "aixbt",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/51784/large/3.png?1731981138",
-      "tier": "daily",
-      "rank": 34
-    },
-    {
-      "sym": "CP",
-      "name": "Cluster Protocol",
-      "color": "#EAB308",
-      "contract": "0x001aad84c21a5cd4d696c56d44866e9703c43f77",
-      "exclude": [],
-      "auto": true,
-      "cap": 20417370,
-      "coingecko": "cluster-protocol",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/102176635/large/blue_%281%29_%281%29_%281%29-2.jpg?1788378721",
-      "tier": "daily",
       "rank": 35
     },
     {
@@ -464,7 +462,7 @@
       "contract": "0xff0c532fdb8cd566ae169c1cb157ff2bdc83e105",
       "exclude": [],
       "auto": true,
-      "cap": 19950663,
+      "cap": 19979770,
       "coingecko": "frenpet",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/33022/large/token.png?1700274697",
       "tier": "daily",
@@ -477,12 +475,25 @@
       "contract": "0x3ec2156d4c0a9cbdab4a016633b7bcf6a8d68ea2",
       "exclude": [],
       "auto": true,
-      "cap": 19740551,
+      "cap": 19864940,
       "coingecko": "debtreliefbot",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/54784/large/1000143570.jpg?1759054009",
       "trending": true,
       "tier": "hot",
       "rank": 37
+    },
+    {
+      "sym": "AUKI",
+      "name": "Auki Token",
+      "color": "#A3E635",
+      "contract": "0xf9569cfb8fd265e91aa478d86ae8c78b8af55df4",
+      "exclude": [],
+      "auto": true,
+      "cap": 19742678,
+      "coingecko": "auki-labs",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/39811/large/COINGECKO-200-x-200_%281%29.png?1724166209",
+      "tier": "daily",
+      "rank": 38
     },
     {
       "sym": "MEY",
@@ -491,11 +502,11 @@
       "contract": "0x8bfac1b375bf2894d6f12fb2eb48b1c1a7916789",
       "exclude": [],
       "auto": true,
-      "cap": 19740018,
+      "cap": 19691162,
       "coingecko": "mey-network",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/52249/large/logo_mey_200.png?1732828172",
       "tier": "daily",
-      "rank": 38
+      "rank": 39
     },
     {
       "sym": "FAI",
@@ -504,22 +515,9 @@
       "contract": "0xb33ff54b9f7242ef1593d2c9bcd8f9df46c77935",
       "exclude": [],
       "auto": true,
-      "cap": 19307330,
+      "cap": 19320918,
       "coingecko": "freysa-ai",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/52315/large/FAI.png?1733076295",
-      "tier": "daily",
-      "rank": 39
-    },
-    {
-      "sym": "BLUECHIP",
-      "name": "BLUE CHIP",
-      "color": "#8B5CF6",
-      "contract": "0xb200000000000000000000cfbdf64a8706a94a01",
-      "exclude": [],
-      "auto": true,
-      "cap": 18691469,
-      "coingecko": "blue-chip-4",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/102176736/large/bluechip.jpg?1788619359",
       "tier": "daily",
       "rank": 40
     },
@@ -530,22 +528,22 @@
       "contract": "0xed6e000def95780fb89734c07ee2ce9f6dcaf110",
       "exclude": [],
       "auto": true,
-      "cap": 18614885,
+      "cap": 18729051,
       "coingecko": "definitive",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/55072/large/EDGE-120x120.png?1743598652",
       "tier": "daily",
       "rank": 41
     },
     {
-      "sym": "ROLL",
-      "name": "Roll",
-      "color": "#6366F1",
-      "contract": "0xab6363da0c80cef3ae105bd6241e30872355d021",
+      "sym": "BLUECHIP",
+      "name": "BLUE CHIP",
+      "color": "#8B5CF6",
+      "contract": "0xb200000000000000000000cfbdf64a8706a94a01",
       "exclude": [],
       "auto": true,
-      "cap": 18138749,
-      "coingecko": "roll-2",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/71618/large/token_image_roll.png?1768563479",
+      "cap": 18644304,
+      "coingecko": "blue-chip-4",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/102176736/large/bluechip.jpg?1788619359",
       "tier": "daily",
       "rank": 42
     },
@@ -556,11 +554,24 @@
       "contract": "0x37f0c2915cecc7e977183b8543fc0864d03e064c",
       "exclude": [],
       "auto": true,
-      "cap": 17891897,
+      "cap": 18510723,
       "coingecko": "hunt-token",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/7989/large/HUNT.png?1696508215",
       "tier": "daily",
       "rank": 43
+    },
+    {
+      "sym": "ROLL",
+      "name": "Roll",
+      "color": "#6366F1",
+      "contract": "0xab6363da0c80cef3ae105bd6241e30872355d021",
+      "exclude": [],
+      "auto": true,
+      "cap": 18189566,
+      "coingecko": "roll-2",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/71618/large/token_image_roll.png?1768563479",
+      "tier": "daily",
+      "rank": 44
     },
     {
       "sym": "HALO",
@@ -569,22 +580,9 @@
       "contract": "0xbbd27c575fb0e113219d610cc787b02eeff71d42",
       "exclude": [],
       "auto": true,
-      "cap": 16951326,
+      "cap": 17310052,
       "coingecko": "halo-4",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/102174888/large/halo-token-mark-2048.png?1785372622",
-      "tier": "daily",
-      "rank": 44
-    },
-    {
-      "sym": "TREE",
-      "name": "Tree",
-      "color": "#F97316",
-      "contract": "0x52c2b317eb0bb61e650683d2f287f56c413e4cf6",
-      "exclude": [],
-      "auto": true,
-      "cap": 16664137,
-      "coingecko": "tree-capital",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/33727/large/circle_green.png?1709894067",
       "tier": "daily",
       "rank": 45
     },
@@ -595,7 +593,7 @@
       "contract": "0x5576d6ed9181f2225aff5282ac0ed29f755437ea",
       "exclude": [],
       "auto": true,
-      "cap": 16593511,
+      "cap": 17159672,
       "coingecko": "openserv",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/51430/large/X_Logo_Blue_%282%29.png?1747853206",
       "tier": "daily",
@@ -608,11 +606,24 @@
       "contract": "0x56ab53b77f07da3af732150e8aec4783eb5bba7d",
       "exclude": [],
       "auto": true,
-      "cap": 16377854,
+      "cap": 16722484,
       "coingecko": "umia",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/102175647/large/coingecko-F64-option-B-green-transparent-1000.png?1787245813",
       "tier": "daily",
       "rank": 47
+    },
+    {
+      "sym": "TREE",
+      "name": "Tree",
+      "color": "#F97316",
+      "contract": "0x52c2b317eb0bb61e650683d2f287f56c413e4cf6",
+      "exclude": [],
+      "auto": true,
+      "cap": 16491112,
+      "coingecko": "tree-capital",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/33727/large/circle_green.png?1709894067",
+      "tier": "daily",
+      "rank": 48
     },
     {
       "sym": "CTR",
@@ -621,11 +632,11 @@
       "contract": "0x11030f79109269d796fd0fb956d6244e502757f7",
       "exclude": [],
       "auto": true,
-      "cap": 15048594,
+      "cap": 14975407,
       "coingecko": "citrea",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/102173169/large/CTR.png?1778226916",
       "tier": "daily",
-      "rank": 48
+      "rank": 49
     },
     {
       "sym": "MAGIC",
@@ -634,11 +645,11 @@
       "contract": "0xf1572d1da5c3cce14ee5a1c9327d17e9ff0e3f43",
       "exclude": [],
       "auto": true,
-      "cap": 14874905,
+      "cap": 14808704,
       "coingecko": "magic",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/18623/large/magic.png?1696518095",
       "tier": "daily",
-      "rank": 49
+      "rank": 50
     },
     {
       "sym": "REI",
@@ -647,11 +658,11 @@
       "contract": "0x6b2504a03ca4d43d0d73776f6ad46dab2f2a4cfd",
       "exclude": [],
       "auto": true,
-      "cap": 13908771,
+      "cap": 13922633,
       "coingecko": "unit-00-rei",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/52005/large/photo_2025-08-05_23.19.12.jpeg?1754448292",
       "tier": "daily",
-      "rank": 50
+      "rank": 51
     },
     {
       "sym": "BALD",
@@ -664,7 +675,7 @@
       "coingecko": "bald",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/31119/large/cdjxKSjo_400x400.jpg?1696529949",
       "tier": "daily",
-      "rank": 51
+      "rank": 52
     },
     {
       "sym": "UP",
@@ -673,11 +684,25 @@
       "contract": "0x5b2193fdc451c1f847be09ca9d13a4bf60f8c86b",
       "exclude": [],
       "auto": true,
-      "cap": 13757590,
+      "cap": 13822773,
       "coingecko": "superform",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/70945/large/superform.png?1764747920",
       "tier": "daily",
-      "rank": 52
+      "rank": 53
+    },
+    {
+      "sym": "STONKEX",
+      "name": "The Stonks Exchange",
+      "color": "#0EA5E9",
+      "contract": "0x5ab000ff9b9ffe0349ce5ffa5fd86f217c3680f5",
+      "exclude": [],
+      "auto": true,
+      "cap": 13639232,
+      "coingecko": "the-stonks-exchange",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/102175858/large/3ch0d6jb3yebllqq0y9agkhzobeg.?1787807036",
+      "trending": true,
+      "tier": "hot",
+      "rank": 54
     },
     {
       "sym": "RECALL",
@@ -686,11 +711,11 @@
       "contract": "0x1f16e03c1a5908818f47f6ee7bb16690b40d0671",
       "exclude": [],
       "auto": true,
-      "cap": 13502044,
+      "cap": 13478013,
       "coingecko": "recall",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/69994/large/recall-logo.jpeg?1760337415",
       "tier": "daily",
-      "rank": 53
+      "rank": 55
     },
     {
       "sym": "DEFISSI",
@@ -699,11 +724,11 @@
       "contract": "0x164ffdae2fe3891714bc2968f1875ca4fa1079d0",
       "exclude": [],
       "auto": true,
-      "cap": 12327572,
+      "cap": 12407621,
       "coingecko": "defi-ssi",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/53090/large/defi.png?1735214136",
       "tier": "daily",
-      "rank": 54
+      "rank": 56
     },
     {
       "sym": "OGN",
@@ -716,24 +741,10 @@
       "coingecko": "origin-protocol",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/3296/large/op.jpg?1696504006",
       "tier": "daily",
-      "rank": 55
+      "rank": 57
     },
     {
-      "sym": "STONKEX",
-      "name": "The Stonks Exchange",
-      "color": "#0EA5E9",
-      "contract": "0x5ab000ff9b9ffe0349ce5ffa5fd86f217c3680f5",
-      "exclude": [],
-      "auto": true,
-      "cap": 11291272,
-      "coingecko": "the-stonks-exchange",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/102175858/large/3ch0d6jb3yebllqq0y9agkhzobeg.?1787807036",
-      "trending": true,
-      "tier": "hot",
-      "rank": 56
-    },
-    {
-      "sym": "LAPTOP45",
+      "sym": "LAPTOP34",
       "name": "LAPTOP",
       "color": "#EF4444",
       "contract": "0x449b9198d91bc04e46a2ec38d6cfa85e4cdf4b07",
@@ -742,7 +753,7 @@
       "cap": 10278757,
       "logoUrl": "https://assets.geckoterminal.com/0ivgunchsya44nuk64hi0rbqdhrc",
       "tier": "daily",
-      "rank": 57
+      "rank": 58
     },
     {
       "sym": "KEYCAT",
@@ -751,11 +762,11 @@
       "contract": "0x9a26f5433671751c3276a065f57e5a02d2817973",
       "exclude": [],
       "auto": true,
-      "cap": 6144067,
+      "cap": 6173396,
       "coingecko": "keyboard-cat-base",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/36608/large/IMG_9500.jpeg?1746639185",
       "tier": "daily",
-      "rank": 58
+      "rank": 59
     },
     {
       "sym": "DOGINME",
@@ -764,24 +775,10 @@
       "contract": "0x6921b130d297cc43754afba22e5eac0fbf8db75b",
       "exclude": [],
       "auto": true,
-      "cap": 5671598,
+      "cap": 5816814,
       "coingecko": "doginme",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/35123/large/doginme-logo1-transparent200.png?1710856784",
       "tier": "daily",
-      "rank": 59
-    },
-    {
-      "sym": "BSTONK",
-      "name": "BaseStonk",
-      "color": "#EC4899",
-      "contract": "0x0f61edbfe6cd86024c0f210c0695b08df55fdfc9",
-      "exclude": [],
-      "auto": true,
-      "cap": 5607171,
-      "coingecko": "basestonk",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/102175606/large/bases_400x400.jpg?1787073649",
-      "trending": true,
-      "tier": "hot",
       "rank": 60
     },
     {
@@ -791,10 +788,24 @@
       "contract": "0xa3d353743164972b37c8e5358fb1e76f0be8aba3",
       "exclude": [],
       "auto": true,
-      "cap": 371006,
+      "cap": 407705,
       "trending": true,
       "tier": "hot",
       "rank": 61
+    },
+    {
+      "sym": "BSTONK",
+      "name": "BaseStonk",
+      "color": "#EC4899",
+      "contract": "0x0f61edbfe6cd86024c0f210c0695b08df55fdfc9",
+      "exclude": [],
+      "auto": true,
+      "cap": 5166055,
+      "coingecko": "basestonk",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/102175606/large/bases_400x400.jpg?1787073649",
+      "trending": true,
+      "tier": "hot",
+      "rank": 62
     },
     {
       "sym": "GITLAWB",
@@ -803,12 +814,12 @@
       "contract": "0x5f980dcfc4c0fa3911554cf5ab288ed0eb13dba3",
       "exclude": [],
       "auto": true,
-      "cap": 2734204,
+      "cap": 2895067,
       "coingecko": "gitlawb",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/102172941/large/b16bfbf1-8384-43fc-9797-88fba91ddca5.png?1776736251",
       "trending": true,
       "tier": "hot",
-      "rank": 62
+      "rank": 63
     },
     {
       "sym": "STFY",
@@ -817,12 +828,12 @@
       "contract": "0xc6405d7a226e1c18e559be2f335f74c01ad07bf5",
       "exclude": [],
       "auto": true,
-      "cap": 1627532,
+      "cap": 1671767,
       "coingecko": "stockify-2",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/102176941/large/stfy.jpg?1789051024",
       "trending": true,
       "tier": "hot",
-      "rank": 63
+      "rank": 64
     },
     {
       "sym": "DOT",
@@ -831,13 +842,27 @@
       "contract": "0x23a2847d772803f9efc64b4277b782b06296fe51",
       "exclude": [],
       "auto": true,
-      "cap": 4194721,
+      "cap": 4033066,
       "coingecko": "dot",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/102174001/large/erwvkdmick9fryu8uh2no16jc9fx.?1781766527",
       "trending": true,
       "tier": "hot",
-      "rank": 64
+      "rank": 65
+    },
+    {
+      "sym": "BASEMATE",
+      "name": "Basemate",
+      "color": "#A3E635",
+      "contract": "0x07e61d8a4e197dfc269e90d7ece1df0d26702ba3",
+      "exclude": [],
+      "auto": true,
+      "cap": 219614,
+      "coingecko": "basemate",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/102173520/large/basemate.jpg?1779949954",
+      "trending": true,
+      "tier": "hot",
+      "rank": 66
     }
   ],
-  "discovered_at": "2026-09-12T08:54:26.748Z"
+  "discovered_at": "2026-09-12T12:51:54.807Z"
 }
