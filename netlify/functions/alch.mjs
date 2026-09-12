@@ -4,7 +4,7 @@
 // + appends to the site feed immediately. Snapshot-based alerts (entries/exits/schools)
 // stay with the 2h pipeline — they only exist per-ranking.
 import crypto from 'node:crypto';
-import { updateJson, USERS_PATH, MAX_HITS } from '../lib/store.mjs';
+import { updateJson, USERS_PATH, MAX_HITS, webhookAddresses } from '../lib/store.mjs';
 
 const REPO = 'beeonchain/basefish';
 const SITE = 'https://basefish.netlify.app';
@@ -24,6 +24,22 @@ function throttled(addr, feed) {
   if (all.length >= THROTTLE.maxPerDay) return true;
   mine.push(now); recent.set(addr, mine);
   return false;
+}
+// noise breaker: an address that fires this many notifications in an hour is a bot / contract, not a whale.
+// Drop it from the webhook (every notification costs compute units) and remember it so the pipeline's sync
+// doesn't add it back. Real whales never come close to this.
+const NOISE = { perHour: 40 };
+const hourly = new Map(); // addr -> [ts...] notifications seen by this instance
+const evicted = new Set();
+async function noiseCheck(addr) {
+  const now = Date.now(); const l = (hourly.get(addr) || []).filter((t) => now - t < 36e5); l.push(now); hourly.set(addr, l);
+  if (l.length < NOISE.perHour || evicted.has(addr)) return false;
+  evicted.add(addr);
+  try {
+    await webhookAddresses([], [addr]);
+    await updateJson('data/alerts_state.json', { tx: {} }, (st) => { st.noisy = st.noisy || {}; st.noisy[addr] = { ts: now, n: l.length }; }, `alerts: evict noisy ${short(addr)} from webhook`);
+  } catch {}
+  return true;
 }
 const short = (a) => a.slice(0, 6) + '…' + a.slice(-4);
 const musd = (v) => { const x = Math.abs(v); return x >= 1e6 ? '$' + (x / 1e6).toFixed(2) + 'M' : x >= 1e3 ? '$' + (x / 1e3).toFixed(0) + 'K' : '$' + x.toFixed(0); };
@@ -96,6 +112,7 @@ export default async (req) => {
     const hash = a.hash;
     if (!tok || !hash) continue;
     const from = String(a.fromAddress || '').toLowerCase(), to = String(a.toAddress || '').toLowerCase();
+    for (const w of [from, to]) if (tok.top.has(w)) await noiseCheck(w);
     const amt = Number(a.value) || 0, usd = amt * tok.price;
     const link = `https://basescan.org/tx/${hash}`;
     // 1) custom watches — any size, straight to the owner

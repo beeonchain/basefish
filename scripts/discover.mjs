@@ -5,7 +5,8 @@
 import fs from 'node:fs';
 
 const CFG = 'tokens.config.json';
-const LIMITS = { autoTop: 60, trending: 10, total: 80, hot: 18 };
+// 20 biggest + up to 3 trending, 25 in total (incl. the hand-curated ones). Anyone who wants another token pastes its CA on the site.
+const LIMITS = { autoTop: 20, trending: 3, total: 25, hot: 25 };
 const MIN = { mcap: 1_500_000, liq: 120_000, liqTrending: 60_000 };
 // not "holders of a Base project": stables, wrapped/bridged/staked majors, RWA/treasury wrappers, LP receipts
 const EXCL_SYM = /^(usdc|usdbc|usdt|dai|eurc|eur\w*|usde|susde|usds|susds|gho|frax|lusd|tusd|pyusd|ausd|apxusd|apyusd|usdai|susdai|crvusd|reusd|usd0|syrupusdc|steakusdc|sdai|ustbl|eutbl|thbill|jtrsy|jaaa|usad|weth|eth|aweth|cbeth|acbeth|wsteth|weeth|rseth|wrseth|reth|lseth|ezeth|steth|meth|sfrxeth|frxeth|ynETH|wbtc|cbbtc|tbtc|lbtc|fbtc|solvbtc|unibtc|gtbtc|clbtc|xbtc|jitosol|wsol|sol|bnb|wbnb|matic|pol|avax|link|aave|comp|crv|snx|1inch|cake|uni|sushi|bal|ldo|eigen|pendle|ena|ethfi|zro|icp|tao|tel|chz|trac|zen|xcn|morpho|op|arb)$/i;

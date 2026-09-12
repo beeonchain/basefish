@@ -1428,13 +1428,29 @@ RUNLOG.finished = new Date().toISOString(); RUNLOG.budgets = { arkham: arkhamBud
 fs.writeFileSync('data/run_log.json', JSON.stringify(RUNLOG, null, 1));
 console.log(`\nWrote data/index.json with ${index.tokens.length} tokens. Label cache: ${Object.keys(labelCache).length} addresses${ARKHAM_KEY ? '' : ' (no ARKHAM_API_KEY — enrichment skipped)'}.`);
 
-// ---- Alchemy Address Activity webhook: keep its address list = every tracked top-100 + every custom watch ----
+// ---- Alchemy Address Activity webhook: keep its address list SMALL ----
+// Every notification costs compute units, and a router / vault / market maker in a top-100 list fires thousands
+// of them a day (Sep 2026: 6,000 addresses ≈ 300M CU/day). So the webhook only watches wallets that can actually
+// produce an alert we show: the top WH_TOP real wallets per token (no contracts, no infra-looking entities),
+// plus every custom watch, minus addresses the receiver flagged as noisy (data/alerts_state.json → noisy).
 // Needs ALCH_NOTIFY_TOKEN (Notify auth token) in the Actions secrets. Best-effort; skipped silently otherwise.
+const WH_TOP = Number(process.env.WH_TOP || 20);
+const WH_SKIP_RX = /market maker|\bmm\b|exchange|deposit|router|pool|bridge|vault|treasury|sablier|gauge|locker|staking|deployer|airdrop|distributor|launchpad|escrow|wintermute|gsr|flow traders|jump|cumberland|amber/i;
 if (process.env.ALCH_NOTIFY_TOKEN) {
   try {
     const WH = process.env.ALCH_WEBHOOK_ID || 'wh_1ailuvfsjb3deig0', H = { 'X-Alchemy-Token': process.env.ALCH_NOTIFY_TOKEN, 'content-type': 'application/json' };
+    let noisy = {}; try { noisy = JSON.parse(fs.readFileSync('data/alerts_state.json', 'utf8')).noisy || {}; } catch {}
     const want = new Set();
-    for (const top of Object.values(ALLTOPS)) for (const h of top || []) want.add(h.addr.toLowerCase());
+    for (const top of Object.values(ALLTOPS)) {
+      let n = 0;
+      for (const h of top || []) {
+        if (n >= WH_TOP) break;
+        const a = h.addr.toLowerCase();
+        if (h.isContract || h.infra || noisy[a]) continue;
+        if (WH_SKIP_RX.test([h.entity, h.entityType, h.label, ...(h.labels || [])].filter(Boolean).join(' '))) continue;
+        want.add(a); n++;
+      }
+    }
     try { const subs = JSON.parse(fs.readFileSync('data/tg_subs.json', 'utf8')); for (const c of Object.values(subs.chats || {})) for (const w of c.watches || []) want.add(w.w.toLowerCase()); } catch {}
     try { const us = JSON.parse(fs.readFileSync('data/users.json', 'utf8')); for (const u of Object.values(us.users || {})) for (const w of u.watches || []) want.add(w.w.toLowerCase()); } catch {}
     const have = new Set(); let after = null;
