@@ -5,6 +5,8 @@ import path from 'node:path';
 import { namehash } from './keccak.mjs';
 import { buildAlerts, attachTxHashes, checkWatches, writeFeed, sendTelegram } from './alerts.mjs';
 import { computeTags, applyTags } from './tags.mjs';
+import { makeRpc, classifier, traceToken, destFromTrace } from './trace.mjs';
+let CODES = {}; try { CODES = JSON.parse(fs.readFileSync('data/codes.json', 'utf8')); } catch {}
 
 const KEY = process.env.MORALIS_API_KEY || '';
 const BQ_TOKEN = process.env.BITQUERY_TOKEN || '';
@@ -1271,13 +1273,27 @@ for (const t of RUN_TOKENS) {
           } catch (e) {}
         }
         for (const k of ['in', 'out']) for (const d2 of Object.keys(dest7[k])) dest7[k][d2] = Math.round(dest7[k][d2]);
-        const withVia = (m) => { const v = viaOf[m.addr.toLowerCase()]; if (!v) return m; const side = m.usd >= 0 ? 'in' : 'out'; const o = {}; for (const [k, u2] of Object.entries(v[side])) o[k] = Math.round(u2); return { ...m, via: o }; };
+        // full-coverage tracing: every mover / entry / exit gets its token transfers pulled from Alchemy and classified
+        let dest7t = null, viaT = null;
+        if (ALCH_KEY) {
+          try {
+            const labels = {}; for (const h of top) { const l = h.entity || h.label; if (l) labels[h.addr.toLowerCase()] = l; }
+            for (const x of infra) if (x.label) labels[x.addr.toLowerCase()] = x.label;
+            const classify = classifier({ excluded: exclCache, labels, poolSet, codes: CODES });
+            const who = [...new Set([...movers.map(m => m.addr), ...entries.map(e => e.addr), ...exits.map(e => e.addr)].map(a => a.toLowerCase()))];
+            const st = await traceToken({ rpc: makeRpc(ALCH_KEY), sym: t.sym, contract: t.contract.toLowerCase(), addrs: who, price: usd, classify, codes: CODES, maxAddrs: FULL ? 60 : 40, log: (m) => console.log('  ' + m) });
+            const r = destFromTrace(st, 7); dest7t = r.dest; viaT = r.via;
+            cexIn = 0; cexOut = 0; cexN = 0; for (const tr of st.transfers) { if (tr.kind !== 'cex' || Date.now() - tr.ts > 7 * 864e5) continue; cexN++; if (tr.dir === 'in') cexIn += tr.usd || 0; else cexOut += tr.usd || 0; }
+          } catch (e) { console.log('  trace err', e.message.slice(0, 80)); }
+        }
+        const dest7f = dest7t || dest7, viaF = viaT || viaOf;
+        const withVia = (m) => { const v = viaF[m.addr.toLowerCase()]; if (!v) return m; const side = m.usd >= 0 ? 'in' : 'out'; const o = {}; for (const [k, u2] of Object.entries(v[side])) o[k] = Math.round(u2); return { ...m, via: o }; };
         movers = movers.map(withVia);
         flows = { updated: Date.now(), series, net7: net(7), net30: net(30), refTs7: ref7s.ts,
           moversUp: movers.filter(m => m.usd > 0).slice(0, 6),
           moversDown: movers.filter(m => m.usd < 0).slice(-6).reverse(),
           entries: entries.slice(0, 8), exits: exits.slice(0, 8),
-          cex7: { in: Math.round(cexIn), out: Math.round(cexOut), n: cexN }, dest7 };
+          cex7: { in: Math.round(cexIn), out: Math.round(cexOut), n: cexN }, dest7: dest7f, dest7movers: movers.length };
       }
     } catch (e) { console.log('  flows err', e.message.slice(0, 80)); }
     if (ARKHAM_KEY) {
@@ -1347,6 +1363,7 @@ for (const t of RUN_TOKENS) {
 if (!index.tokens.length) { console.error('No token data fetched at all — aborting without writing index.'); process.exit(1); }
 fs.writeFileSync(LABELS_PATH, JSON.stringify(labelCache));
 fs.writeFileSync(EXCL_PATH, JSON.stringify(exclCache));
+fs.writeFileSync('data/codes.json', JSON.stringify(CODES));
 fs.writeFileSync(FR_PATH, JSON.stringify({ updated: new Date().toISOString(), wallets: frCache.wallets }));
 fs.writeFileSync(BN_PATH, JSON.stringify(bnCache));
 fs.writeFileSync(CT_PATH, JSON.stringify(ctCache));
