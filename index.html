@@ -74,8 +74,17 @@
   .fbox{border:1px solid var(--line);background:var(--panel);min-width:0}
   .fbox>.fh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line)}
   .fbox>.fb{padding:12px 14px}
-  .dest{display:grid;gap:6px}.dest>div{display:grid;grid-template-columns:190px 1fr 70px 38px;gap:10px;align-items:center;font-size:12px}.dest>div>span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .dest .bar{height:10px;background:var(--panel2);border:1px solid var(--line)}.dest .bar>i{display:block;height:100%}
+  /* facts under a figure: small boxed key:value pairs — important, but a level below the figure */
+  .kv2{display:flex;gap:4px;flex-wrap:wrap;margin-top:2px}
+  .kv2 span{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px;border:1px solid var(--line);background:var(--panel2);font-size:11px;color:var(--muted);white-space:nowrap}
+  .kv2 span b{font-family:var(--font-mono);font-weight:700;color:var(--text)}
+  /* where the coins went: one table per direction */
+  .dest{display:grid;grid-template-columns:1fr;gap:0;border:1px solid var(--line)}
+  .dest .dh,.dest .dr{display:grid;grid-template-columns:minmax(200px,1.4fr) 1.6fr 84px 48px;gap:12px;align-items:center;padding:7px 12px;font-size:12px}
+  .dest .dh{background:var(--panel2);border-bottom:1px solid var(--line)}.dest .dr{border-bottom:1px solid var(--line)}.dest .dr:last-child{border-bottom:0}
+  .dest .dr>span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:inline-flex;align-items:center;gap:6px;font-weight:600}
+  .dest .dbar{height:10px;background:var(--panel2);border:1px solid var(--line)}.dest .dbar>i{display:block;height:100%}
+  .dest .r{text-align:right}
   .card-ui{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);padding:var(--sp-4)}
   .card-ui h5,.wbox>h5{font:700 11px var(--font-body);letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
   .num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
@@ -185,7 +194,7 @@
   .tank canvas{display:block;width:100%;height:100%}
   .tank .glass{position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,rgba(255,255,255,.06),transparent 30%,transparent 70%,rgba(255,255,255,.03));border-radius:0}
   .chip{position:absolute;top:12px;left:12px;display:flex;gap:6px;z-index:3}
-  .chip span{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;border-radius:var(--r-sm);background:var(--glass);color:#fff;font-family:var(--font-mono);border:1px solid var(--glass-line);backdrop-filter:blur(6px)}
+  .chip span{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;border-radius:var(--r-sm);background:var(--glass);color:#fff;font-family:var(--font-mono);border:1px solid var(--glass-line);backdrop-filter:blur(6px)}
   .zoom{position:absolute;right:12px;top:12px;z-index:3;display:flex;flex-direction:column;gap:4px}
   .webtog{position:absolute;right:52px;top:12px;z-index:3;display:flex;gap:7px;align-items:center;background:var(--glass);backdrop-filter:blur(10px);border-radius:var(--r-sm);color:#fff;border:1px solid var(--glass-line);padding:8px 11px;font-size:10.5px;font-weight:800;letter-spacing:.5px;cursor:pointer;backdrop-filter:blur(6px)}
   .webtog input{accent-color:var(--teal);margin:0;cursor:pointer}
@@ -210,14 +219,14 @@
   .card{cursor:grab;touch-action:none}
   .card.dragging{cursor:grabbing;animation:none;opacity:.96}
   .card button,.card a,.card input{cursor:pointer}
-  .card .tier{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;display:flex;align-items:center;gap:6px}
+  .card .tier{font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;display:flex;align-items:center;gap:6px}
   .card .tier i{width:8px;height:8px;border-radius:0}
   .card .addr{font:600 16px var(--font-mono);margin:4px 0 10px;display:flex;align-items:center;gap:8px}
   .card .addr button{color:var(--dim);font-size:11px;border:1px solid var(--line);border-radius:var(--r-sm);padding:2px 7px}
   .card .addr button:hover{color:var(--text)}
-  .card .row{display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid var(--line);color:var(--muted);font-size:13px}
-  .card .row b{color:var(--text);font-weight:600}
-  .card .big{font:700 24px/1 var(--font-display);color:var(--text)}
+  .card .row{display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px}
+  .card .row b{color:var(--text);font-weight:700;font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+  .card .big{font:800 24px/1 var(--font-mono);color:var(--text);letter-spacing:-.01em}
   .card .x{position:absolute;right:10px;top:10px;color:var(--dim);font-size:16px}
   .card .acts{display:flex;gap:6px;margin-top:10px}
   .card .acts button{flex:1;padding:8px;border-radius:var(--r-sm);border:1px solid var(--line2);font-weight:700;font-size:13px}
@@ -226,11 +235,11 @@
   .card .lbls{margin-bottom:8px}
   /* legend bar */
   .bar{display:flex;align-items:center;gap:18px;padding:10px 16px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel)}
-  .bar .t{font-weight:800;text-transform:uppercase;font-size:11px;letter-spacing:.08em;color:var(--dim)} .bar .t small{display:block;color:var(--dim);font-weight:500;font-size:11px;text-transform:none;letter-spacing:0}
-  .bar .sz{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
-  .bar .sz b{display:block;color:var(--text);font-weight:600}
+  .bar .t{font-weight:600;text-transform:uppercase;font-size:10.5px;letter-spacing:.08em;color:var(--muted)} .bar .t small{display:block;color:var(--dim);font-weight:400;font-size:11px;text-transform:none;letter-spacing:0;opacity:.85}
+  .bar .sz{display:flex;align-items:center;gap:8px;color:var(--dim);font-size:11px}
+  .bar .sz b{display:block;color:var(--text);font-weight:700;font-family:var(--font-mono);font-size:12px;white-space:nowrap}
   .bar .sz canvas{width:44px;height:26px}
-  .bar .about{margin-left:auto;color:var(--muted);font-weight:600;border:1px solid var(--line2);padding:7px 12px;border-radius:var(--r-sm);font-size:13px}
+  .bar .about{margin-left:auto;color:var(--muted);font-weight:700;border:1px solid var(--line2);padding:0 12px;height:30px;border-radius:var(--r-sm);font-size:12px}
   .bar .about:hover{color:var(--text)}
   /* ---------- right rail ---------- */
   .rail{border-left:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:12px;overflow:auto;min-height:0;max-height:100%}
@@ -238,29 +247,29 @@
   .app.noRail .rail{display:none}
   .app.noRail .bar{display:none}
   .box{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);padding:14px}
-  .box h3{font:700 11px var(--font-body);text-transform:uppercase;letter-spacing:.09em;color:var(--dim);margin:0 0 10px;display:flex;align-items:center;justify-content:space-between}
-  .box h3 a{font:600 12px var(--font-body);color:var(--accent);cursor:pointer;text-transform:none;letter-spacing:0}
+  .box h3{font:600 10.5px var(--font-body);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px;display:flex;align-items:center;justify-content:space-between}
+  .box h3 a{font:700 12px var(--font-mono);color:var(--accent);cursor:pointer;text-transform:none;letter-spacing:0}
   .hold{display:flex;flex-direction:column;gap:3px;max-height:400px;overflow:auto;scrollbar-width:thin;margin:0 -4px;padding:0 4px}
   .hold button{display:grid;grid-template-columns:16px 24px 1fr auto;align-items:center;gap:8px;padding:6px 6px;border-radius:var(--r-sm);text-align:left}
   .hold button:hover,.hold button.sel{background:var(--panel2)}
-  .hold .n{color:var(--dim);font-size:11px;font-weight:700}
+  .hold .n{color:var(--dim);font-size:10.5px;font-weight:600;font-family:var(--font-mono)}
   .hold .a{font-family:var(--font-mono);font-size:12px;font-weight:500}
   .hold .p{text-align:right;font-weight:700;font-size:13px;font-family:var(--font-mono);font-variant-numeric:tabular-nums}
-  .hold .p small{display:block;color:var(--muted);font-weight:500;font-size:11px}
+  .hold .p small{display:block;color:var(--dim);font-weight:400;font-size:10.5px}
   .hold .bar2{height:3px;border-radius:0;background:var(--panel2);margin-top:3px;overflow:hidden}
   .hold .bar2 i{display:block;height:100%;background:var(--teal)}
   .dist{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:center}
   .dist canvas{width:110px;height:110px}
   .dist ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
-  .dist li{display:grid;grid-template-columns:10px 1fr auto;gap:7px;align-items:center;font-size:12.5px;color:var(--muted)}
+  .dist li{display:grid;grid-template-columns:10px 1fr auto;gap:7px;align-items:center;font-size:12px;color:var(--muted)}
   .dist li i{width:10px;height:10px;border-radius:0}
-  .dist li b{color:var(--text);font-weight:600}
-  .dist li small{display:block;font-size:10px;color:var(--dim)}
+  .dist li b{color:var(--text);font-weight:600}.dist li>b.mono{font-weight:700}
+  .dist li small{display:block;font-size:10px;color:var(--dim);opacity:.85}
   .feed{display:flex;flex-direction:column;gap:6px;font-size:12.5px}
   .feed div{display:grid;grid-template-columns:6px 1fr auto;gap:8px;align-items:center;padding:5px 0;border-top:1px solid var(--line)}
   .feed div:first-child{border-top:0}
   .feed i{width:6px;height:6px;border-radius:0}
-  .feed .a{font-family:var(--font-mono);color:var(--text)}
+  .feed .a{font-family:var(--font-mono);color:var(--muted);font-size:12px}
   .feed .v{font-weight:700;font-family:var(--font-mono)}
   .feed small{color:var(--dim)}
   .leg{display:flex;flex-direction:column;gap:7px;font-size:12.5px;color:var(--muted)}
@@ -462,7 +471,7 @@
     <div class="wp" id="walletPage"></div>
     <div class="view" id="profileView"></div>
     <div class="bar">
-      <div class="t">Fish size = wallet size<small>Bigger fish hold more. That's it. · tiers relative to this tank</small></div>
+      <div class="t">Fish size = wallet size<small>tiers are relative to this tank</small></div>
       <div class="sz"><canvas data-tier="small"></canvas><div>Small<b id="thSmall">&lt; $10K</b></div></div>
       <div class="sz"><canvas data-tier="medium"></canvas><div>Medium<b id="thMed">$10K – $100K</b></div></div>
       <div class="sz"><canvas data-tier="large"></canvas><div>Large<b id="thLarge">$100K – $1M</b></div></div>
@@ -1702,8 +1711,9 @@ function snapAmt(o,s,F){if(o.a!=null)return o.a;const p=s.p||(F&&F.series&&(F.se
 function flowCalc(snaps,F,days){
   if(!snaps||snaps.length<2)return null;
   const now=snaps[snaps.length-1],target=now.ts-days*864e5;
-  let ref=snaps[0];for(const s of snaps){if(s.ts<=target)ref=s;else break}
-  if(days<3650&&now.ts-ref.ts<days*864e5*0.5&&ref===snaps[0])return{tooShort:true,span:(now.ts-ref.ts)/864e5};
+  // reference = the snapshot closest to the window start (either side), so "7 days" never silently becomes 13
+  let ref=snaps[0];if(days<3650){ref=snaps.reduce((b,s)=>Math.abs(s.ts-target)<Math.abs(b.ts-target)?s:b,snaps[0]);if(ref===now)ref=snaps[Math.max(0,snaps.length-2)]}
+  if(days<3650&&now.ts-ref.ts<days*864e5*0.5)return{tooShort:true,span:(now.ts-ref.ts)/864e5};
   const tot=s=>{let a=0;for(const k in s.h){const o=s.h[k];if(o.r<=100){const v=snapAmt(o,s,F);if(v==null)return null;a+=v}}return a};
   const price=cur.price||0;let nowA=tot(now),refA=tot(ref);
   if(refA==null){ // reference snapshot can't be valued (no stored amount/price): use the oldest valued snapshot inside the window
@@ -1804,7 +1814,7 @@ async function renderFlows(){
     if(days>=3650&&pts.length>200){const keep=[];let last=0;for(const q of pts){if(q.ts-last>=864e5*0.9||q===pts[pts.length-1]){keep.push(q);last=q.ts}}pts=keep}
     if(pts.length>=2)FLOWPTS=pts}
   const series=FLOWPTS||(days>=3650?F.series:F.series.filter(p=>p.ts>=Date.now()-days*864e5-36e5));
-  const tile=(t2,big,sub,cls,tip)=>`<div class="tile"><span class="t2">${t2}${tip?`<span class="ib" title="${esc(tip)}">i</span>`:''}</span><span class="t1 ${cls||''}">${big}</span><span class="t3">${sub}</span></div>`;
+  const tile=(t2,big,facts,cls,tip)=>`<div class="tile"><span class="t2">${t2}${tip?`<span class="ib" title="${esc(tip)}">i</span>`:''}</span><span class="t1 ${cls||''}">${big}</span>${typeof facts==='string'?`<span class="t3">${facts}</span>`:`<span class="kv2">${facts.map(([k,v])=>`<span>${k}<b>${v}</b></span>`).join('')}</span>`}</div>`;
   const acc=C&&!C.tooShort&&C.amt>=0;
   const spanTxt=C&&!C.tooShort?(C.span<1.5?`${Math.max(1,Math.round(C.span*24))}h`:`${Math.round(C.span)}d`):'';
   // one sentence that answers the question; the reading of it fades back
@@ -1825,16 +1835,20 @@ async function renderFlows(){
       <span style="margin-left:auto;display:inline-flex;border:1px solid var(--line)">${FLOW_WINS.map(w=>`<button onclick="flowWin='${w[0]}';renderFlows()" style="padding:0 11px;height:28px;font-weight:700;font-size:11px;${flowWin===w[0]?'background:var(--text);color:#fff':'color:var(--muted)'}">${w[1]}</button>`).join('')}</span></div>
     <div style="border-left:3px solid ${!ok?'var(--dim)':acc?'var(--teal)':'var(--coral)'};background:var(--panel);padding:12px 14px"><div style="font-size:15px;font-weight:700;line-height:1.4">${story}</div><div class="t3" style="margin-top:4px;font-size:12px">${read}</div></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
-      ${ok?tile(`Net · ${W[1]}`,`${tokAmt(C.amt,true)}`,`${acc?'accumulated':'distributed'} · ~${usd(Math.abs(C.usd))} · ${C.pct>=0?'+':''}${C.pct.toFixed(2)}%`,acc?'up':'down','Change in the combined balance of the top 100 wallets over the window, valued at today’s price'):tile(`Net · ${W[1]}`,'—','not enough history yet')}
-      ${tile('Top 100 hold now',`${tokAmt(nowAmt)}`,`~${usd(nowAmt*(cur.price||0))} · ${(data.topShare*100).toFixed(1)}% of supply`)}
-      ${tile(`Turnover · ${W[1]}`,ok?`<span class="up">${C.nEntries}</span> <span class="t3" style="font-family:var(--font-body)">in</span> · <span class="down">${C.nExits}</span> <span class="t3" style="font-family:var(--font-body)">out</span>`:'—','wallets entering / leaving the top 100')}
-      ${cex.n?tile('Exchange flow · 7d',`<span class="up">${usd(cex.in)}</span> <span class="t3" style="font-family:var(--font-body)">in</span> · <span class="down">${usd(cex.out)}</span> <span class="t3" style="font-family:var(--font-body)">out</span>`,`${cex.n} labeled exchange transfer${cex.n===1?'':'s'}`,'','Only transfers with a labeled exchange counterparty count, so this understates the real total'):tile('Exchange flow · 7d','—','no labeled exchange transfers observed')}
+      ${ok?tile(`Net · ${spanTxt}`,`${tokAmt(C.amt,true)} <small style="font-size:12px;font-weight:600;color:var(--muted)">${esc(sym)}</small>`,[[acc?'accumulated':'distributed','~'+usd(Math.abs(C.usd))],['change',(C.pct>=0?'+':'')+C.pct.toFixed(2)+'%']],acc?'up':'down','Change in the combined balance of the top 100 wallets over the window, valued at today’s price'):tile(`Net · ${W[1]}`,'—','not enough history yet')}
+      ${tile('Top 100 hold now',`${tokAmt(nowAmt)} <small style="font-size:12px;font-weight:600;color:var(--muted)">${esc(sym)}</small>`,[['value','~'+usd(nowAmt*(cur.price||0))],['of supply',(data.topShare*100).toFixed(1)+'%']])}
+      ${tile(`Turnover · ${spanTxt||W[1]}`,ok?`<span class="up">${C.nEntries}</span> <span class="t3" style="font-family:var(--font-body)">in</span> · <span class="down">${C.nExits}</span> <span class="t3" style="font-family:var(--font-body)">out</span>`:'—',ok?[['joined',C.nEntries+' wallet'+(C.nEntries===1?'':'s')],['left',C.nExits]]:'wallets entering / leaving the top 100')}
+      ${cex.n?tile('Exchange flow · 7d',`<span class="up">${usd(cex.in)}</span> <span class="t3" style="font-family:var(--font-body)">in</span> · <span class="down">${usd(cex.out)}</span> <span class="t3" style="font-family:var(--font-body)">out</span>`,[['transfers',cex.n],['net',(cex.in-cex.out>=0?'+':'−')+usd(Math.abs(cex.in-cex.out))]],'','Only transfers with a labeled exchange counterparty count, so this understates the real total'):tile('Exchange flow · 7d','—','no labeled exchange transfers observed')}
     </div>
     ${(()=>{const D=F.dest7;if(!D||!D.n)return'';
       const NAMES={out:{dex:'Sold on a DEX',cex:'Sent to an exchange',bridge:'Bridged out',wallet:'Moved to other wallets'},in:{dex:'Bought on a DEX',cex:'Withdrawn from an exchange',bridge:'Bridged in',wallet:'Received from wallets'}};
-      const col=(o,dir,label)=>{const tot=Object.values(o).reduce((a,b)=>a+b,0);if(!tot)return`<div><div class="t2" style="margin-bottom:6px">${label}</div><div class="t3">none observed</div></div>`;const segs=Object.entries(o).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);const mx=segs[0][1];
-        return `<div><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><span class="t2">${label}</span><span class="t1" style="font-size:15px">${usd(tot)}</span></div><div class="dest">${segs.map(([k,v])=>`<div><span style="display:inline-flex;align-items:center;gap:6px;color:${DEST[k].c};font-weight:600">${DEST[k].ic}${NAMES[dir][k]}</span><span class="bar"><i style="width:${100*v/mx}%;background:${DEST[k].c}"></i></span><b class="mono" style="text-align:right">${usd(v)}</b><span class="t3 mono" style="text-align:right">${Math.round(100*v/tot)}%</span></div>`).join('')}</div></div>`};
-      return box('Where the coins went',`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px">${col(D.out,'out','Out of the top 100')}${col(D.in,'in','Into the top 100')}</div>`,`last 7 days · ${D.n} transfers across ${D.wallets} wallets with enriched history <span class="ib" title="Counterparties of each transfer are classified as DEX pool/router, exchange, bridge or plain wallet. Coverage grows with every refresh.">i</span>`)})()}
+      const totOut=Object.values(D.out).reduce((a,b)=>a+b,0),totIn=Object.values(D.in).reduce((a,b)=>a+b,0);
+      const netOut=ok&&C.usd<0?Math.abs(C.usd):0,netIn=ok&&C.usd>0?C.usd:0;
+      const tbl=(o,dir,label,tot,ref)=>{const segs=Object.entries(o).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);const mx=segs.length?segs[0][1]:1;
+        return `<div><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><span class="t2">${label}</span><span class="kv2"><span>traced<b>${usd(tot)}</b></span>${ref?`<span>of ~<b>${usd(ref)}</b> net</span>`:''}</span></div>
+          <div class="dest"><div class="dh t2" style="letter-spacing:.06em"><span>Destination</span><span>Share of traced</span><span class="r">Amount</span><span class="r">%</span></div>${segs.length?segs.map(([k,v])=>`<div class="dr"><span style="color:${DEST[k].c}">${DEST[k].ic}${NAMES[dir][k]}</span><span class="dbar"><i style="width:${100*v/mx}%;background:${DEST[k].c}"></i></span><b class="mono r">${usd(v)}</b><span class="t3 mono r">${Math.round(100*v/tot)}%</span></div>`).join(''):`<div class="dr t3" style="grid-template-columns:1fr">none observed in this window</div>`}</div></div>`};
+      return box('Where the coins went',`<div class="t3" style="font-size:12px;margin-bottom:12px">We can only follow coins for wallets whose transfer history is enriched (${D.wallets} of the top 100 so far, ${D.n} transfers in the last 7 days). The tables show where <b>those</b> coins went — a sample, not the whole ${spanTxt||'window'} net move. Coverage grows with every refresh.</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px">${tbl(D.out,'out','Out of the top 100',totOut,netOut)}${tbl(D.in,'in','Into the top 100',totIn,netIn)}</div>`,`last 7 days · ${D.wallets} wallets · ${D.n} transfers <span class="ib" title="Each transfer's counterparty is classified as a DEX pool/router, an exchange, a bridge or a plain wallet. Share of traced = this destination's part of everything we could follow in that direction.">i</span>`)})()}
     ${box(`How much $${esc(sym)} the top 100 hold`,`<canvas id="fchart" style="width:100%;height:220px;display:block;cursor:crosshair"></canvas><div class="t3" style="margin-top:6px;display:flex;gap:14px;flex-wrap:wrap"><span><i style="display:inline-block;width:14px;height:3px;background:var(--accent);vertical-align:middle;margin-right:5px"></i>combined balance</span><span><i style="display:inline-block;width:14px;height:0;border-top:2px dashed var(--dim);vertical-align:middle;margin-right:5px"></i>price</span><span>hover a point · click one to see who moved</span></div><div id="fday" style="margin-top:8px"></div>`,'one point per snapshot')}
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px">
       ${box(`Biggest accumulators`,ok&&C.moversUp.length?C.moversUp.map(moveRow).join(''):'<div class="t3" style="padding:8px 2px">no significant adds</div>',W[1])}
