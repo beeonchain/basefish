@@ -1425,7 +1425,7 @@ async function privyInit(){if(ACCT.privy)return ACCT.privy;if(!ACCT.cfg)try{ACCT
   await loadPrivy();const P=window.PrivyCore;ACCT.privy=new P.Privy({appId:ACCT.cfg.privy,storage:new P.LocalStorage()});await ACCT.privy.initialize();return ACCT.privy}
 async function acctToken(){if(!ACCT.privy)return ACCT.token;try{ACCT.token=await ACCT.privy.getAccessToken()}catch{ACCT.token=null}return ACCT.token}
 const acctH=()=>ACCT.token?{'content-type':'application/json',authorization:'Bearer '+ACCT.token}:{'content-type':'application/json'};
-async function acctApi(path,body){await acctToken();const r=await fetch(path,{method:body?'POST':'GET',headers:acctH(),body:body?JSON.stringify(body):undefined});const j=await r.json().catch(()=>({}));if(!r.ok){if(r.status===401&&path.startsWith('/api/me')){acctSignOut(false)}throw new Error(j.error||('HTTP '+r.status))}return j}
+async function acctApi(path,body){await acctToken();const r=await fetch(path,{method:body?'POST':'GET',headers:acctH(),body:body?JSON.stringify(body):undefined});const j=await r.json().catch(()=>({}));if(!r.ok){if(r.status===401&&path.startsWith('/api/me')&&!path.includes('sync')){acctSignOut(false)}throw new Error(j.error||('HTTP '+r.status))}return j}
 const hasPrivySession=()=>{try{return Object.keys(localStorage).some(k=>/^privy/i.test(k)&&/token|session|refresh/i.test(k))}catch{return false}};
 async function acctInit(){
   try{ACCT.cfg=await fetch('/api/auth').then(r=>r.json())}catch{ACCT.cfg={privy:'cmtznydhb01760cl6wiylerak'}}
@@ -1440,7 +1440,7 @@ async function acctInit(){
   acctNav();if(view==='alerts')renderAlerts();if(view==='profile')renderProfile()}
 function acctSet(u){ACCT.user=u;if(u&&ACCT.seenHits===null)ACCT.seenHits=new Set((u.hits||[]).map(h=>h.id));acctNav()}
 function acctNav(){const b=document.querySelector('#nav button[data-view="profile"] span');if(b)b.textContent=ACCT.user?(ACCT.user.label||'Account'):'Sign in'}
-async function acctAfterLogin(msg){const j=await acctApi('/api/me?sync=1');ACCT.seenHits=null;acctSet(j.user);toastMsg(`${msg} as <b>${esc(j.user.label)}</b>`,'var(--teal)');closeSignIn();if(view==='alerts')renderAlerts();if(view==='profile')renderProfile();if(view==='wallet'&&location.hash.startsWith('#w='))openProfileByAddr(location.hash.slice(3));const f=ACCT.after;ACCT.after=null;if(f)try{f()}catch{}}
+async function acctAfterLogin(msg){let j;try{j=await acctApi('/api/me?sync=1')}catch(e){throw new Error('signed in with Privy, but the account service said: '+errText(e))}ACCT.seenHits=null;acctSet(j.user);toastMsg(`${msg} as <b>${esc(j.user.label)}</b>`,'var(--teal)');closeSignIn();if(view==='alerts')renderAlerts();if(view==='profile')renderProfile();if(view==='wallet'&&location.hash.startsWith('#w='))openProfileByAddr(location.hash.slice(3));const f=ACCT.after;ACCT.after=null;if(f)try{f()}catch{}}
 async function acctRefresh(){if(!ACCT.user)return false;try{const j=await acctApi('/api/me');const fresh=(j.user.hits||[]).filter(h=>!ACCT.seenHits.has(h.id));fresh.slice(0,3).forEach(h=>toastMsg(`<b>${esc(h.title)}</b>`,h.usd>=0?'var(--teal)':'var(--coral)'));fresh.forEach(h=>ACCT.seenHits.add(h.id));ACCT.user=j.user;return fresh.length>0}catch{return false}}
 async function acctSignOut(rerender=true){try{if(ACCT.privy)await ACCT.privy.logout()}catch{}ACCT.token=null;ACCT.user=null;ACCT.seenHits=null;acctNav();if(rerender){if(view==='profile')setView('aquarium');else if(view==='alerts')renderAlerts()}}
 /* requireAuth(fn): run fn now if signed in, else open the sign-in modal and run it after */
@@ -1463,14 +1463,18 @@ const siMsg=(m)=>{const e=document.getElementById('siMsg');if(e)e.textContent=m|
 async function siEmailSend(){const em=(document.getElementById('siEmail').value||'').trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){siMsg('Enter a valid email');return}
   try{siMsg('Sending code…');const p=await privyInit();await p.auth.email.sendCode(em);SI.email=em;SI.step='code';renderSignIn();setTimeout(()=>{const i=document.getElementById('siCode');i&&i.focus()},50)}catch(e){siMsg(e.message||'could not send the code')}}
 async function siEmailCode(){const code=(document.getElementById('siCode').value||'').trim();if(code.length<4){siMsg('Enter the code');return}
-  try{siMsg('Checking…');const p=await privyInit();if(SI.mode==='link')await p.auth.email.linkWithCode(SI.email,code);else await p.auth.email.loginWithCode(SI.email,code);await acctAfterLogin(SI.mode==='link'?'Email linked':'Signed in');if(SI.mode==='link')renderProfile()}catch(e){siMsg(e.message||'wrong code')}}
+  try{siMsg('Checking…');const p=await privyInit();if(SI.mode==='link')await p.auth.email.linkWithCode(SI.email,code);else await p.auth.email.loginWithCode(SI.email,code);await acctAfterLogin(SI.mode==='link'?'Email linked':'Signed in');if(SI.mode==='link')renderProfile()}catch(e){console.error('sign-in',e);siMsg('Sign-in failed: '+errText(e))}}
 async function siOAuth(provider){try{siMsg('Redirecting…');const p=await privyInit();sessionStorage.setItem('pv_mode',SI.mode);const r=await p.auth.oauth.generateURL(provider,location.origin+location.pathname);location.assign(r.url||r)}catch(e){siMsg(e.message||'could not start '+provider)}}
+const BASE_CHAIN={chainId:'0x2105',chainName:'Base',nativeCurrency:{name:'Ether',symbol:'ETH',decimals:18},rpcUrls:['https://mainnet.base.org'],blockExplorerUrls:['https://basescan.org']};
+async function ensureBase(eth){const cid=await eth.request({method:'eth_chainId'});if(parseInt(cid,16)===8453)return;siMsg('Switching your wallet to Base…');
+  try{await eth.request({method:'wallet_switchEthereumChain',params:[{chainId:'0x2105'}]})}catch(e){if(e&&(e.code===4902||/unrecognized|not added|4902/i.test(e.message||''))){await eth.request({method:'wallet_addEthereumChain',params:[BASE_CHAIN]})}else throw e}}
+const errText=e=>{const m=(e&&(e.message||e.error||e.code))||'';return typeof m==='string'&&m?m.slice(0,200):'something went wrong'};
 async function siWallet(){const eth=window.ethereum;if(!eth){siMsg('No wallet found in this browser — install MetaMask, Coinbase Wallet or Rabby, or use email.');return}
-  try{siMsg('Waiting for your wallet…');const p=await privyInit();const [addr]=await eth.request({method:'eth_requestAccounts'});const cid=await eth.request({method:'eth_chainId'});
-    const wallet={address:addr,chainId:'eip155:'+parseInt(cid,16)};const {message}=await p.auth.siwe.init(wallet,location.host,location.origin);
-    const sig=await eth.request({method:'personal_sign',params:[message,addr]});
-    if(SI.mode==='link')await p.auth.siwe.linkWithSiwe(sig,wallet,message);else await p.auth.siwe.loginWithSiwe(sig,wallet,message,'login-or-sign-up');
-    await acctAfterLogin(SI.mode==='link'?'Wallet linked':'Signed in');if(SI.mode==='link')renderProfile()}catch(e){siMsg(e.message||'signature rejected')}}
+  try{siMsg('Waiting for your wallet…');const p=await privyInit();const [addr]=await eth.request({method:'eth_requestAccounts'});await ensureBase(eth);
+    const wallet={address:addr,chainId:'eip155:8453'};const {message}=await p.auth.siwe.init(wallet,location.host,location.origin);
+    siMsg('Sign the message in your wallet (gas-free)…');const sig=await eth.request({method:'personal_sign',params:[message,addr]});
+    siMsg('Verifying…');if(SI.mode==='link')await p.auth.siwe.linkWithSiwe(sig,wallet,message);else await p.auth.siwe.loginWithSiwe(sig,wallet,message,'login-or-sign-up');
+    await acctAfterLogin(SI.mode==='link'?'Wallet linked':'Signed in');if(SI.mode==='link')renderProfile()}catch(e){console.error('sign-in',e);siMsg('Sign-in failed: '+errText(e));toastMsg('Sign-in failed: '+esc(errText(e)),'var(--coral)')}}
 /* ---- watches (Alerts tab) ---- */
 async function acctAdd(){const w=(document.getElementById('acctW').value||'').trim(),t=document.getElementById('acctT').value;if(!/^0x[0-9a-fA-F]{40}$/.test(w)){toastMsg('Paste a full wallet address (0x…40 hex).','var(--coral)');return}
   try{const j=await acctApi('/api/me',{op:'add',w,t});ACCT.user=j.user;toastMsg(`Watching <b>${short(w.toLowerCase())}</b> for $${t}`,'var(--teal)');renderAlerts()}catch(e){toastMsg(esc(e.message),'var(--coral)')}}

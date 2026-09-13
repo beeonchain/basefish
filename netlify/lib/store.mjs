@@ -83,9 +83,10 @@ export async function privyUser(did, { fresh = false } = {}) {
   } catch { return c ? c.v : null; }
 }
 // admin = DIDs / emails / wallets listed in ADMIN_IDS (comma-separated) in Netlify env
+// founder wallet is always admin; ADMIN_IDS (comma-separated DIDs / emails / wallets) adds more
+export const FOUNDER_WALLETS = ['0xc034e02dc51eb30c9ae48069ce09bda36e4ed1ea'];
 export function isAdmin(did, u) {
-  const ids = (process.env.ADMIN_IDS || '').split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
-  if (!ids.length) return false;
+  const ids = [...FOUNDER_WALLETS, ...(process.env.ADMIN_IDS || '').split(',').map((s) => s.trim().toLowerCase()).filter(Boolean)];
   const mine = [did, u && u.email, ...((u && u.wallets) || [])].filter(Boolean).map((s) => String(s).toLowerCase());
   return mine.some((m) => ids.includes(m));
 }
