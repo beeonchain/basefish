@@ -450,7 +450,6 @@
       <button data-view="alerts" data-atab="mine" class="subitem"><span>Personal</span></button>
       <button data-view="lockers"><svg viewBox="0 0 16 16"><rect x="4" y="7" width="8" height="7"/><rect x="5" y="3" width="2" height="4"/><rect x="9" y="3" width="2" height="4"/><rect x="6" y="2" width="4" height="2"/><rect x="7" y="10" width="2" height="2" fill="#fff"/></svg><span>Lockers</span></button>
       <button data-view="watch"><svg viewBox="0 0 16 16"><rect x="7" y="2" width="2" height="3"/><rect x="2" y="7" width="3" height="2"/><rect x="11" y="7" width="3" height="2"/><rect x="6" y="5" width="4" height="2"/><rect x="5" y="7" width="6" height="2"/><rect x="6" y="9" width="4" height="2"/><rect x="4" y="11" width="2" height="2"/><rect x="10" y="11" width="2" height="2"/><rect x="7" y="9" width="2" height="3"/></svg><span>Watchlist</span></button>
-      <button data-view="avatar"><svg viewBox="0 0 16 16"><rect x="5" y="2" width="6" height="2"/><rect x="4" y="4" width="8" height="5"/><rect x="6" y="6" width="2" height="1" fill="#fff"/><rect x="3" y="10" width="10" height="4"/><rect x="2" y="12" width="12" height="2"/></svg><span>Avatar</span></button>
       <button data-view="profile" class="acctbtn"><svg viewBox="0 0 16 16"><rect x="5" y="2" width="6" height="6"/><rect x="3" y="9" width="10" height="5"/></svg><span>Sign in</span></button>
     </nav>
     <div class="tracked">
@@ -1198,8 +1197,8 @@ function buildPicker(){
   document.querySelectorAll('#tokpick button').forEach(b=>b.onclick=()=>{closeCard();loadToken(TOKENS.find(t=>t.sym===b.dataset.sym));toastMsg(`Aquarium switched to <b>$${cur.sym}</b>`,'var(--muted)')});
 }
 /* views */
-const VIEW_T={aquarium:['Whalarium','Every wallet is a fish. Top 100, live from Base.'],holders:['Top holders','The top 100 wallets of this token, ranked by balance.'],wallets:['Ecosystem Whales','Every wallet that sits in a top 100, across all tracked tokens.'],flows:['Flows','Are the biggest wallets buying or selling?'],alerts:['Alerts','What the biggest wallets just did.'],lockers:['Lockers','Locked, vesting and staked supply — who holds the keys.'],watch:['Watchlist','Wallets you follow.'],wallet:['Wallet','One wallet, across every tracked token.'],mini:['Token lookup','Any Base token by contract address.'],profile:['Account','Your accounts, plan, shark and claimed wallets.'],avatar:['Avatar','Build your shark — a layered PFP, yours to mint.']};
-function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>{const sub=b.dataset.atab;b.classList.toggle('on',b.dataset.view===v&&(!sub||sub===alertTab));b.classList.toggle('parent-on',(b.dataset.view==='aquarium'&&v==='holders')||(b.dataset.view==='alerts'&&!sub&&v==='alerts'))});
+const VIEW_T={aquarium:['Whalarium','Every wallet is a fish. Top 100, live from Base.'],holders:['Top holders','The top 100 wallets of this token, ranked by balance.'],wallets:['Ecosystem Whales','Every wallet that sits in a top 100, across all tracked tokens.'],flows:['Flows','Are the biggest wallets buying or selling?'],alerts:['Alerts','What the biggest wallets just did.'],lockers:['Lockers','Locked, vesting and staked supply — who holds the keys.'],watch:['Watchlist','Wallets you follow.'],wallet:['Wallet','One wallet, across every tracked token.'],mini:['Token lookup','Any Base token by contract address.'],profile:['Account','Your accounts, plan, shark and claimed wallets.'],avatar:['Account · Avatar','Build your shark — a layered PFP, yours to mint.']};
+function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>{const sub=b.dataset.atab;b.classList.toggle('on',b.dataset.view===v&&(!sub||sub===alertTab));b.classList.toggle('parent-on',(b.dataset.view==='aquarium'&&v==='holders')||(b.dataset.view==='alerts'&&!sub&&v==='alerts')||(b.dataset.view==='profile'&&v==='avatar'))});
   {const t=VIEW_T[v]||VIEW_T.aquarium;const a=document.getElementById('viewTitle'),b=document.getElementById('viewSub');if(a)a.textContent=t[0];if(b)b.textContent=t[1];}
   document.querySelector('.app').classList.toggle('noRail',v!=='aquarium');
   document.querySelector('.app').classList.toggle('wview',v==='wallets'||v==='watch');
@@ -1731,7 +1730,7 @@ async function propose(addr,kind){if(!requireAuth())return;const g=id=>(document
   try{await acctApi('/api/propose',kind==='tag'?{kind,addr,tag:g('ppTag'),note:g('ppNote')}:{kind,addr,x:g('ppX'),name:g('ppName'),evidence:g('ppEv')});toastMsg('Proposal sent — thanks. We review these by hand.','var(--teal)');proposeUI(addr)}catch(e){toastMsg(esc(e.message),'var(--coral)')}}
 /* ---- profile view ---- */
 function renderProfile(){const el=document.getElementById('profileView');if(!el)return;
-  if(!ACCT.user){el.innerHTML=`<div style="padding:40px 16px;max-width:520px"><h3 style="margin:0 0 6px;font-size:18px">Your account</h3><p style="color:var(--muted);margin:0 0 14px">Watches, private alerts, claimed wallets, your avatar in the tank and token fetches live here. Sign in with email, Google, X or a wallet — it takes ten seconds and costs nothing.</p><button class="btn primary" onclick="openSignIn('login')">Sign in</button></div>`;return}
+  if(!ACCT.user){el.innerHTML=`<div style="padding:40px 16px;max-width:520px"><h3 style="margin:0 0 6px;font-size:18px">Your account</h3><p style="color:var(--muted);margin:0 0 14px">Watches, private alerts, claimed wallets, your avatar in the tank and token fetches live here. Sign in with email, Google, X or a wallet — it takes ten seconds and costs nothing.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" onclick="openSignIn('login')">Sign in</button><button class="btn" onclick="setView('avatar')">Try the shark builder →</button></div></div>`;return}
   const u=ACCT.user,av=u.avatar||{fish:'medium',color:'blue',acc:'none'};
   const box=(t,inner,right)=>`<div class="card-ui" style="padding:0"><div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 14px;border-bottom:1px solid var(--line)"><b style="font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)">${t}</b><span style="color:var(--dim);font-size:11px">${right||''}</span></div><div style="padding:12px 14px">${inner}</div></div>`;
   const row=(k,v)=>`<div style="display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid var(--line);font-size:12.5px"><span style="color:var(--muted)">${k}</span><span style="text-align:right;min-width:0">${v}</span></div>`;
@@ -1770,7 +1769,8 @@ async function renderAvatarView(){
   const attrs=SHARK.attributes(t);const saved=avSavedEq(t);
   const tabs=SHARK.ORDER.filter(k=>k!=='bg').concat(['bg']);
   const opts=Object.entries(SHARK.TRAITS[cat]);
-  el.innerHTML=`<div class="avwrap">
+  el.innerHTML=`<div style="padding:16px 16px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="wb" onclick="setView('profile')">← Account</button><h3 style="margin:0;font-size:16px">Your shark</h3><span class="t3">one base, every trait a layer — pick, shuffle, save, mint later</span></div>
+  <div class="avwrap">
     <div class="avL">
       <div class="avprev"><canvas id="avCanvas" width="512" height="512"></canvas></div>
       <div class="avmeta">
