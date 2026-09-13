@@ -80,6 +80,11 @@
   .nav button svg{width:15px;height:15px;flex:none;fill:currentColor;shape-rendering:crispEdges}
   .nav button:hover{background:var(--panel2);color:var(--text)}
   .nav button.on{background:var(--panel2);color:var(--teal);box-shadow:inset 3px 0 0 var(--teal)}
+  .nav button.subitem{padding-left:34px;font-size:12.5px;font-weight:500;position:relative}
+  .nav button.subitem::before{content:'';position:absolute;left:18px;top:0;bottom:50%;width:8px;border-left:1px solid var(--line2);border-bottom:1px solid var(--line2)}
+  .nav button.subitem svg{display:none}
+  .nav button.subitem.on{font-weight:700}
+  .nav button.parent-on{color:var(--text)}
   .nav .soon{margin-left:auto;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);border:1px solid var(--line);padding:1px 5px;border-radius:0}
   .nav .navbadge{margin-left:auto;font-size:10px;font-weight:800;padding:2px 6px;background:var(--text);color:#fff;font-style:normal;font-family:var(--font-mono)}
   .tracked{margin-top:auto;border:1px solid var(--line);border-radius:var(--r);padding:12px;background:var(--panel)}
@@ -208,7 +213,7 @@
   .box{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);padding:14px}
   .box h3{font:700 11px var(--font-body);text-transform:uppercase;letter-spacing:.09em;color:var(--dim);margin:0 0 10px;display:flex;align-items:center;justify-content:space-between}
   .box h3 a{font:600 12px var(--font-body);color:var(--accent);cursor:pointer;text-transform:none;letter-spacing:0}
-  .hold{display:flex;flex-direction:column;gap:3px}
+  .hold{display:flex;flex-direction:column;gap:3px;max-height:400px;overflow:auto;scrollbar-width:thin;margin:0 -4px;padding:0 4px}
   .hold button{display:grid;grid-template-columns:16px 24px 1fr auto;align-items:center;gap:8px;padding:6px 6px;border-radius:var(--r-sm);text-align:left}
   .hold button:hover,.hold button.sel{background:var(--panel2)}
   .hold .n{color:var(--dim);font-size:11px;font-weight:700}
@@ -355,9 +360,9 @@
   <aside class="side">
     <div class="brand"><span class="bmark" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="1" y="9" width="3" height="2"/><rect x="4" y="7" width="3" height="2"/><rect x="7" y="9" width="3" height="2"/><rect x="10" y="7" width="3" height="2"/><rect x="13" y="9" width="2" height="2"/><rect x="5" y="3" width="6" height="3"/><rect x="4" y="5" width="8" height="2"/></svg></span><div><h1>Whalarium</h1><small>Base · on-chain</small></div></div>
     <nav class="nav" id="nav">
-      <button class="on" data-view="aquarium"><svg viewBox="0 0 16 16"><rect x="1" y="5" width="2" height="2"/><rect x="1" y="9" width="2" height="2"/><rect x="3" y="7" width="2" height="2"/><rect x="5" y="5" width="8" height="6"/><rect x="13" y="7" width="2" height="2"/><rect x="7" y="3" width="4" height="2"/></svg><span>Aquarium</span></button>
-      <button data-view="holders"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="2" height="2"/><rect x="6" y="3" width="8" height="2"/><rect x="2" y="7" width="2" height="2"/><rect x="6" y="7" width="8" height="2"/><rect x="2" y="11" width="2" height="2"/><rect x="6" y="11" width="8" height="2"/></svg><span>Top holders</span></button>
-      <button data-view="wallets"><svg viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="2"/><rect x="2" y="12" width="12" height="2"/><rect x="2" y="6" width="2" height="6"/><rect x="12" y="6" width="2" height="6"/><rect x="9" y="8" width="3" height="2"/></svg><span>Wallets</span></button>
+      <button class="on" data-view="aquarium"><svg viewBox="0 0 16 16"><rect x="1" y="5" width="2" height="2"/><rect x="1" y="9" width="2" height="2"/><rect x="3" y="7" width="2" height="2"/><rect x="5" y="5" width="8" height="6"/><rect x="13" y="7" width="2" height="2"/><rect x="7" y="3" width="4" height="2"/></svg><span>Whalarium</span></button>
+      <button data-view="holders" class="subitem"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="2" height="2"/><rect x="6" y="3" width="8" height="2"/><rect x="2" y="7" width="2" height="2"/><rect x="6" y="7" width="8" height="2"/><rect x="2" y="11" width="2" height="2"/><rect x="6" y="11" width="8" height="2"/></svg><span>Top holders</span></button>
+      <button data-view="wallets"><svg viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="2"/><rect x="2" y="12" width="12" height="2"/><rect x="2" y="6" width="2" height="6"/><rect x="12" y="6" width="2" height="6"/><rect x="9" y="8" width="3" height="2"/></svg><span>Ecosystem Whales</span></button>
       <button data-view="flows"><svg viewBox="0 0 16 16"><rect x="2" y="4" width="8" height="2"/><rect x="10" y="2" width="2" height="2"/><rect x="12" y="4" width="2" height="2"/><rect x="10" y="6" width="2" height="2"/><rect x="6" y="10" width="8" height="2"/><rect x="4" y="8" width="2" height="2"/><rect x="2" y="10" width="2" height="2"/><rect x="4" y="12" width="2" height="2"/></svg><span>Flows</span></button>
       <button data-view="alerts"><svg viewBox="0 0 16 16"><rect x="6" y="2" width="4" height="2"/><rect x="5" y="4" width="6" height="2"/><rect x="4" y="6" width="8" height="4"/><rect x="3" y="10" width="10" height="2"/><rect x="7" y="13" width="2" height="2"/></svg><span>Alerts</span><em class="navbadge" id="alertBadge" style="display:none"></em></button>
       <button data-view="watch"><svg viewBox="0 0 16 16"><rect x="7" y="2" width="2" height="3"/><rect x="2" y="7" width="3" height="2"/><rect x="11" y="7" width="3" height="2"/><rect x="6" y="5" width="4" height="2"/><rect x="5" y="7" width="6" height="2"/><rect x="6" y="9" width="4" height="2"/><rect x="4" y="11" width="2" height="2"/><rect x="10" y="11" width="2" height="2"/><rect x="7" y="9" width="2" height="3"/></svg><span>Watchlist</span></button>
@@ -377,7 +382,7 @@
   </aside>
 
   <header class="head">
-    <div class="htitle"><h2 id="viewTitle">Aquarium</h2><div class="sub" id="viewSub">Every wallet is a fish. Top 100, live from Base.</div></div>
+    <div class="htitle"><h2 id="viewTitle">Whalarium</h2><div class="sub" id="viewSub">Every wallet is a fish. Top 100, live from Base.</div></div>
     <div class="tokpick" id="tokpick"></div>
     <div class="tokall" id="tokall" style="display:none"><button id="tokallBtn">ALL TOKENS ▾</button><div class="tokmenu" id="tokmenu"></div></div>
     <div class="stats">
@@ -423,7 +428,7 @@
   </main>
 
   <aside class="rail">
-    <div class="box"><h3>Top holders <a id="viewAll">View all 100</a></h3><div class="hold" id="holdList"></div></div>
+    <div class="box"><h3>Top 100 <a id="viewAll" title="Share of the total supply held by these 100 wallets · click for the full table"><span id="railTop">—</span> of supply</a></h3><div class="hold" id="holdList"></div></div>
     <div class="box"><h3>Top-100 supply split</h3><div class="dist"><canvas id="donut"></canvas><ul id="distList"></ul></div></div>
     <div class="box"><h3>Live activity <a style="color:var(--dim)">on-chain</a></h3><div class="feed" id="feed"></div></div>
     <div class="box"><h3>Legend</h3><div class="leg">
@@ -931,10 +936,10 @@ function renderChrome(){
     document.getElementById('tkDex').href='https://dexscreener.com/base/'+t.contract;
   }
   document.getElementById('stHolders').textContent=num(t.holders);document.getElementById('stHoldersTile').style.display=(t.holders>0)?'':'none';
-  document.getElementById('stTop').textContent=(data.topShare*100).toFixed(1)+'%';
+  document.getElementById('stTop').textContent=(data.topShare*100).toFixed(1)+'%';{const r=document.getElementById('railTop');if(r)r.textContent=(data.topShare*100).toFixed(1)+'%'}
   document.getElementById('stWhales').textContent=L.filter(h=>h.tier==='whale').length;
   const th=t.th;document.getElementById('thSmall').textContent='< '+usd(th[0]);document.getElementById('thMed').textContent=usd(th[0])+' – '+usd(th[1]);document.getElementById('thLarge').textContent=usd(th[1])+' – '+usd(th[2]);document.getElementById('thWhale').textContent='> '+usd(th[2]);
-  document.getElementById('holdList').innerHTML=L.slice(0,7).map((h,i)=>`<button data-i="${i}"><span class="n">${h.rank}</span><span style="width:26px;height:19px;flex:none"><img src="assets/tank/${h.rank===1?'king':h.tier}.webp" style="width:26px;height:19px;object-fit:contain" onerror="this.style.display='none'"></span><span><div class="a">${short(h.addr)}</div>${(h.entity||h.label)?`<div style="font-size:10px;font-weight:600;color:${cexOf(h.entity)?cexOf(h.entity)[1]:'var(--muted)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc((h.entity||h.label).slice(0,26))}</div>`:''}<div class="bar2"><i style="width:${Math.min(100,h.pct/L[0].pct*100)}%"></i></div></span><span class="p mono">${h.pct.toFixed(2)}%<small>${usd(h.value)}</small></span></button>`).join('');
+  document.getElementById('holdList').innerHTML=L.map((h,i)=>`<button data-i="${i}"><span class="n">${h.rank}</span><span style="width:26px;height:19px;flex:none"><img src="assets/tank/${h.rank===1?'king':h.tier}.webp" style="width:26px;height:19px;object-fit:contain" onerror="this.style.display='none'"></span><span><div class="a">${short(h.addr)}</div>${(h.entity||h.label)?`<div style="font-size:10px;font-weight:600;color:${cexOf(h.entity)?cexOf(h.entity)[1]:'var(--muted)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc((h.entity||h.label).slice(0,26))}</div>`:''}<div class="bar2"><i style="width:${Math.min(100,h.pct/L[0].pct*100)}%"></i></div></span><span class="p mono">${h.pct.toFixed(2)}%<small>${usd(h.value)}</small></span></button>`).join('');
   document.querySelectorAll('#holdList button').forEach(b=>b.onclick=()=>{setView('aquarium');select(fish[+b.dataset.i])});
   drawMinis();drawDonut();renderTable();freshTick();if(view==='flows')renderFlows();
   if(![...document.querySelectorAll('#tokpick button')].some(b=>b.dataset.sym===t.sym))buildPicker();
@@ -1072,8 +1077,8 @@ function buildPicker(){
   document.querySelectorAll('#tokpick button').forEach(b=>b.onclick=()=>{closeCard();loadToken(TOKENS.find(t=>t.sym===b.dataset.sym));toastMsg(`Aquarium switched to <b>$${cur.sym}</b>`,'var(--muted)')});
 }
 /* views */
-const VIEW_T={aquarium:['Aquarium','Every wallet is a fish. Top 100, live from Base.'],holders:['Top holders','The top 100 wallets of this token, ranked by balance.'],wallets:['Wallets','Every wallet that sits in a top 100, across all tracked tokens.'],flows:['Flows','Are the biggest wallets buying or selling?'],alerts:['Alerts','What the biggest wallets just did.'],watch:['Watchlist','Wallets you follow.'],wallet:['Wallet','One wallet, across every tracked token.'],mini:['Token lookup','Any Base token by contract address.']};
-function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
+const VIEW_T={aquarium:['Whalarium','Every wallet is a fish. Top 100, live from Base.'],holders:['Top holders','The top 100 wallets of this token, ranked by balance.'],wallets:['Ecosystem Whales','Every wallet that sits in a top 100, across all tracked tokens.'],flows:['Flows','Are the biggest wallets buying or selling?'],alerts:['Alerts','What the biggest wallets just did.'],watch:['Watchlist','Wallets you follow.'],wallet:['Wallet','One wallet, across every tracked token.'],mini:['Token lookup','Any Base token by contract address.']};
+function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>{b.classList.toggle('on',b.dataset.view===v);b.classList.toggle('parent-on',b.dataset.view==='aquarium'&&v==='holders')});
   {const t=VIEW_T[v]||VIEW_T.aquarium;const a=document.getElementById('viewTitle'),b=document.getElementById('viewSub');if(a)a.textContent=t[0];if(b)b.textContent=t[1];}
   document.querySelector('.app').classList.toggle('noRail',v!=='aquarium');
   document.querySelector('.app').classList.toggle('wview',v==='wallets'||v==='watch');
@@ -1135,7 +1140,7 @@ async function renderWallets(){
     }</tbody></table></div>
     <div style="color:var(--dim);font-size:11px;margin-top:6px">% of token supply held · whale share = top-6 wallets' slice of top-100 value · click a row to open that tank</div>
   </div>`:'';
-  el.innerHTML=`${board}<div style="padding:10px 14px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center;font-size:11.5px;color:var(--muted);flex-wrap:wrap">
+  el.innerHTML=`<div style="padding:10px 14px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center;font-size:11.5px;color:var(--muted);flex-wrap:wrap">
     <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="infraTogW" ${hideInfra?'checked':''}> Hide contracts &amp; exchange deposits</label>
     ${hiddenW?`<span style="color:var(--dim)">${hiddenW} hidden</span>`:''}
     <span style="color:var(--dim)">· ${multi} wallet${multi===1?'':'s'} hold ${multi===1?'s':''}more than one tracked token</span></div>
@@ -1294,6 +1299,7 @@ GLYPH.watch=G10('<rect x="2" y="2" width="6" height="1"/><rect x="0" y="4" width
 const AICON=new Proxy({},{get:(_,k)=>{const K=AKIND[k];return `<span class="tg" style="color:${K?K.c:'var(--dim)'};display:inline-flex;vertical-align:-1px">${GLYPH[k]||GLYPH.TAG}</span>`}});
 const akindChip=k=>{const K=AKIND[k]||{n:k,c:'#5B616E',t:''};return `<span class="pill tagp" style="color:${K.c};border-color:${K.c}99;height:18px;font-size:9.5px;padding:0 5px;gap:4px" title="${esc(K.t)}">${GLYPH[k]||GLYPH.TAG}${esc(K.n)}</span>`};
 let ALERTS=[],alertTokFilter='ALL',alertMode='feed';
+const aTx=a=>{if(a.hash)return `<a href="https://basescan.org/tx/${a.hash}" target="_blank" rel="noopener" style="color:var(--dim);font-weight:700;font-size:11px">tx ↗</a>`;const t=TOKENS.find(x=>x.sym===a.sym);return a.addr&&t&&t.contract?`<a href="https://basescan.org/token/${t.contract}?a=${a.addr}" target="_blank" rel="noopener" title="No single tx attached — this alert came from a balance change between two snapshots. Opens this wallet's transfers of the token." style="color:var(--dim);font-weight:700;font-size:11px">transfers ↗</a>`:''};
 const aUsd=a=>(a.usd!=null&&a.usd>0&&/\bsent\b/.test(a.title||''))?-a.usd:a.usd; // older feed entries stored sends as positive // feed = newest first · wallet = grouped by actor
 const FEED_RAW='https://raw.githubusercontent.com/beeonchain/basefish/main/data/alerts.json';
 async function fetchAlerts(){
@@ -1338,7 +1344,7 @@ async function renderAlerts(){
   const latest=[...rows].sort((x,y)=>y.ts-x.ts).slice(0,3);
   const item=a=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:12px">
       <span style="display:flex;gap:8px;min-width:0;align-items:flex-start"><span style="padding-top:1px">${akindChip(a.kind)}</span><span style="min-width:0"><b>${a.kind==='cex'?cexIcon(a.title):''}${esc(a.title)}</b><br><small style="color:var(--muted)">${esc(a.sub||'')}</small></span></span>
-      <span style="white-space:nowrap;color:var(--dim);font-size:11px;text-align:right">${tokTag(a.sym)}<br>${agoStr(a.ts)} ago${a.hash?` · <a href="https://basescan.org/tx/${a.hash}" target="_blank" rel="noopener" style="color:var(--dim);font-weight:700">tx ↗</a>`:''}</span></div>`;
+      <span style="white-space:nowrap;color:var(--dim);font-size:11px;text-align:right">${tokTag(a.sym)}<br>${agoStr(a.ts)} ago · ${aTx(a)}</span></div>`;
   const row=g=>{const open=alertOpen.has(g.key);const kindsIc=[...g.kinds].map(k=>AICON[k]).join('');
     return `<div style="border-bottom:1px solid var(--line)">
       <button class="flowrow" style="padding:11px 14px;border:0" onclick="alertOpen.has('${g.key}')?alertOpen.delete('${g.key}'):alertOpen.add('${g.key}');renderAlerts()">
@@ -1359,7 +1365,7 @@ async function renderAlerts(){
     return `<div class="flowrow" style="display:grid;grid-template-columns:110px 1fr auto;gap:12px;align-items:center;padding:9px 14px;border-bottom:1px solid var(--line);font-size:12px">
       <span class="mono" style="color:var(--dim);font-size:11px;white-space:nowrap">${agoStr(a.ts)} ago${a.ts>seenTs?' <i style="display:inline-block;width:6px;height:6px;background:var(--coral);vertical-align:middle;margin-left:3px" title="new"></i>':''}</span>
       <span style="min-width:0;display:flex;gap:8px;align-items:center;flex-wrap:wrap">${akindChip(a.kind)}${tokTag(a.sym)}<b style="min-width:0">${a.kind==='cex'?cexIcon(a.title):''}${esc(a.title)}</b>${a.sub?`<small style="color:var(--muted)">${esc(a.sub)}</small>`:''}</span>
-      <span style="white-space:nowrap;text-align:right;display:flex;gap:10px;align-items:center">${a.usd!=null?`<b class="mono ${aUsd(a)>=0?'up':'down'}">${aUsd(a)>=0?'+':'−'}${usd(Math.abs(aUsd(a)))}</b>`:''}${a.addr?`<button onclick="openProfileByAddr('${a.addr.toLowerCase()}')" style="border:1px solid var(--line);padding:3px 8px;font-size:10.5px;font-weight:700;color:var(--teal)">${who} →</button>`:''}${a.hash?`<a href="https://basescan.org/tx/${a.hash}" target="_blank" rel="noopener" style="color:var(--dim);font-weight:700;font-size:11px">tx ↗</a>`:''}</span></div>`};
+      <span style="white-space:nowrap;text-align:right;display:flex;gap:10px;align-items:center">${a.usd!=null?`<b class="mono ${aUsd(a)>=0?'up':'down'}">${aUsd(a)>=0?'+':'−'}${usd(Math.abs(aUsd(a)))}</b>`:''}${a.addr?`<button onclick="openProfileByAddr('${a.addr.toLowerCase()}')" style="border:1px solid var(--line);padding:3px 8px;font-size:10.5px;font-weight:700;color:var(--teal)">${who} →</button>`:''}${aTx(a)}</span></div>`};
   const feed=[...rows].sort((x,y)=>y.ts-x.ts);const feedN=alertOpen.has('feed:all')?9999:60;
   const section=(title,gs)=>gs.length?`<div style="border:1px solid var(--line);background:var(--panel)">
       <div style="padding:9px 14px;font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)">${title} <span style="color:var(--dim);font-weight:400">· ${gs.length}</span></div>${gs.map(row).join('')}</div>`:'';

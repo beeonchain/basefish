@@ -3,7 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { namehash } from './keccak.mjs';
-import { buildAlerts, checkWatches, writeFeed, sendTelegram } from './alerts.mjs';
+import { buildAlerts, attachTxHashes, checkWatches, writeFeed, sendTelegram } from './alerts.mjs';
 import { computeTags, applyTags } from './tags.mjs';
 
 const KEY = process.env.MORALIS_API_KEY || '';
@@ -1197,7 +1197,7 @@ for (const t of RUN_TOKENS) {
       // a = token amount so alerts can tell real balance changes from price moves; p = price at snapshot time
       snaps.push({ ts: nowTs, p: usd, src: HOLDERS_SRC[t.sym] || 'none', h: Object.fromEntries(top.map((h, i) => [h.addr.toLowerCase(), { r: i + 1, u: Math.round(h.usd), a: Number(h.amount) || 0 }])) });
       snaps = thinSnaps(snaps);
-      ALERTCTX[t.sym] = { prev: snaps.length > 1 ? snaps[snaps.length - 2] : null, cur: snaps[snaps.length - 1], top, price: usd };
+      ALERTCTX[t.sym] = { prev: snaps.length > 1 ? snaps[snaps.length - 2] : null, cur: snaps[snaps.length - 1], top, price: usd, contract: t.contract };
       fs.writeFileSync(spath, JSON.stringify(snaps));
     }
     // ---- Flows: daily top-100 balance history, movers, entries/exits, observed CEX flow ----
@@ -1475,6 +1475,7 @@ if (process.env.ALCH_NOTIFY_TOKEN) {
 // ---- alerts: detect events, publish the site feed, push Telegram ----
 try {
   const publicAlerts = buildAlerts(ALERTCTX, schoolsForAlerts, { CEX_RX, WALLET_DIR });
+  RUNLOG.alertTx = await attachTxHashes(publicAlerts, ALERTCTX, ALCH_KEY); // snapshot-diff alerts get the real transfer hash when one can be found
   const watchAlerts = ARKHAM_KEY ? await checkWatches(arkhamGet, 20) : [];
   const fresh = await writeFeed([...publicAlerts, ...watchAlerts.map(({ chat, ...a }) => a)]);
   console.log(`alerts: ${publicAlerts.length} public (${fresh} new in feed), ${watchAlerts.length} watch hits`);

@@ -17,6 +17,30 @@ const musd = (v) => { const x = Math.abs(v); return x >= 1e6 ? '$' + (x / 1e6).t
 
 function nameFor(h) { return h.entity || h.basename || short(h.addr); }
 
+// Snapshot-diff alerts (whale / entry / exit) know *that* a balance changed, not which transaction did it.
+// Look the transfer up on Alchemy: erc20 transfers of that token from/to the wallet since the previous snapshot,
+// biggest one wins. Base mines a block every ~2s, so the block window comes from the timestamps. Best-effort, capped.
+export async function attachTxHashes(alerts, ctx, key, { max = 40 } = {}) {
+  if (!key) return { skipped: 'no key' };
+  const rpc = async (method, params) => { const r = await fetch(`https://base-mainnet.g.alchemy.com/v2/${key}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }) }); const j = await r.json(); if (j.error) throw new Error(j.error.message); return j.result; };
+  let latest = null, done = 0, found = 0;
+  for (const a of alerts) {
+    if (a.hash || !a.addr || !['whale', 'entry', 'exit'].includes(a.kind)) continue;
+    const c = ctx[a.sym]; if (!c || !c.contract) continue;
+    if (done >= max) break; done++;
+    try {
+      if (latest == null) latest = parseInt(await rpc('eth_blockNumber', []), 16);
+      const since = c.prev && c.prev.ts ? c.prev.ts : Date.now() - 3 * 3600e3;
+      const fromBlock = Math.max(0, latest - Math.ceil((Date.now() - since) / 2000) - 400);
+      const dir = a.usd < 0 ? 'fromAddress' : 'toAddress';
+      const res = await rpc('alchemy_getAssetTransfers', [{ fromBlock: '0x' + fromBlock.toString(16), toBlock: 'latest', contractAddresses: [c.contract], category: ['erc20'], [dir]: a.addr, order: 'desc', maxCount: '0x14', excludeZeroValue: true }]);
+      const best = (res && res.transfers || []).sort((x, y) => (Number(y.value) || 0) - (Number(x.value) || 0))[0];
+      if (best && best.hash) { a.hash = best.hash; found++; }
+    } catch (e) { /* best-effort */ }
+  }
+  return { looked: done, found };
+}
+
 // ctx: { [sym]: { prev, cur, top, price } }  prev/cur = snapshot objects {ts,h:{addr:{r,u}}}
 export function buildAlerts(ctx, schools, { CEX_RX, WALLET_DIR }) {
   const state = jread(STATE, { tx: {}, school: {}, watch: {} });
