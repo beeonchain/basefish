@@ -41,7 +41,7 @@ export async function traceToken({ rpc, sym, contract, addrs, price, classify, c
   const now = Date.now();
   const latest = parseInt(await rpc('eth_blockNumber', []), 16);
   const blockAt = (ts) => Math.max(0, latest - Math.ceil((now - ts) / 2000) - 300); // Base ≈ 2s blocks, with slack
-  const seen = new Set(st.transfers.map((t) => t.hash + ':' + t.addr + ':' + t.dir));
+  const seen = new Set(st.transfers.map((t) => (t.uid || t.hash) + ':' + t.addr + ':' + t.dir)); // uid = Alchemy uniqueId (hash:log:index) — one tx can carry several transfers of the same token
   let calls = 0, added = 0, unknownCps = new Set();
   const list = addrs.slice(0, maxAddrs);
   for (let i = 0; i < list.length; i += 6) {
@@ -58,12 +58,12 @@ export async function traceToken({ rpc, sym, contract, addrs, price, classify, c
             pageKey = res && res.pageKey; if (!pageKey) break;
           }
           for (const tr of transfers) {
-            const k = tr.hash + ':' + a + ':' + dir; if (seen.has(k)) continue; seen.add(k);
+            const k = (tr.uniqueId || tr.hash) + ':' + a + ':' + dir; if (seen.has(k)) continue; seen.add(k);
             const cp = String(dir === 'out' ? tr.to : tr.from || '').toLowerCase();
             const amount = Number(tr.value) || 0;
             const ts = tr.metadata && tr.metadata.blockTimestamp ? new Date(tr.metadata.blockTimestamp).getTime() : now;
             if (cp && codes[cp] === undefined) unknownCps.add(cp);
-            st.transfers.push({ hash: tr.hash, addr: a, dir, cp, amount, usd: Math.round(amount * price), ts });
+            st.transfers.push({ hash: tr.hash, uid: tr.uniqueId || undefined, addr: a, dir, cp, amount, usd: Math.round(amount * price), ts });
             added++;
           }
         } catch (e) { log(`trace ${sym} ${a.slice(0, 8)} ${dir}: ${e.message.slice(0, 60)}`); }
