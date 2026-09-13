@@ -10,6 +10,7 @@ import { computeFlows } from './flows.mjs';
 let CODES = {}; try { CODES = JSON.parse(fs.readFileSync('data/codes.json', 'utf8')); } catch {}
 
 const KEY = process.env.MORALIS_API_KEY || '';
+let MORALIS_DEAD = false; // flipped on the first 401 so a revoked key does not slow every token down
 const BQ_TOKEN = process.env.BITQUERY_TOKEN || '';
 if (!KEY && !BQ_TOKEN) { console.error('No data keys (MORALIS_API_KEY / BITQUERY_TOKEN)'); process.exit(1); }
 
@@ -997,11 +998,11 @@ for (const t of RUN_TOKENS) {
     let usd = 0, chg = 0, supply = 0, mcap = 0, vol = 0;
     const mk = await cgMarketFor(t);
     if (mk) { usd = mk.current_price || 0; chg = mk.price_change_percentage_24h || 0; supply = mk.total_supply || 0; mcap = mk.market_cap || (usd * supply); vol = mk.total_volume || 0; }
-    if (!usd && KEY) {
-      const price = await j(`${M}/erc20/${c}/price?chain=${cfg.chain}&include=percent_change`);
-      usd = Number(price.usdPrice) || 0; chg = Number(price['24hrPercentChange']) || 0;
+    if (!usd && KEY && !MORALIS_DEAD) { // Moralis is a fallback only — a dead key (401) must never fail the token
+      try { const price = await j(`${M}/erc20/${c}/price?chain=${cfg.chain}&include=percent_change`); usd = Number(price.usdPrice) || 0; chg = Number(price['24hrPercentChange']) || 0; }
+      catch (e) { if (/\b401\b/.test(e.message)) MORALIS_DEAD = true; console.log('  moralis price unavailable:', e.message.slice(0, 80)); }
     }
-    if (!supply && KEY) {
+    if (!supply && KEY && !MORALIS_DEAD) {
       try { const meta = (await j(`${M}/erc20/metadata?chain=${cfg.chain}&addresses%5B0%5D=${c}`))[0] || {}; supply = Number(meta.total_supply_formatted) || 0; if (!mcap) mcap = usd * supply; } catch (e) {}
     }
     if (!usd) { // DexScreener fallback (keyless) — for tokens added from the site without a CoinGecko id, or when Moralis is down

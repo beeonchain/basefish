@@ -1786,12 +1786,15 @@ async function openMini(ca,info){
 }
 async function trackMini(ca){
   if(!ACCT.user){requireAuth(()=>trackMini(ca));return}
+  // respond instantly: the request itself takes a few seconds (two GitHub writes + a dispatch), so the button and the panel react first
+  const b=document.querySelector('#miniView button[onclick^="trackMini"]');const was=b?b.textContent:'';if(b){b.disabled=true;b.textContent='Requesting…';b.style.opacity=.6}
+  const sym0=(MINI&&MINI.sym)||'TOKEN';FETCHJOB={sym:sym0,ca,since:new Date().toISOString(),t0:Date.now(),state:'requesting',elapsed:0,pct:1,step:'Registering the token…'};fetchJobPaint();
   try{const j=await acctApi('/api/track',{ca});
-    if(j.already){toastMsg(`$${esc(j.sym)} is already tracked`,'var(--muted)');jumpToken(j.sym);return}
+    if(j.already){fetchJobClose();toastMsg(`$${esc(j.sym)} is already tracked`,'var(--muted)');jumpToken(j.sym);return}
     toastMsg(`<b>$${esc(j.sym)}</b> added — building the full aquarium now`,'var(--teal)');
-    const b=document.querySelector('#miniView button[onclick^="trackMini"]');if(b){b.disabled=true;b.textContent='Added · building…';b.style.opacity=.6}
+    if(b){b.textContent='Added · building…'}
     fetchJobStart({sym:j.sym,ca:j.ca||ca,since:j.startedAt||new Date().toISOString(),t0:Date.now(),dispatched:j.dispatched});
-  }catch(e){toastMsg(esc(e.message),'var(--coral)')}
+  }catch(e){fetchJobClose();if(b){b.disabled=false;b.textContent=was;b.style.opacity=1}toastMsg(esc(e.message),'var(--coral)')}
 }
 /* ---- fetch progress: a sticky panel that follows the single-token pipeline run until the token is live ---- */
 let FETCHJOB=null,FETCHTMR=null;
@@ -1810,10 +1813,11 @@ async function fetchJobPoll(){if(!FETCHJOB)return;try{const r=await fetch(`/api/
     fetchJobPaint()}catch{}}
 function fetchJobPaint(){const J=FETCHJOB;if(!J)return;let el=document.getElementById('fetchbar');if(!el){el=document.createElement('div');el.id='fetchbar';document.body.appendChild(el)}
   const done=J.state==='done',fail=J.state==='failed';const mins=Math.max(0,Math.round((200-(J.state==='running'?J.elapsed:0))/60));
-  el.innerHTML=`<div class="fbh"><span class="t2">${done?'Token ready':fail?'Fetch failed':'Fetching full data'}</span><b class="mono">${J.pct}%</b><button onclick="fetchJobClose()" title="Hide">✕</button></div>
+  el.innerHTML=`<div class="fbh"><span class="t2">${done?'Token ready':fail?'Fetch failed':J.state==='requesting'?'Starting fetch':'Fetching full data'}</span><b class="mono">${J.pct}%</b><button onclick="fetchJobClose()" title="Hide">✕</button></div>
     <div class="fbt"><b>$${esc(J.sym)}</b> <span class="mono t3">${short(J.ca)}</span></div>
     <div class="fbp"><i style="width:${J.pct}%;${fail?'background:var(--coral)':''}"></i></div>
-    <div class="fbs">${esc(J.step||'Starting…')}${!done&&!fail?` · ${J.state==='queued'?'starting':'~'+mins+' min left'}`:''}</div>
+    <div class="fbs">${esc(J.step||'Starting…')}${!done&&!fail?` · ${J.state==='queued'||J.state==='requesting'?'starting':'~'+mins+' min left'}`:''}</div>
+    ${fail?`<div class="t3" style="margin-top:6px">The token stays registered — it is picked up by the next scheduled refresh (every ~2h). Your fetch was not charged twice.</div>`:''}
     ${done?`<button class="btn primary" style="margin-top:8px;width:100%" onclick="jumpToken('${esc(J.sym)}');fetchJobClose()">Open $${esc(J.sym)} →</button>`:''}`}
 async function reloadTokens(){try{const r=await fetch('data/index.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const idx=await r.json();if(idx.tokens&&idx.tokens.length){const have=new Set(TOKENS.map(t=>t.sym));idx.tokens.forEach(t=>{if(!have.has(t.sym))TOKENS.push(t)});buildPicker()}}catch{}}
 /* ---- Flows view: where the top-100's money is moving ---- */
