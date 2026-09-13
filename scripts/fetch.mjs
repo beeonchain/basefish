@@ -1237,7 +1237,7 @@ for (const t of RUN_TOKENS) {
         // per-wallet movers / entries / exits vs the ~7d reference
         const ref7s = nearestS(Date.now() - 7 * 864e5);
         let movers = [], entries = [], exits = [];
-        if ((nowS.ts - ref7s.ts) / 864e5 > 4) {
+        if ((nowS.ts - ref7s.ts) / 864e5 >= 0.8) { // young tokens: compare against the oldest snapshot we have (≥ ~1 day) rather than showing nothing
           const refPrice = priceAt(ref7s.ts, ref7s); // null → wallets without stored amounts are skipped (no guessing)
           const curSet = new Set(top.map(h => h.addr.toLowerCase()));
           for (const h of top) {
@@ -1280,8 +1280,10 @@ for (const t of RUN_TOKENS) {
             const labels = {}; for (const h of top) { const l = h.entity || h.label; if (l) labels[h.addr.toLowerCase()] = l; }
             for (const x of infra) if (x.label) labels[x.addr.toLowerCase()] = x.label;
             const classify = classifier({ excluded: exclCache, labels, poolSet, codes: CODES });
-            const who = [...new Set([...movers.map(m => m.addr), ...entries.map(e => e.addr), ...exits.map(e => e.addr)].map(a => a.toLowerCase()))];
-            const st = await traceToken({ rpc: makeRpc(ALCH_KEY), sym: t.sym, contract: t.contract.toLowerCase(), addrs: who, price: usd, classify, codes: CODES, maxAddrs: FULL ? 60 : 40, log: (m) => console.log('  ' + m) });
+            // biggest absolute movers first — sorting by signed usd put every seller at the end, where the cap dropped them
+            const ranked = [...movers, ...entries, ...exits.map(e => ({ addr: e.addr, usd: -(e.usd || 0) }))].sort((a, b) => Math.abs(b.usd || 0) - Math.abs(a.usd || 0));
+            const who = [...new Set(ranked.map(m => m.addr.toLowerCase()))];
+            const st = await traceToken({ rpc: makeRpc(ALCH_KEY), sym: t.sym, contract: t.contract.toLowerCase(), addrs: who, price: usd, classify, codes: CODES, maxAddrs: FULL ? 120 : 80, log: (m) => console.log('  ' + m) });
             const r = destFromTrace(st, 7); dest7t = r.dest; viaT = r.via;
             cexIn = 0; cexOut = 0; cexN = 0; for (const tr of st.transfers) { if (tr.kind !== 'cex' || Date.now() - tr.ts > 7 * 864e5) continue; cexN++; if (tr.dir === 'in') cexIn += tr.usd || 0; else cexOut += tr.usd || 0; }
           } catch (e) { console.log('  trace err', e.message.slice(0, 80)); }

@@ -50,9 +50,14 @@ export async function traceToken({ rpc, sym, contract, addrs, price, classify, c
       const fromBlock = '0x' + blockAt(since).toString(16);
       for (const dir of ['out', 'in']) {
         try {
-          calls++;
-          const res = await rpc('alchemy_getAssetTransfers', [{ fromBlock, toBlock: 'latest', contractAddresses: [contract], category: ['erc20'], [dir === 'out' ? 'fromAddress' : 'toAddress']: a, withMetadata: true, maxCount: '0x64', excludeZeroValue: true }]);
-          for (const tr of (res && res.transfers) || []) {
+          let pageKey, transfers = [];
+          for (let page = 0; page < 5; page++) { // follow pagination so busy wallets (>100 transfers since last trace) are not truncated
+            calls++;
+            const res = await rpc('alchemy_getAssetTransfers', [{ fromBlock, toBlock: 'latest', contractAddresses: [contract], category: ['erc20'], [dir === 'out' ? 'fromAddress' : 'toAddress']: a, withMetadata: true, maxCount: '0x64', excludeZeroValue: true, ...(pageKey ? { pageKey } : {}) }]);
+            transfers.push(...((res && res.transfers) || []));
+            pageKey = res && res.pageKey; if (!pageKey) break;
+          }
+          for (const tr of transfers) {
             const k = tr.hash + ':' + a + ':' + dir; if (seen.has(k)) continue; seen.add(k);
             const cp = String(dir === 'out' ? tr.to : tr.from || '').toLowerCase();
             const amount = Number(tr.value) || 0;
