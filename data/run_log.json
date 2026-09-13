@@ -1,5 +1,5 @@
 {
- "started": "2026-09-13T15:56:39.547Z",
+ "started": "2026-09-13T16:52:09.384Z",
  "tier": "hot",
  "tokens": {
   "BRETT": {
@@ -7,28 +7,165 @@
    "src": "bq-holders+live",
    "top": 100,
    "infra": 44,
-   "price": 0.00486968
+   "price": 0.00488777
   },
   "TOSHI": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 70,
-   "price": 0.00011492
+   "price": 0.00011476
+  },
+  "BASECAT": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 9,
+   "price": 0.02239997
   },
   "AERO": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 79,
-   "price": 0.562142
+   "price": 0.565166
+  },
+  "VIRTUAL": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 86,
+   "price": 0.616104
+  },
+  "VVV": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 74,
+   "price": 21.42
+  },
+  "TIBBIR": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 7,
+   "price": 0.192771
   },
   "LAPTOP": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 33,
-   "price": 0.288335
+   "price": 0.279151
+  },
+  "AWE": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 45,
+   "price": 0.059798
+  },
+  "NOCK": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 10,
+   "price": 0.04663341
+  },
+  "O": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 21,
+   "price": 0.521021
+  },
+  "MAG7SSI": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 14,
+   "price": 0.517703
+  },
+  "DIEM": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 31,
+   "price": 1680.24
+  },
+  "KTA": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 30,
+   "price": 0.094199
+  },
+  "OMI": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 18,
+   "price": 0.00021087
+  },
+  "BIM": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 8,
+   "price": 1.63
+  },
+  "SQD": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 47,
+   "price": 0.03185331
+  },
+  "DEGEN": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 71,
+   "price": 0.00101946
+  },
+  "MOCA": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 20,
+   "price": 0.00948598
+  },
+  "OETHB": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 8,
+   "price": 2502.38
+  },
+  "ZORA": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 65,
+   "price": 0.00814028
+  },
+  "STONKEX": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 9,
+   "price": 0.00882237
+  },
+  "ELON": {
+   "ok": false,
+   "err": "401 https://deep-index.moralis.io/api/v2.2/erc20/0xa3d353743164972b37c8e5358fb1e76f0be8aba3/price?chain=base&include=percent_change :: {\"message\":\"Your Moralis "
+  },
+  "SR": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 4,
+   "price": 0.00110778
   }
  },
  "errors": [],
@@ -39,25 +176,25 @@
   "SNIPE": 22,
   "DIAMOND": 148
  },
- "finished": "2026-09-13T16:13:26.125Z",
+ "finished": "2026-09-13T17:38:53.339Z",
  "budgets": {
-  "arkham": 278,
-  "profile": 51,
+  "arkham": 166,
+  "profile": 6,
   "frontrun": 150,
-  "rpc": 400,
-  "funding": 129
+  "rpc": 314,
+  "funding": 0
  },
  "webhook": {
-  "have": 262,
-  "want": 263,
-  "added": 1,
-  "removed": 0,
-  "audited": 263,
-  "evicted": 0,
-  "noisy": 33
+  "have": 273,
+  "want": 272,
+  "added": 0,
+  "removed": 1,
+  "audited": 274,
+  "evicted": 2,
+  "noisy": 35
  },
  "alertTx": {
-  "looked": 0,
-  "found": 0
+  "looked": 2,
+  "found": 2
  }
 }
