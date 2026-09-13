@@ -1519,7 +1519,15 @@ async function ensureBase(eth){const cid=await eth.request({method:'eth_chainId'
   try{await eth.request({method:'wallet_switchEthereumChain',params:[{chainId:'0x2105'}]})}catch(e){if(e&&(e.code===4902||/unrecognized|not added|4902/i.test(e.message||''))){await eth.request({method:'wallet_addEthereumChain',params:[BASE_CHAIN]})}else throw e}}
 const errText=e=>{const m=(e&&(e.message||e.error||e.code))||'';return typeof m==='string'&&m?m.slice(0,200):'something went wrong'};
 async function siWallet(){const eth=window.ethereum;if(!eth){siMsg('No wallet found in this browser — install MetaMask, Coinbase Wallet or Rabby, or use email.');return}
-  try{siMsg('Waiting for your wallet…');const p=await privyInit();const [raw]=await eth.request({method:'eth_requestAccounts'});await ensureBase(eth);
+  try{siMsg('Waiting for your wallet…');const p=await privyInit();
+    let raw;
+    if(SI.mode==='link'){ // the extension only hands us accounts already connected to the site — ask for the account picker so a *different* one can be chosen
+      try{await eth.request({method:'wallet_requestPermissions',params:[{eth_accounts:{}}]})}catch(e){if(e&&e.code===4001)throw e}
+      const accts=(await eth.request({method:'eth_accounts'}))||[];const mine=new Set((ACCT.user&&ACCT.user.wallets||[]).map(x=>x.toLowerCase()));
+      raw=accts.find(x=>!mine.has(String(x).toLowerCase()));
+      if(!raw){siMsg('That wallet is already linked. In your wallet, connect or select the other account, then try again.');return}
+    }else{[raw]=await eth.request({method:'eth_requestAccounts'})}
+    await ensureBase(eth);
     const addr=toChecksum(raw);const wallet={address:addr,chainId:'eip155:8453'};const {message}=await p.auth.siwe.init(wallet,location.host,location.origin);
     siMsg('Sign the message in your wallet (gas-free)…');const sig=await eth.request({method:'personal_sign',params:[message,raw]});
     siMsg('Verifying…');if(SI.mode==='link')await p.auth.siwe.linkWithSiwe(sig,wallet,message);else await p.auth.siwe.loginWithSiwe(sig,wallet,message,'login-or-sign-up');
