@@ -302,7 +302,8 @@
   .wp .whead .fishic{width:52px;height:52px;border-radius:var(--r);background:var(--panel2);display:grid;place-items:center;border:1px solid var(--line2)}
   .wp .whead h3{font:800 24px/1.1 var(--font-display);margin:0;letter-spacing:-.01em}
   .wp .whead .addr{font:500 13px var(--font-mono);color:var(--muted);word-break:break-all;margin-top:4px}
-  .wp .whead .val{margin-left:auto;text-align:right}
+  .wp .whead .wid{flex:1 1 0;min-width:0}
+  .wp .whead .val{margin-left:auto;text-align:right;flex:0 0 auto}
   .wp .whead .val b{font:800 30px/1 var(--font-display)}
   .wp .whead .val small{display:block;color:var(--dim);font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin-bottom:4px}
   .wp .wbtns{display:flex;gap:8px;width:100%;align-items:center}
@@ -1972,7 +1973,7 @@ async function openProfile(h){
   const scan=`https://basescan.org/address/${h.addr}`;
   const ark=`https://intel.arkm.com/explorer/address/${h.addr}`;
   el.innerHTML=`<div class="whead"><div class="fishic"><img src="assets/tank/${h.rank===1?'king':h.tier}.webp" style="width:40px;height:32px;object-fit:contain" onerror="this.style.display='none'"></div>
-    <div style="min-width:0"><h3 id="wpname">${h.claim?`${avatarHtml(h.claim.avatar,26)} ${esc(h.claim.name||'claimed wallet')}`:(h.entity||short(h.addr))}</h3>
+    <div class="wid"><h3 id="wpname">${h.claim?`${avatarHtml(h.claim.avatar,26)} ${esc(h.claim.name||'claimed wallet')}`:(h.entity||short(h.addr))}</h3>
       <div class="addr">${cpa(h.addr,h.addr)} <button class="ico" onclick="navigator.clipboard&&navigator.clipboard.writeText('${h.addr}');toastMsg('Address copied','var(--teal)')" title="Copy address"><svg viewBox="0 0 16 16"><rect x="5" y="5" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="2" y="2" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
         <a class="ico" href="${scan}" target="_blank" rel="noopener" title="View on Basescan"><img src="assets/cex/basescan.png" alt="Basescan" onerror="this.onerror=null;this.src='https://www.google.com/s2/favicons?domain=basescan.org&sz=32'"></a>
         <a class="ico" href="${ark}" target="_blank" rel="noopener" title="View on Arkham"><img src="assets/cex/arkham.png" alt="Arkham" onerror="this.onerror=null;this.src='https://www.google.com/s2/favicons?domain=intel.arkm.com&sz=32'"></a></div>
