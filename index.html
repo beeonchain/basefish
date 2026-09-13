@@ -284,6 +284,13 @@
   .wp .cprow .bar3 i{display:block;height:100%}
   .wp .txrow:hover td{background:var(--panel2);cursor:pointer}
   .wp .empty2{padding:18px 14px;color:var(--dim);font-size:12px}
+  /* micro-states: one loading / empty / error look everywhere */
+  .st{display:flex;align-items:center;gap:10px;padding:26px 16px;color:var(--muted);font-size:12.5px}
+  .st.err{color:var(--coral)}
+  .st i.dots{display:inline-flex;gap:3px}.st i.dots b{width:5px;height:5px;background:var(--accent);animation:dot 1s infinite}
+  .st i.dots b:nth-child(2){animation-delay:.2s}.st i.dots b:nth-child(3){animation-delay:.4s}
+  @keyframes dot{0%,80%,100%{opacity:.2}40%{opacity:1}}
+  @media (prefers-reduced-motion:reduce){.st i.dots b{animation:none;opacity:.6}}
   .wp canvas.hist{display:block;width:100%;height:190px}
   /* ---------- footer ---------- */
   .foot{grid-column:1/4;border-top:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 20px;font-size:12px;color:var(--dim)}
@@ -296,8 +303,12 @@
   .view{display:none;flex:1;min-height:0;overflow:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--panel)}
   .view.show{display:block}
   .view table{width:100%;border-collapse:collapse}
-  .view th{position:sticky;top:0;z-index:1;background:var(--panel);text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);padding:11px 14px;border-bottom:1px solid var(--line2)}
-  .view td{padding:10px 14px;border-bottom:1px solid var(--line);font-size:13px}
+  .view th{position:sticky;top:0;z-index:1;background:var(--panel);text-align:left;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);padding:10px 12px;white-space:nowrap;border-bottom:1px solid var(--line2)}
+  .view td{padding:8px 12px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}
+  .view td:nth-child(4){max-width:520px}
+  .view td.r.mono{font-variant-numeric:tabular-nums}
+  .view td:nth-last-child(2){font-weight:700}
+  .view td:first-child{color:var(--dim);font-size:12px}
   .view td.mono,.view td .mono{font-variant-numeric:tabular-nums}
   .view tr:hover td{background:var(--panel2);cursor:pointer}
   .view td.r,.view th.r{text-align:right}
@@ -326,6 +337,17 @@
     .hsearch{flex:1}.hsearch input{width:100%}
     .tank{height:56vh}
     .wp .wgrid{grid-template-columns:1fr}
+    .app.noRail{grid-template-columns:1fr}          /* the no-rail layout must not re-split the grid on phones */
+    .main{padding:10px}
+    .view table{min-width:860px}                     /* tables scroll sideways inside their panel instead of collapsing */
+    .view{-webkit-overflow-scrolling:touch}
+    .head h2{font-size:18px}
+    .htitle{min-width:0;width:100%}
+    .hsearch{flex:1 1 100%;order:5}.share{order:6}
+    .tokpick{max-width:calc(100% - 0px)}
+    .wp .whead{flex-wrap:wrap}
+    .wp .wbtns{flex-wrap:wrap}
+    .card{left:8px;right:8px;width:auto;max-width:none}
   }
 </style>
 
@@ -446,6 +468,7 @@ const TYPE_COLORS={cex:'#E5484D',exchange:'#E5484D',dex:'#E5484D',bridge:'#E5484
 function typeColor(t){return TYPE_COLORS[String(t||'').toLowerCase()]||CH.dim}
 function typePill(t){if(!t)return'';const c=typeColor(t);return `<span class="pill cls" style="color:${c};border-color:${c}55">${t}</span>`}
 function entPill(name,t){if(!name)return'<span style="color:var(--dim)">Unknown</span>';const cx=cexOf(name);if(cx)return `<span class="pill id" style="background:${cx[1]}18;color:${cx[1]};border-color:${cx[1]}66">${cexIcon(name)}${esc(name)}</span>`;const c=typeColor(t);return `<span class="pill id" style="background:${c}18;color:${c};border:1px solid ${c}55">${name}</span>`}
+const loadingHtml=(m)=>`<div class="st"><i class="dots"><b></b><b></b><b></b></i>${m}…</div>`;
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 /* every distinct label for a wallet (Arkham-style multi-label), minus the entity name itself */
 function wlabels(h){const out=[],seen=new Set();const add=s=>{if(!s)return;const k=String(s).trim();if(k&&!seen.has(k.toLowerCase())){seen.add(k.toLowerCase());out.push(k)}};(h.labels||[]).forEach(add);add(h.label);const ent=(h.entity||'').toLowerCase();return out.filter(l=>l.toLowerCase()!==ent)}
@@ -770,12 +793,19 @@ function fishLabel(f,t,force){
   const lbl=(f.h.infra?(KIND[f.h.kind]||KIND.contract).n+' · ':'')+(f.h.entity||f.h.label||short(f.h.addr)).slice(0,24);
   const sq=tags.length?tags.length*8+4:0,tw=ctx.measureText(lbl).width+14+sq;
   const sel=f===selected||f===hovered;
-  const ly=Math.max(4,f.y-s*.62-22); // never clipped above the tank
-  ctx.fillStyle=sel?CH.accent:(f.h.infra?(KIND[f.h.kind]||KIND.contract).c:'rgba(10,11,13,.78)');roundRect(f.x-tw/2,ly,tw,18,0);ctx.fill();if(!sel){ctx.strokeStyle='rgba(255,255,255,.25)';ctx.stroke()}
-  let x0=f.x-tw/2+7;tags.forEach(tg=>{ctx.fillStyle=sel?'#FFFFFF':(TAGS[tg]||{c:'#fff'}).c;if(!sel&&tg==='CT')ctx.fillStyle='#FFFFFF';ctx.fillRect(x0,ly+6,6,6);x0+=8});
-  ctx.fillStyle='#FFFFFF';ctx.textAlign='left';ctx.fillText(lbl,f.x-tw/2+7+sq,ly+13);ctx.restore();
+  let ly=Math.max(4,f.y-s*.62-22),lx=f.x-tw/2; // never clipped above the tank
+  lx=Math.min(Math.max(2,lx),W-tw-2);
+  const hit=(x,y)=>LBL_PLACED.some(b=>x<b.x+b.w+3&&x+tw+3>b.x&&y<b.y+b.h+2&&y+18+2>b.y);
+  if(!sel){for(let k=0;k<4&&hit(lx,ly);k++)ly=Math.max(4,ly-20);if(hit(lx,ly)){const r=f.x+tw/2+8;if(r+tw<W-2&&!hit(r,ly))lx=r;else if(f.x-tw*1.5-8>2&&!hit(f.x-tw*1.5-8,ly))lx=f.x-tw*1.5-8}}
+  LBL_PLACED.push({x:lx,y:ly,w:tw,h:18});
+  ctx.fillStyle=sel?CH.accent:(f.h.infra?(KIND[f.h.kind]||KIND.contract).c:'rgba(10,11,13,.78)');roundRect(lx,ly,tw,18,0);ctx.fill();if(!sel){ctx.strokeStyle='rgba(255,255,255,.25)';ctx.stroke()}
+  if(ly<f.y-s*.62-30||Math.abs(lx+tw/2-f.x)>tw/2){ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(lx+tw/2,ly+18);ctx.lineTo(f.x,f.y-s*.5);ctx.stroke()} // leader line when the label was moved
+  let x0=lx+7;tags.forEach(tg=>{ctx.fillStyle=sel?'#FFFFFF':(TAGS[tg]||{c:'#fff'}).c;if(!sel&&tg==='CT')ctx.fillStyle='#FFFFFF';ctx.fillRect(x0,ly+6,6,6);x0+=8});
+  ctx.fillStyle='#FFFFFF';ctx.textAlign='left';ctx.fillText(lbl,lx+7+sq,ly+13);ctx.restore();
 }
+let LBL_PLACED=[]; // label boxes drawn this frame — later labels dodge earlier ones (stack upward, then sideways)
 function drawFishes(t){
+  LBL_PLACED=[];
   const order=fish.filter(fishVisible).sort((a,b)=>a.size-b.size);
   order.forEach(f=>{if(f!==selected)drawOneFish(f,t)});
   if(sprReady)drawEnv(t,false);
@@ -856,7 +886,7 @@ function select(f){selected=f;tip.style.display='none';const h=f.h,t=TIER[h.tier
   <div class="addr">${short(h.addr)}<button id="ccopy" title="Copy address">copy</button></div>
   ${chips?`<div class="lbls">${chips}</div>`:''}
   ${(()=>{const sc=h.school?schoolOf(h.school):null;if(!sc)return'';const pt=sc.perToken[cur.sym];const inTank=pt?pt.members:1;
-    return `<div style="border:1px solid rgba(120,150,255,.5);background:rgba(77,107,255,.08);padding:6px 9px;margin-bottom:8px;font-size:11px"><b style="color:#4D6BFF">SCHOOL DETECTED</b> · ${sc.members.length} fish appear connected${pt&&inTank>1?` · ${pt.pct}% of $${cur.sym} combined`:''} <button onclick="event.stopPropagation();const d=document.getElementById('cardSchool');d.style.display=d.style.display==='none'?'':'none';if(!d.innerHTML)d.innerHTML=renderSchoolSvg(schoolOf(${sc.id}),'${h.addr.toLowerCase()}',{w:320,h:240})" style="float:right;color:#4D6BFF;font-weight:800;font-size:10.5px">🕸 diagram</button><div id="cardSchool" style="display:none;margin-top:6px"></div></div>`})()}
+    return `<div style="border:1px solid rgba(120,150,255,.5);background:rgba(77,107,255,.08);padding:6px 9px;margin-bottom:8px;font-size:11px"><b style="color:#4D6BFF">SCHOOL DETECTED</b> · ${sc.members.length} fish appear connected${pt&&inTank>1?` · ${pt.pct}% of $${cur.sym} combined`:''} <button onclick="event.stopPropagation();const d=document.getElementById('cardSchool');d.style.display=d.style.display==='none'?'':'none';if(!d.innerHTML)d.innerHTML=renderSchoolSvg(schoolOf(${sc.id}),'${h.addr.toLowerCase()}',{w:320,h:240})" style="float:right;color:#4D6BFF;font-weight:800;font-size:10.5px">diagram</button><div id="cardSchool" style="display:none;margin-top:6px"></div></div>`})()}
   <div class="row"><span>Token held</span><b>$${cur.sym}</b></div>
   <div class="row"><span>Amount</span><b class="mono">${num(h.amount)}</b></div>
   <div class="row"><span>% of supply</span><b class="mono" style="color:var(--teal)">${h.pct.toFixed(2)}%</b></div>
@@ -1017,7 +1047,7 @@ function renderTable(){
     ${hidden?`<span style="color:var(--dim)">${hidden} infrastructure wallet${hidden>1?'s':''} hidden · ranks unchanged</span>`:''}${merged?`<span style="color:var(--dim)">merged ranking · (#n) = rank among real holders</span>`:''}
     ${Object.keys(tagCounts).length?`<span style="display:flex;gap:5px;flex-wrap:wrap;align-items:center"><span style="color:var(--dim)">tags:</span>${Object.keys(TAGS).filter(t=>tagCounts[t]).map(t=>`<button onclick="tagFilter=tagFilter==='${t}'?'':'${t}';renderTable()" class="pill tagp" style="background:${tagFilter===t?TAGS[t].c:'transparent'};color:${tagFilter===t?'#fff':TAGS[t].c};border-color:${TAGS[t].c}${tagFilter===t?'':'99'};cursor:pointer" title="${esc(TAGS[t].t)}">${tagGlyph(t)}${t}<span style="opacity:.6;font-weight:500">${tagCounts[t]}</span></button>`).join('')}</span>`:''}
     <button id="csvBtn" style="margin-left:auto;border:1px solid var(--line);padding:3px 10px;color:var(--muted);cursor:pointer;font-size:10.5px;font-family:var(--font-mono)">EXPORT CSV</button></div>`:''}
-  <table><thead><tr>${sTh('rank','#')}<th>Wallet</th><th>Tier</th><th>Labels</th>${sTh('chg',refH,1)}${has7?sTh('chg7',ref7,1):''}${sTh('amount','Amount',1)}${sTh('pct','% supply',1)}${sTh('value','Value',1)}<th class="r">Type</th></tr></thead><tbody>${rows.map(h=>h.infra?`<tr data-a="${h.addr}" style="background:var(--panel2);opacity:.85"><td class="mono" style="color:var(--dim);white-space:nowrap">${h._m||h.rank}</td><td class="mono">${cpa(h.addr)} <span style="color:var(--muted)">${esc(h.label||'')}</span></td><td>${kindTag(h.kind)}</td><td><span style="color:var(--dim);font-size:11px">excluded from ranking</span></td><td class="r"></td>${has7?'<td></td>':''}<td class="r mono">${num(h.amount)}</td><td class="r mono">${(h.pct||0).toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:${(KIND[h.kind]||KIND.contract).c}">${(KIND[h.kind]||KIND.contract).n.toLowerCase()}</td></tr>`:`<tr data-i="${h.rank-1}"><td class="mono" style="color:var(--dim);white-space:nowrap">${merged?`${h._m} <small title="rank among real holders">(#${h.rank})</small>`:h.rank} ${rankChip(h)}</td><td class="mono">${cpa(h.addr)}${(h.entity||h.basename)?` <span style="color:${cexOf(h.entity)?cexOf(h.entity)[1]:'var(--teal)'};font-weight:700">${cexOf(h.entity)?cexIcon(h.entity):''}${esc(h.entity||h.basename)}</span>`:''}</td><td><span class="tierc"><i style="background:${TIER[h.tier].c}"></i>${TIER[h.tier].n}</span></td><td><div class="lbls">${tagPills(h,true)}${lblChips(h,2)||(h.tags&&h.tags.length?'':'<span style="border:0;background:none;padding:0;color:var(--dim)">—</span>')}</div></td><td class="r">${usdChip(h)}</td>${has7?`<td class="r" style="white-space:nowrap">${rankChip(h,'rankChange7')} ${usdChip(h,'usdChange7')}</td>`:''}<td class="r mono">${num(h.amount)}</td><td class="r mono">${h.pct.toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:${typeOf(h)==='wallet'?'var(--muted)':typeColor(h.entityType)}">${typeOf(h)}</td></tr>`).join('')}</tbody></table>`;
+  <table><thead><tr>${sTh('rank','#')}<th>Wallet</th><th>Tier</th><th>Labels</th>${sTh('chg',refH,1)}${has7?sTh('chg7',ref7,1):''}${sTh('amount','Amount',1)}${sTh('pct','% supply',1)}${sTh('value','Value',1)}<th class="r">Kind</th></tr></thead><tbody>${rows.map(h=>h.infra?`<tr data-a="${h.addr}" style="background:var(--panel2);opacity:.85"><td class="mono" style="color:var(--dim);white-space:nowrap">${h._m||h.rank}</td><td class="mono">${cpa(h.addr)} <span style="color:var(--muted)">${esc(h.label||'')}</span></td><td>${kindTag(h.kind)}</td><td><span style="color:var(--dim);font-size:11px">excluded from ranking</span></td><td class="r"></td>${has7?'<td></td>':''}<td class="r mono">${num(h.amount)}</td><td class="r mono">${(h.pct||0).toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:${(KIND[h.kind]||KIND.contract).c}">${(KIND[h.kind]||KIND.contract).n.toLowerCase()}</td></tr>`:`<tr data-i="${h.rank-1}"><td class="mono" style="color:var(--dim);white-space:nowrap">${merged?`${h._m} <small title="rank among real holders">(#${h.rank})</small>`:h.rank} ${rankChip(h)}</td><td class="mono">${cpa(h.addr)}${(h.entity||h.basename)?` <span style="color:${cexOf(h.entity)?cexOf(h.entity)[1]:'var(--teal)'};font-weight:700">${cexOf(h.entity)?cexIcon(h.entity):''}${esc(h.entity||h.basename)}</span>`:''}</td><td><span class="tierc"><i style="background:${TIER[h.tier].c}"></i>${TIER[h.tier].n}</span></td><td><div class="lbls">${tagPills(h,true)}${lblChips(h,2)||(h.tags&&h.tags.length?'':'<span style="border:0;background:none;padding:0;color:var(--dim)">—</span>')}</div></td><td class="r">${usdChip(h)}</td>${has7?`<td class="r" style="white-space:nowrap">${rankChip(h,'rankChange7')} ${usdChip(h,'usdChange7')}</td>`:''}<td class="r mono">${num(h.amount)}</td><td class="r mono">${h.pct.toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:${typeOf(h)==='wallet'?'var(--dim)':typeColor(h.entityType)};font-size:11px">${typeOf(h)==='wallet'?'':esc(typeOf(h))}</td></tr>`).join('')}</tbody></table>`;
   document.querySelectorAll('#holdersView tr[data-i]').forEach(r=>r.onclick=()=>{setView('aquarium');select(fish[+r.dataset.i])});
   document.querySelectorAll('#holdersView th[data-sort]').forEach(th=>th.onclick=()=>{const k=th.dataset.sort;if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=1}renderTable()});
   const tog=document.getElementById('infraTog');if(tog)tog.onchange=()=>{hideInfra=tog.checked;renderTable()};
@@ -1029,7 +1059,7 @@ function renderTable(){
 function renderTokMenu(q){
   const m=document.getElementById('tokmenu');const ql=q.trim().toLowerCase();
   const list=[...TOKENS].sort((a,b)=>(b.mcap||0)-(a.mcap||0)).filter(t=>!ql||t.sym.toLowerCase().includes(ql)||(t.name||'').toLowerCase().includes(ql));
-  m.innerHTML=`<input placeholder="filter ${TOKENS.length} tokens…" value="${esc(q)}">`+list.map(t=>`<button class="trow" data-sym="${t.sym}">${t.logo?`<img src="${t.logo}" onerror="this.style.display='none'">`:`<i style="background:${t.color}"></i>`}<b>$${esc(t.sym)}</b><span style="color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.name||'')}</span>${t.trending?'<span class="pill" style="background:#F9731622;color:#F76B15;border:1px solid #F76B1555">📈 trending</span>':''}<small>${t.mcap?usd(t.mcap):''}${t.stale?' · daily':''}</small></button>`).join('')+(list.length?'':'<div style="padding:12px;color:var(--dim);font-size:12px">no match — paste a contract address in the search box to add a token</div>');
+  m.innerHTML=`<input placeholder="filter ${TOKENS.length} tokens…" value="${esc(q)}">`+list.map(t=>`<button class="trow" data-sym="${t.sym}">${t.logo?`<img src="${t.logo}" onerror="this.style.display='none'">`:`<i style="background:${t.color}"></i>`}<b>$${esc(t.sym)}</b><span style="color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.name||'')}</span>${t.trending?'<span class="pill" style="background:#F9731622;color:#F76B15;border:1px solid #F76B1555">trending</span>':''}<small>${t.mcap?usd(t.mcap):''}${t.stale?' · daily':''}</small></button>`).join('')+(list.length?'':'<div style="padding:12px;color:var(--dim);font-size:12px">no match — paste a contract address in the search box to add a token</div>');
   const inp=m.querySelector('input');inp.oninput=()=>{const v=inp.value;const pos=inp.selectionStart;renderTokMenu(v);const i2=m.querySelector('input');i2.focus();i2.setSelectionRange(pos,pos)};inp.onclick=e=>e.stopPropagation();
   m.querySelectorAll('.trow').forEach(b=>b.onclick=()=>{m.classList.remove('open');closeCard();loadToken(TOKENS.find(t=>t.sym===b.dataset.sym));toastMsg(`Aquarium switched to <b>$${b.dataset.sym}</b>`,'var(--muted)')});
 }
@@ -1063,7 +1093,7 @@ function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>b
   if(v==='aquarium')resize()}
 async function renderWallets(){
   const el=document.getElementById('walletsView');
-  el.innerHTML='<div style="padding:30px;color:var(--muted)">Loading wallets across all aquariums…</div>';
+  el.innerHTML=loadingHtml('Loading wallets across every tracked token');
   const agg=new Map();
   const tokStats=[];
   for(const t of TOKENS){
@@ -1288,7 +1318,7 @@ function alertNames(){
 }
 async function renderAlerts(){
   const el=document.getElementById('alertsView');
-  if(!el.innerHTML)el.innerHTML='<div style="padding:30px;color:var(--muted)">Loading alerts…</div>';
+  if(!el.innerHTML)el.innerHTML=loadingHtml('Loading alerts');
   if(!ALERTS.length)await fetchAlerts();
   const seenTs=alertSeenTs();
   markAlertsSeen();
@@ -1347,7 +1377,7 @@ async function renderAlerts(){
     ${acctPanel()}
     ${TG_BOT?`<div style="border:1px solid var(--line);background:var(--panel2);padding:10px 14px;font-size:12px">Instant alerts in Telegram → <a href="https://t.me/${TG_BOT}" target="_blank" rel="noopener" style="color:var(--teal);font-weight:800">@${TG_BOT}</a> — /start subscribes, /watch 0x… TOKEN follows any wallet live</div>`:''}
     ${alertMode==='feed'?(feed.length?`<div style="border:1px solid var(--line);background:var(--panel)"><div style="padding:9px 14px;font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)">Latest <span style="color:var(--dim);font-weight:400">· ${feed.length}</span></div>${feed.slice(0,feedN).map(feedRow).join('')}${feed.length>feedN?`<button onclick="alertOpen.add('feed:all');renderAlerts()" style="padding:10px 14px;font-size:11px;font-weight:700;color:var(--teal)">show all ${feed.length} →</button>`:''}</div>`:''):`${section('Wallets',wallets)}${section('Schools',schools)}`}
-    ${!list.length?'<div style="padding:26px;color:var(--dim);border:1px solid var(--line)">No alerts in this window yet. Calm waters.</div>':''}
+    ${!list.length?'<div class="st" style="border:1px solid var(--line)">No alerts for this token yet. Whale moves, top-20 entries and exchange flows show up here as they happen.</div>':''}
     <div style="color:var(--dim);font-size:11px">"By wallet" folds every alert of the same wallet into one row (net = sum of its alerted moves at current prices) · not financial advice</div>
   </div>`;
 }
@@ -1369,7 +1399,7 @@ const acctH=()=>ACCT.token?{'content-type':'application/json',authorization:'Bea
 async function acctApi(path,body){const r=await fetch(path,{method:body?'POST':'GET',headers:acctH(),body:body?JSON.stringify(body):undefined});const j=await r.json().catch(()=>({}));if(!r.ok){if(r.status===401&&path==='/api/me'){acctSignOut(false)}throw new Error(j.error||('HTTP '+r.status))}return j}
 async function acctInit(){try{ACCT.cfg=await acctApi('/api/auth')}catch{ACCT.cfg={wallet:true,google:null}}if(ACCT.token){try{const j=await acctApi('/api/me');acctSet(j.user)}catch{}}if(view==='alerts')renderAlerts()}
 function acctSet(u){ACCT.user=u;if(u&&ACCT.seenHits===null)ACCT.seenHits=new Set((u.hits||[]).map(h=>h.id))}
-async function acctRefresh(){if(!ACCT.token||!ACCT.user)return false;try{const j=await acctApi('/api/me');const fresh=(j.user.hits||[]).filter(h=>!ACCT.seenHits.has(h.id));fresh.slice(0,3).forEach(h=>toastMsg(`👁 <b>${esc(h.title)}</b>`,h.usd>=0?'var(--teal)':'var(--coral)'));fresh.forEach(h=>ACCT.seenHits.add(h.id));ACCT.user=j.user;return fresh.length>0}catch{return false}}
+async function acctRefresh(){if(!ACCT.token||!ACCT.user)return false;try{const j=await acctApi('/api/me');const fresh=(j.user.hits||[]).filter(h=>!ACCT.seenHits.has(h.id));fresh.slice(0,3).forEach(h=>toastMsg(`<b>${esc(h.title)}</b>`,h.usd>=0?'var(--teal)':'var(--coral)'));fresh.forEach(h=>ACCT.seenHits.add(h.id));ACCT.user=j.user;return fresh.length>0}catch{return false}}
 function acctSignOut(rerender=true){ACCT.token=null;ACCT.user=null;ACCT.seenHits=null;try{localStorage.removeItem('bf_session')}catch{}if(rerender)renderAlerts()}
 function acctSession(j){ACCT.token=j.token;try{localStorage.setItem('bf_session',j.token)}catch{}ACCT.seenHits=null;acctSet(j.user);toastMsg(`Signed in as <b>${esc(j.user.label)}</b>`,'var(--teal)');renderAlerts()}
 async function signInWallet(){
@@ -1387,24 +1417,24 @@ function mountGoogle(){const cid=ACCT.cfg&&ACCT.cfg.google,el=document.getElemen
   if(window.google&&google.accounts){go();return}
   if(!document.getElementById('gsiScript')){const sc=document.createElement('script');sc.id='gsiScript';sc.src='https://accounts.google.com/gsi/client';sc.async=true;sc.onload=go;document.head.appendChild(sc)}else setTimeout(mountGoogle,400)}
 async function acctAdd(){const w=(document.getElementById('acctW').value||'').trim(),t=document.getElementById('acctT').value;if(!/^0x[0-9a-fA-F]{40}$/.test(w)){toastMsg('Paste a full wallet address (0x…40 hex).','var(--coral)');return}
-  try{const j=await acctApi('/api/me',{op:'add',w,t});ACCT.user=j.user;toastMsg(`👁 Watching <b>${short(w.toLowerCase())}</b> for $${t}`,'var(--teal)');renderAlerts()}catch(e){toastMsg(esc(e.message),'var(--coral)')}}
+  try{const j=await acctApi('/api/me',{op:'add',w,t});ACCT.user=j.user;toastMsg(`Watching <b>${short(w.toLowerCase())}</b> for $${t}`,'var(--teal)');renderAlerts()}catch(e){toastMsg(esc(e.message),'var(--coral)')}}
 async function acctRemove(w,t){try{const j=await acctApi('/api/me',{op:'remove',w,t});ACCT.user=j.user;renderAlerts()}catch(e){toastMsg(esc(e.message),'var(--coral)')}}
 async function acctOp(op){try{const j=await acctApi('/api/me',{op});ACCT.user=j.user;renderAlerts()}catch(e){toastMsg(esc(e.message),'var(--coral)')}}
 function acctWatchPrefill(addr){setView('alerts');setTimeout(()=>{const i=document.getElementById('acctW');if(i){i.value=addr;i.scrollIntoView({block:'center'})}},50)}
 function acctPanel(){
   const box=(inner)=>`<div style="border:1px solid var(--teal);background:var(--panel);padding:12px 14px">${inner}</div>`;
-  const head=(sub)=>`<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:8px"><b style="font-size:12px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)">👁 Your watches</b><span style="color:var(--dim);font-size:11px">${sub}</span></div>`;
+  const head=(sub)=>`<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:8px"><b style="font-size:12px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)">Your watches</b><span style="color:var(--dim);font-size:11px">${sub}</span></div>`;
   if(!ACCT.user){
     const g=ACCT.cfg&&ACCT.cfg.google;setTimeout(mountGoogle,0);
     return box(head('track any wallet · private alerts here + Telegram')+`<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="font-size:12px;color:var(--muted)">Sign in to add your own wallets to track — every tx of that wallet in a token, live.</span>
-      <button onclick="signInWallet()" style="border:1px solid var(--teal);color:var(--teal);padding:7px 12px;font-weight:800;font-size:12px">🔐 Connect wallet</button>${g?'<span id="gsiBtn"></span>':''}</div>`);
+      <button onclick="signInWallet()" style="border:1px solid var(--teal);color:var(--teal);padding:7px 12px;font-weight:800;font-size:12px">Connect wallet</button>${g?'<span id="gsiBtn"></span>':''}</div>`);
   }
   const u=ACCT.user,opts=TOKENS.map(t=>`<option>${t.sym}</option>`).join('');
   const rows=(u.watches||[]).map(w=>`<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:12px"><span><button onclick="openProfileByAddr('${w.w}')" class="mono" style="color:var(--teal);font-weight:700">${short(w.w)}</button> ${cpa(w.w,'⧉')} <span style="color:var(--dim)">·</span> $${esc(w.t)}</span><button onclick="acctRemove('${w.w}','${w.t}')" title="remove" style="color:var(--coral);font-weight:800;font-size:11px">✕ remove</button></div>`).join('');
   const hits=(u.hits||[]).slice(0,12).map(h=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:12px"><span><b>${esc(h.title)}</b><br><small style="color:var(--muted)">${esc(h.sub||'')}</small></span><span style="white-space:nowrap;color:var(--dim);font-size:11px;text-align:right">${agoStr(h.ts)} ago${h.hash?` · <a href="https://basescan.org/tx/${h.hash}" target="_blank" rel="noopener" style="color:var(--dim);font-weight:700">tx ↗</a>`:''}</span></div>`).join('');
-  const tg=u.tg?`<span style="color:var(--teal);font-weight:700">📲 Telegram linked</span> <button onclick="acctOp('unlink')" style="color:var(--dim);font-size:11px">unlink</button>`
-    :u.link?`📲 Send <code class="mono" style="font-weight:800;color:var(--teal)">/link ${u.link}</code> to <a href="https://t.me/${TG_BOT}" target="_blank" rel="noopener" style="color:var(--teal);font-weight:800">@${TG_BOT}</a> (15 min) — then hits also land in Telegram`
-    :`<button onclick="acctOp('linkcode')" style="border:1px solid var(--line);padding:4px 9px;font-size:11px;font-weight:700;color:var(--teal)">📲 Link Telegram</button> <span style="color:var(--dim)">get hits in the bot too</span>`;
+  const tg=u.tg?`<span style="color:var(--teal);font-weight:700">Telegram linked</span> <button onclick="acctOp('unlink')" style="color:var(--dim);font-size:11px">unlink</button>`
+    :u.link?`Send <code class="mono" style="font-weight:800;color:var(--teal)">/link ${u.link}</code> to <a href="https://t.me/${TG_BOT}" target="_blank" rel="noopener" style="color:var(--teal);font-weight:800">@${TG_BOT}</a> (15 min) — then hits also land in Telegram`
+    :`<button onclick="acctOp('linkcode')" style="border:1px solid var(--line);padding:4px 9px;font-size:11px;font-weight:700;color:var(--teal)">Link Telegram</button> <span style="color:var(--dim)">get hits in the bot too</span>`;
   return box(head(`signed in as <b>${esc(u.label)}</b> · <button onclick="acctSignOut()" style="color:var(--dim);font-weight:700">sign out</button>`)+`
     <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><input id="acctW" placeholder="0x wallet address" class="mono" style="flex:1;min-width:240px;border:1px solid var(--line);padding:7px 9px;font-size:12px;background:var(--panel2)"><select id="acctT" style="border:1px solid var(--line);padding:7px;font-size:12px;background:var(--panel2)">${opts}</select><button onclick="acctAdd()" style="border:1px solid var(--teal);color:var(--teal);padding:7px 12px;font-weight:800;font-size:12px">+ Watch</button></div>
     <div style="margin-top:8px">${rows||'<div style="padding:8px 0;color:var(--dim);font-size:12px">No watches yet — paste a wallet above. You get every transfer of that wallet in the chosen token, within seconds.</div>'}</div>
@@ -1427,7 +1457,7 @@ async function openMini(ca,info){
     <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">${info.logo?`<img src="${info.logo}" style="width:34px;height:34px;border:1px solid var(--line)" onerror="this.style.display='none'">`:''}<div><h3 style="margin:0;font-size:18px">$${sym} <span style="color:var(--muted);font-weight:500;font-size:13px">${esc(info.name)}</span></h3><div class="mono" style="font-size:11px;color:var(--dim)">${cpa(ca,ca)}</div></div>
       <span class="pill" style="background:var(--panel2);color:var(--muted);border:1px solid var(--line)">PREVIEW · not tracked yet</span>
       <span style="margin-left:auto;display:flex;gap:8px;align-items:center">
-        <button onclick="trackMini('${ca}')" title="${canTrack?'Add this token to Whalarium: full aquarium, flows, alerts, schools':'Sign in (Alerts tab) to add tokens'}" style="border:1px solid var(--teal);background:var(--teal);color:#fff;padding:8px 14px;font-weight:800;font-size:12px">⚓ Fetch full data</button>
+        <button onclick="trackMini('${ca}')" title="${canTrack?'Add this token to Whalarium: full aquarium, flows, alerts, schools':'Sign in (Alerts tab) to add tokens'}" style="border:1px solid var(--teal);background:var(--teal);color:#fff;padding:8px 14px;font-weight:800;font-size:12px">Fetch full data</button>
         <a href="https://basescan.org/token/${ca}" target="_blank" rel="noopener" style="color:var(--muted);font-weight:700;font-size:11px">Basescan ↗</a><a href="https://dexscreener.com/base/${ca}" target="_blank" rel="noopener" style="color:var(--muted);font-weight:700;font-size:11px">Dexscreener ↗</a></span></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <div style="flex:1;min-width:150px;border:1px solid var(--line);padding:12px 14px;background:var(--panel)"><div style="color:var(--dim);font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;font-weight:700">Price</div><div class="mono" style="font-size:19px;font-weight:800;margin-top:4px">${fmtP(price)}</div><div style="color:${(info.chg||0)>=0?'var(--teal)':'var(--coral)'};font-size:11px;margin-top:3px">${info.chg!=null?(info.chg>=0?'+':'')+info.chg.toFixed(2)+'% 24h':'no 24h data'}</div></div>
@@ -1435,7 +1465,7 @@ async function openMini(ca,info){
       <div style="flex:1;min-width:150px;border:1px solid var(--line);padding:12px 14px;background:var(--panel)"><div style="color:var(--dim);font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;font-weight:700">Top ${H.length} hold</div><div class="mono" style="font-size:19px;font-weight:800;margin-top:4px">${info.topShare!=null?info.topShare.toFixed(1)+'%':'—'}</div><div style="color:var(--muted);font-size:11px;margin-top:3px">of supply · includes pools &amp; exchanges (unfiltered preview)</div></div>
       <div style="flex:1;min-width:150px;border:1px solid var(--line);padding:12px 14px;background:var(--panel)"><div style="color:var(--dim);font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;font-weight:700">Balances as of</div><div class="mono" style="font-size:19px;font-weight:800;margin-top:4px">${esc(info.asOf||'—')}</div><div style="color:var(--muted);font-size:11px;margin-top:3px">daily snapshot · live data once tracked</div></div>
     </div>
-    <div style="border:1px solid var(--line);background:var(--panel2);padding:10px 14px;font-size:12px"><b>⚓ Fetch full data</b> adds $${sym} to Whalarium: live top-100 with exchange/pool filtering, labels &amp; X identities, schools, flows history, instant alerts and the fish tank. Takes ~10 minutes after you click. ${canTrack?'':'<span style="color:var(--coral)">Sign in first (Alerts tab → Your watches).</span>'}</div>
+    <div style="border:1px solid var(--line);background:var(--panel2);padding:10px 14px;font-size:12px"><b>Fetch full data</b> adds $${sym} to Whalarium: live top-100 with exchange/pool filtering, labels &amp; X identities, schools, flows history, instant alerts and the fish tank. Takes ~10 minutes after you click. ${canTrack?'':'<span style="color:var(--coral)">Sign in first (Alerts tab → Your watches).</span>'}</div>
     ${H.length?`<div style="border:1px solid var(--line);background:var(--panel);overflow-x:auto"><table style="min-width:640px"><thead><tr><th>#</th><th>Wallet</th><th class="r">Amount</th><th class="r">% supply</th><th class="r">Value</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`:`<div style="padding:26px;color:var(--dim);border:1px solid var(--line)">No holder snapshot available for this token yet${info.holdersError?': <small>'+esc(info.holdersError)+'</small>':''}.</div>`}
   </div>`;
 }
@@ -1443,8 +1473,8 @@ async function trackMini(ca){
   if(!ACCT.user){toastMsg('Sign in first — Alerts tab → Your watches → Connect wallet / Google','var(--coral)');setView('alerts');return}
   try{const j=await acctApi('/api/track',{ca});
     if(j.already){toastMsg(`$${esc(j.sym)} is already tracked`,'var(--muted)');jumpToken(j.sym);return}
-    toastMsg(`⚓ <b>$${esc(j.sym)}</b> added — full aquarium in ~10 min${j.dispatched?'':' (refresh queued)'}`,'var(--teal)');
-    const b=document.querySelector('#miniView button[onclick^="trackMini"]');if(b){b.disabled=true;b.textContent='⚓ Added · building…';b.style.opacity=.6}
+    toastMsg(`<b>$${esc(j.sym)}</b> added — full aquarium in ~10 min${j.dispatched?'':' (refresh queued)'}`,'var(--teal)');
+    const b=document.querySelector('#miniView button[onclick^="trackMini"]');if(b){b.disabled=true;b.textContent='Added · building…';b.style.opacity=.6}
   }catch(e){toastMsg(esc(e.message),'var(--coral)')}
 }
 /* ---- Flows view: where the top-100's money is moving ---- */
@@ -1689,8 +1719,8 @@ async function openProfile(h){
     <div><h3 id="wpname">${h.entity||short(h.addr)}</h3><div class="addr">${cpa(h.addr,h.addr)}</div>
       <div class="lbls" id="wplbls" style="margin-top:6px">${[tagPills(h),h.rank?`<span><i class="tg" style="background:${t.c};width:7px;height:7px"></i>rank #${h.rank} in $${h.tokSym||cur.sym} · ${t.n.toLowerCase()}</span>`:`<span class="ctx">free swimmer · not in a tracked top 100</span>`,lblChips(h,5)].join('')}</div></div>
     <div class="val"><small id="wpvlabel">Tracked positions · Base</small><b class="mono" id="wpval">—</b></div>
-    <div class="wbtns"><button onclick="setView('aquarium')">← Aquarium</button><button id="wpcopy">Copy address</button><button id="wpshare">Share wallet</button><button id="wpwatch"></button><button onclick="acctWatchPrefill('${h.addr.toLowerCase()}')" title="get an alert on every tx of this wallet">🔔 Alert me</button><span id="wpsocials" style="display:contents"></span><a href="${ark}" target="_blank" rel="noopener">Arkham ↗</a><a href="${scan}" target="_blank" rel="noopener">Basescan ↗</a></div></div>
-  <div class="wgrid" id="wpgrid"><div class="empty2">Loading. Trust the fish.</div></div>`;
+    <div class="wbtns"><button onclick="setView('aquarium')">← Aquarium</button><button id="wpcopy">Copy address</button><button id="wpshare">Share wallet</button><button id="wpwatch"></button><button onclick="acctWatchPrefill('${h.addr.toLowerCase()}')" title="get an alert on every tx of this wallet">Alert me</button><span id="wpsocials" style="display:contents"></span><a href="${ark}" target="_blank" rel="noopener">Arkham ↗</a><a href="${scan}" target="_blank" rel="noopener">Basescan ↗</a></div></div>
+  <div class="wgrid" id="wpgrid">${loadingHtml('Loading positions, funding and transfers')}</div>`;
   drawMinis();
   document.getElementById('wpcopy').onclick=e=>{navigator.clipboard&&navigator.clipboard.writeText(h.addr);e.target.textContent='copied';setTimeout(()=>e.target.textContent='Copy address',1200)};
   document.getElementById('wpshare').onclick=()=>{const u=location.origin+location.pathname+'?token='+cur.sym.toLowerCase()+'%23w='+h.addr;navigator.clipboard&&navigator.clipboard.writeText(location.href);toastMsg('Wallet link copied','var(--teal)')};
@@ -1807,7 +1837,7 @@ async function legacyDrawerProfile(h){
     ${h.entity?`<div class="ent">${h.entity}</div>`:''}
     <h4>${h.addr}</h4>
     <div class="lbls">${lblChips(h,4)}</div></div>`;
-  d.innerHTML=head+`<div class="body"><div class="empty">Loading profile…</div></div>`;
+  d.innerHTML=head+`<div class="body">${loadingHtml('Loading profile')}</div>`;
   d.classList.add('open');
   document.getElementById('dx').onclick=()=>d.classList.remove('open');
   let p=profCache[h.addr];
