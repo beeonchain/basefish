@@ -1,4 +1,4 @@
-// Daily token discovery — which Base tokens does WALLETSEA track?
+// Daily token discovery — which Base tokens does WHALARIUM track?
 // Source: GeckoTerminal (CoinGecko's DEX API, keyless): pools by 24h volume + trending pools on Base →
 // base tokens → info (mcap/fdv/liquidity/logo/coingecko id) → filter → rank → tokens.config.json.
 // Keeps every manual entry and every token added from the site ("Fetch full data"); replaces the auto set.

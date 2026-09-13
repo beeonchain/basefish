@@ -1,4 +1,4 @@
-// Walletsea Telegram bot — webhook + full setup via chat commands.
+// Whalarium Telegram bot — webhook + full setup via chat commands.
 // Subscriber prefs live in data/tg_subs.json in the repo (committed via GitHub API);
 // the data pipeline reads that file on each run and sends the actual alerts.
 // One-time setup: open  /api/tg?setup=1  once after adding TG_BOT_TOKEN + GH_DISPATCH_TOKEN in Netlify env.
@@ -35,7 +35,7 @@ async function reply(tg, chat, text) {
   });
 }
 
-const HELP = `<b>🌊 Walletsea alerts</b>
+const HELP = `<b>🌊 Whalarium alerts</b>
 Alerts arrive with each data refresh (~every 2h).
 
 /start — subscribe (all tokens, all events)
@@ -46,7 +46,7 @@ Alerts arrive with each data refresh (~every 2h).
 /watch 0x… TOKEN — custom: every tx of that wallet in that token (max ${MAX_WATCHES})
 /unwatch 0x… — remove a watch
 /list — your current setup
-/link CODE — connect to your Walletsea account (basefish.netlify.app) (code from the Alerts tab); watches then sync both ways
+/link CODE — connect to your Whalarium account (basefish.netlify.app) (code from the Alerts tab); watches then sync both ways
 /unlink — disconnect
 /help — this message`;
 
@@ -186,7 +186,7 @@ export default async (req) => {
       const targets = Object.keys(subs.chats).filter((c) => c !== chat);
       let sent = 0;
       for (const c of targets) {
-        try { await reply(TG, c, `📢 <b>Walletsea</b>\n${arg}`); sent++; } catch (e) {}
+        try { await reply(TG, c, `📢 <b>Whalarium</b>\n${arg}`); sent++; } catch (e) {}
         await new Promise((s) => setTimeout(s, 40));
       }
       out = `Broadcast sent to ${sent}/${targets.length} subscriber${targets.length === 1 ? '' : 's'}.`; break; }
