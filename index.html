@@ -428,7 +428,7 @@
       <div class="kv"><span>Market cap</span><b class="mono" id="tkMcap">—</b></div>
       <div class="kv" id="tkHoldersRow"><span>Holders</span><b class="mono" id="tkHolders">—</b></div>
       <div class="kv" id="tkVolRow" style="display:none"><span>24h volume</span><b class="mono" id="tkVol">—</b></div>
-      <div class="kv" id="tkCtrRow" style="display:none"><span>Contract</span><b class="mono" style="display:flex;gap:6px;align-items:center"><span id="tkCtr"></span><button id="tkCopy" style="font-size:9px;padding:1px 5px;border:1px solid var(--line);color:var(--muted);cursor:pointer" title="Copy contract">copy</button></b></div>
+      <div class="kv" id="tkCtrRow" style="display:none"><span>Contract</span><button id="tkCopy" class="mono" style="white-space:nowrap;font-size:11px;font-weight:700;padding:2px 7px;border:1px solid var(--line2);background:var(--panel);color:var(--text);cursor:pointer;display:inline-flex;align-items:center;gap:5px" title="Copy the full contract address"><span id="tkCtr"></span><svg viewBox="0 0 16 16" width="11" height="11" style="flex:none"><rect x="5" y="5" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="2" y="2" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button></div>
       <div id="tkLinks" style="display:none;margin-top:8px;font-size:10.5px"><a id="tkScan" target="_blank" rel="noopener" style="color:var(--muted);font-weight:700">Basescan ↗</a> &nbsp; <a id="tkDex" target="_blank" rel="noopener" style="color:var(--muted);font-weight:700">Dexscreener ↗</a></div>
     </div>
     <p class="disclaimer">NFA. On-chain data, shown as it is. Not affiliated with Base, Coinbase or any token team.</p>
@@ -996,7 +996,7 @@ function renderChrome(){
   if(t.vol){document.getElementById('tkVolRow').style.display='';document.getElementById('tkVol').textContent=usd(t.vol)}else document.getElementById('tkVolRow').style.display='none';
   if(t.contract){
     document.getElementById('tkCtrRow').style.display='';document.getElementById('tkCtr').textContent=short(t.contract);
-    document.getElementById('tkCopy').onclick=e=>{navigator.clipboard&&navigator.clipboard.writeText(t.contract);e.target.textContent='ok';setTimeout(()=>e.target.textContent='copy',1200)};
+    document.getElementById('tkCopy').onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(t.contract);const c=document.getElementById('tkCtr');c.textContent='copied';setTimeout(()=>c.textContent=short(t.contract),1200)};
     document.getElementById('tkLinks').style.display='';
     document.getElementById('tkScan').href='https://basescan.org/token/'+t.contract;
     document.getElementById('tkDex').href='https://dexscreener.com/base/'+t.contract;
