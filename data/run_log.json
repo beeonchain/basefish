@@ -1,5 +1,5 @@
 {
- "started": "2026-09-13T16:52:09.384Z",
+ "started": "2026-09-13T18:17:18.811Z",
  "tier": "hot",
  "tokens": {
   "BRETT": {
@@ -7,154 +7,154 @@
    "src": "bq-holders+live",
    "top": 100,
    "infra": 44,
-   "price": 0.00488777
+   "price": 0.00490937
   },
   "TOSHI": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 70,
-   "price": 0.00011476
+   "price": 0.00011475
   },
   "BASECAT": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 9,
-   "price": 0.02239997
+   "price": 0.02226081
   },
   "AERO": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 79,
-   "price": 0.565166
+   "price": 0.567959
   },
   "VIRTUAL": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 86,
-   "price": 0.616104
+   "price": 0.621784
   },
   "VVV": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 74,
-   "price": 21.42
+   "price": 22.03
   },
   "TIBBIR": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 7,
-   "price": 0.192771
+   "price": 0.19749
   },
   "LAPTOP": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 33,
-   "price": 0.279151
+   "price": 0.285421
   },
   "AWE": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 45,
-   "price": 0.059798
+   "price": 0.06001
   },
   "NOCK": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 10,
-   "price": 0.04663341
+   "price": 0.0466851
   },
   "O": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 21,
-   "price": 0.521021
+   "price": 0.517706
   },
   "MAG7SSI": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 14,
-   "price": 0.517703
+   "price": 0.518514
   },
   "DIEM": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 31,
-   "price": 1680.24
+   "price": 1728.32
   },
   "KTA": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 30,
-   "price": 0.094199
+   "price": 0.094242
   },
   "OMI": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 18,
-   "price": 0.00021087
+   "price": 0.0002123
   },
   "BIM": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 8,
-   "price": 1.63
+   "price": 1.64
   },
   "SQD": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 47,
-   "price": 0.03185331
+   "price": 0.03233087
   },
   "DEGEN": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 71,
-   "price": 0.00101946
+   "price": 0.00101487
   },
   "MOCA": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 20,
-   "price": 0.00948598
+   "price": 0.00952461
   },
   "OETHB": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 8,
-   "price": 2502.38
+   "price": 2502.39
   },
   "ZORA": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 65,
-   "price": 0.00814028
+   "price": 0.00817378
   },
   "STONKEX": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 9,
-   "price": 0.00882237
+   "price": 0.01027379
   },
   "ELON": {
    "ok": false,
@@ -165,36 +165,36 @@
    "src": "bq-holders+live",
    "top": 100,
    "infra": 4,
-   "price": 0.00110778
+   "price": 0.00116609
   }
  },
  "errors": [],
  "tags": {
-  "WHALE": 516,
-  "OG": 316,
+  "WHALE": 522,
+  "OG": 322,
   "CT": 25,
   "SNIPE": 22,
   "DIAMOND": 148
  },
- "finished": "2026-09-13T17:38:53.339Z",
+ "finished": "2026-09-13T18:51:47.064Z",
  "budgets": {
-  "arkham": 166,
-  "profile": 6,
+  "arkham": 165,
+  "profile": 54,
   "frontrun": 150,
-  "rpc": 314,
+  "rpc": 399,
   "funding": 0
  },
  "webhook": {
-  "have": 273,
-  "want": 272,
-  "added": 0,
-  "removed": 1,
+  "have": 272,
+  "want": 274,
+  "added": 2,
+  "removed": 0,
   "audited": 274,
-  "evicted": 2,
+  "evicted": 0,
   "noisy": 35
  },
  "alertTx": {
-  "looked": 2,
-  "found": 2
+  "looked": 1,
+  "found": 1
  }
 }
