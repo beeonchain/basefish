@@ -30,7 +30,7 @@ export default async (req) => {
       const used = u.fetches || 0, lim = fetchLimit(u);
       if (used >= lim) { err = `you used all ${lim} fetches of the ${u.plan || 'free'} plan — more plans coming soon`; return false; }
       if (g >= LIMITS.globalDay) { err = 'daily add limit reached for the whole site — try tomorrow'; return false; }
-      u.fetches = used + 1; (u.fetchLog = u.fetchLog || []).push({ ca, ts: Date.now() }); d.meta.trackDay = day; d.meta.trackCount = g + 1;
+      u.fetches = used + 1; (u.fetchLog = u.fetchLog || []).push({ ca, sym: String(info.sym || '').toUpperCase().slice(0, 10) || null, ts: Date.now() }); d.meta.trackDay = day; d.meta.trackCount = g + 1;
     }, 'users: track token');
   } catch (e) { err = String(e.message || e).slice(0, 120); }
   if (err) return json({ error: err }, 400);
@@ -48,12 +48,13 @@ export default async (req) => {
     }, `tokens: add ${sym} (${ca.slice(0, 10)}) via site`);
   } catch (e) { err = String(e.message || e).slice(0, 120); }
   if (err) return json({ error: err }, 400);
-  // kick the pipeline so the full aquarium exists within ~10 minutes
+  // kick a single-token run (its own concurrency lane, so it does not queue behind the 2-hourly refresh) — ~3 minutes
   let dispatched = false;
+  const startedAt = new Date().toISOString();
   try {
-    const r = await fetch('https://api.github.com/repos/beeonchain/basefish/actions/workflows/refresh.yml/dispatches', { method: 'POST', headers: { Authorization: 'Bearer ' + process.env.GH_DISPATCH_TOKEN, Accept: 'application/vnd.github+json', 'User-Agent': 'walletsea-track', 'X-GitHub-Api-Version': '2022-11-28' }, body: JSON.stringify({ ref: 'main' }) });
+    const r = await fetch('https://api.github.com/repos/beeonchain/basefish/actions/workflows/refresh.yml/dispatches', { method: 'POST', headers: { Authorization: 'Bearer ' + process.env.GH_DISPATCH_TOKEN, Accept: 'application/vnd.github+json', 'User-Agent': 'walletsea-track', 'X-GitHub-Api-Version': '2022-11-28' }, body: JSON.stringify({ ref: 'main', inputs: { tier: 'hot', only: added } }) });
     dispatched = r.status === 204;
   } catch {}
-  return json({ ok: true, sym: added, dispatched });
+  return json({ ok: true, sym: added, ca, dispatched, startedAt });
 };
 export const config = { path: '/api/track' };

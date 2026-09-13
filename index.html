@@ -144,6 +144,20 @@
   #hqDrop button{display:block;width:100%;text-align:left;padding:9px 12px;font-size:13px;border-bottom:1px solid var(--line);cursor:pointer;color:var(--text)}
   #hqDrop button:hover{background:var(--panel2)}
   #hqDrop small{color:var(--dim)}
+  #hqDrop .hqh{padding:6px 12px 4px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);background:var(--panel2);border-bottom:1px solid var(--line)}
+  #hqDrop .hqt{display:block;text-align:left;padding:8px 12px}#hqDrop .hqt .hqin{display:flex;gap:10px;align-items:center;width:100%;text-align:left}
+  #hqDrop .hqt .hql{width:22px;height:22px;flex:none;border:1px solid var(--line);display:grid;place-items:center;background:var(--panel2)}
+  #hqDrop .hqt .hql img{width:22px;height:22px;display:block}#hqDrop .hqt .hql i{width:10px;height:10px;display:block}
+  #hqDrop .hqt.main{border-left:3px solid var(--accent);background:var(--panel2);padding-left:9px}
+  #hqDrop .hqt.main b{color:var(--accent)}
+  .tokmenu .tmh,#tokmenu .tmh{padding:7px 12px 5px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);background:var(--panel2);border-bottom:1px solid var(--line)}
+  #fetchbar{position:fixed;right:16px;bottom:16px;z-index:60;width:280px;background:var(--panel);border:1px solid var(--text);box-shadow:0 12px 30px rgba(10,11,13,.14);padding:10px 12px 12px;font-size:12px}
+  #fetchbar .fbh{display:flex;align-items:center;gap:8px}#fetchbar .fbh b{margin-left:auto;font-size:12px}#fetchbar .fbh button{color:var(--dim);font-weight:800;padding:0 2px}
+  #fetchbar .fbt{margin-top:6px;font-size:13px}#fetchbar .fbp{height:8px;border:1px solid var(--line2);background:var(--panel2);margin-top:8px}#fetchbar .fbp i{display:block;height:100%;background:var(--accent);transition:width .6s}
+  #fetchbar .fbs{margin-top:6px;color:var(--muted);font-size:11.5px}
+  .akf{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line2);background:var(--panel);padding:2px 6px 2px 3px;cursor:pointer;color:var(--muted);font-size:10.5px;font-weight:700}
+  .akf small{font-family:var(--font-mono);font-size:10px;color:var(--dim)}
+  .akf:hover{border-color:var(--accent-line)}.akf.on{border-color:var(--text);background:var(--panel2);color:var(--text)}
   @media (max-width:1350px){.hsearch input{width:170px}}
   @media (prefers-reduced-motion:reduce){.tank .glass{display:none}}
   .tokpick{display:flex;gap:6px;margin-left:0;padding:0;border:0;background:transparent;max-width:30vw;overflow-x:auto;scrollbar-width:none;position:relative}
@@ -417,6 +431,9 @@
       <button data-view="wallets"><svg viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="2"/><rect x="2" y="12" width="12" height="2"/><rect x="2" y="6" width="2" height="6"/><rect x="12" y="6" width="2" height="6"/><rect x="9" y="8" width="3" height="2"/></svg><span>Ecosystem Whales</span></button>
       <button data-view="flows"><svg viewBox="0 0 16 16"><rect x="2" y="4" width="8" height="2"/><rect x="10" y="2" width="2" height="2"/><rect x="12" y="4" width="2" height="2"/><rect x="10" y="6" width="2" height="2"/><rect x="6" y="10" width="8" height="2"/><rect x="4" y="8" width="2" height="2"/><rect x="2" y="10" width="2" height="2"/><rect x="4" y="12" width="2" height="2"/></svg><span>Flows</span></button>
       <button data-view="alerts"><svg viewBox="0 0 16 16"><rect x="6" y="2" width="4" height="2"/><rect x="5" y="4" width="6" height="2"/><rect x="4" y="6" width="8" height="4"/><rect x="3" y="10" width="10" height="2"/><rect x="7" y="13" width="2" height="2"/></svg><span>Alerts</span><em class="navbadge" id="alertBadge" style="display:none"></em></button>
+      <button data-view="alerts" data-atab="global" class="subitem"><span>Global</span></button>
+      <button data-view="alerts" data-atab="mine" class="subitem"><span>Personal</span></button>
+      <button data-view="lockers"><svg viewBox="0 0 16 16"><rect x="4" y="7" width="8" height="7"/><rect x="5" y="3" width="2" height="4"/><rect x="9" y="3" width="2" height="4"/><rect x="6" y="2" width="4" height="2"/><rect x="7" y="10" width="2" height="2" fill="#fff"/></svg><span>Lockers</span></button>
       <button data-view="watch"><svg viewBox="0 0 16 16"><rect x="7" y="2" width="2" height="3"/><rect x="2" y="7" width="3" height="2"/><rect x="11" y="7" width="3" height="2"/><rect x="6" y="5" width="4" height="2"/><rect x="5" y="7" width="6" height="2"/><rect x="6" y="9" width="4" height="2"/><rect x="4" y="11" width="2" height="2"/><rect x="10" y="11" width="2" height="2"/><rect x="7" y="9" width="2" height="3"/></svg><span>Watchlist</span></button>
       <button data-view="profile" class="acctbtn"><svg viewBox="0 0 16 16"><rect x="5" y="2" width="6" height="6"/><rect x="3" y="9" width="10" height="5"/></svg><span>Sign in</span></button>
     </nav>
@@ -468,6 +485,7 @@
     <div class="view" id="watchView"></div>
     <div class="view" id="flowsView"></div>
     <div class="view" id="alertsView"></div>
+    <div class="view" id="lockersView"></div>
     <div class="view" id="miniView"></div>
     <div class="wp" id="walletPage"></div>
     <div class="view" id="profileView"></div>
@@ -1007,7 +1025,7 @@ function renderChrome(){
   const th=t.th;document.getElementById('thSmall').textContent='< '+usd(th[0]);document.getElementById('thMed').textContent=usd(th[0])+' – '+usd(th[1]);document.getElementById('thLarge').textContent=usd(th[1])+' – '+usd(th[2]);document.getElementById('thWhale').textContent='> '+usd(th[2]);
   document.getElementById('holdList').innerHTML=L.map((h,i)=>`<button data-i="${i}"><span class="n">${h.rank}</span><span style="width:26px;height:19px;flex:none"><img src="assets/tank/${h.rank===1?'king':h.tier}.webp" style="width:26px;height:19px;object-fit:contain" onerror="this.style.display='none'"></span><span><div class="a">${short(h.addr)}</div>${(h.entity||h.label)?`<div style="font-size:10px;font-weight:600;color:${cexOf(h.entity)?cexOf(h.entity)[1]:'var(--muted)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc((h.entity||h.label).slice(0,26))}</div>`:''}<div class="bar2"><i style="width:${Math.min(100,h.pct/L[0].pct*100)}%"></i></div></span><span class="p mono">${h.pct.toFixed(2)}%<small>${usd(h.value)}</small></span></button>`).join('');
   document.querySelectorAll('#holdList button').forEach(b=>b.onclick=()=>{setView('aquarium');select(fish[+b.dataset.i])});
-  drawMinis();drawDonut();renderTable();freshTick();if(view==='flows')renderFlows();
+  drawMinis();drawDonut();renderTable();freshTick();if(view==='flows')renderFlows();if(view==='lockers')renderLockers();
   buildPicker();
   document.querySelectorAll('#tokpick button').forEach(b=>{b.classList.toggle('on',b.dataset.sym===t.sym);if(b.dataset.sym===t.sym&&b.scrollIntoView)b.scrollIntoView({block:'nearest',inline:'nearest'})});
   const f=document.getElementById('feed');f.innerHTML='';
@@ -1145,9 +1163,12 @@ function renderTable(){
 function renderTokMenu(q){
   const m=document.getElementById('tokmenu');const ql=q.trim().toLowerCase();
   const list=[...TOKENS].sort((a,b)=>(b.mcap||0)-(a.mcap||0)).filter(t=>!ql||t.sym.toLowerCase().includes(ql)||(t.name||'').toLowerCase().includes(ql));
-  m.innerHTML=`<input placeholder="filter ${TOKENS.length} tokens…" value="${esc(q)}">`+list.map(t=>`<button class="trow" data-sym="${t.sym}">${t.logo?`<img src="${t.logo}" onerror="this.style.display='none'">`:`<i style="background:${t.color}"></i>`}<b>$${esc(t.sym)}</b><span style="color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.name||'')}</span>${t.trending?'<span class="pill" style="background:#F9731622;color:#F76B15;border:1px solid #F76B1555">trending</span>':''}<small>${t.mcap?usd(t.mcap):''}${t.stale?' · daily':''}</small></button>`).join('')+(list.length?'':'<div style="padding:12px;color:var(--dim);font-size:12px">no match — paste a contract address in the search box to add a token</div>');
+  // your fetched tokens first (from the account's fetch log) — that is how you find a CA you fetched earlier
+  const mine=(ACCT.user&&ACCT.user.fetched||[]).map(f=>({...f,t:TOKENS.find(t=>(t.contract||'').toLowerCase()===f.ca)})).filter(f=>!ql||(f.t&&(f.t.sym.toLowerCase().includes(ql)||(f.t.name||'').toLowerCase().includes(ql)))||(f.sym||'').toLowerCase().includes(ql));
+  const mineHtml=mine.length?`<div class="tmh">Your fetched tokens <small>· ${mine.length}</small></div>`+mine.map(f=>f.t?`<button class="trow" data-sym="${f.t.sym}">${f.t.logo?`<img src="${f.t.logo}" onerror="this.style.display='none'">`:`<i style="background:${f.t.color}"></i>`}<b>$${esc(f.t.sym)}</b><span style="color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.t.name||'')}</span><small>${f.t.mcap?usd(f.t.mcap):''} · fetched ${agoStr(f.ts)} ago</small></button>`:`<button class="trow" data-ca="${f.ca}"><i style="background:var(--dim)"></i><b>$${esc(f.sym||'TOKEN')}</b><span style="color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" class="mono">${short(f.ca)}</span><small>building… · fetched ${agoStr(f.ts)} ago</small></button>`).join('')+`<div class="tmh">All tokens</div>`:'';
+  m.innerHTML=`<input placeholder="filter ${TOKENS.length} tokens…" value="${esc(q)}">`+mineHtml+list.map(t=>`<button class="trow" data-sym="${t.sym}">${t.logo?`<img src="${t.logo}" onerror="this.style.display='none'">`:`<i style="background:${t.color}"></i>`}<b>$${esc(t.sym)}</b><span style="color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.name||'')}</span>${t.trending?'<span class="pill" style="background:#F9731622;color:#F76B15;border:1px solid #F76B1555">trending</span>':''}<small>${t.mcap?usd(t.mcap):''}${t.stale?' · daily':''}</small></button>`).join('')+(list.length?'':'<div style="padding:12px;color:var(--dim);font-size:12px">no match — paste a contract address in the search box to add a token</div>');
   const inp=m.querySelector('input');inp.oninput=()=>{const v=inp.value;const pos=inp.selectionStart;renderTokMenu(v);const i2=m.querySelector('input');i2.focus();i2.setSelectionRange(pos,pos)};inp.onclick=e=>e.stopPropagation();
-  m.querySelectorAll('.trow').forEach(b=>b.onclick=()=>{m.classList.remove('open');closeCard();loadToken(TOKENS.find(t=>t.sym===b.dataset.sym));toastMsg(`Aquarium switched to <b>$${b.dataset.sym}</b>`,'var(--muted)')});
+  m.querySelectorAll('.trow').forEach(b=>b.onclick=()=>{m.classList.remove('open');closeCard();if(b.dataset.ca){openMini(b.dataset.ca,null);return}loadToken(TOKENS.find(t=>t.sym===b.dataset.sym));toastMsg(`Aquarium switched to <b>$${b.dataset.sym}</b>`,'var(--muted)')});
 }
 function buildPicker(){
   const many=TOKENS.length>6;const extra=cur&&!TOKENS.slice(0,4).some(t=>t.sym===cur.sym)?TOKENS.filter(t=>t.sym===cur.sym):[];const top=TOKENS.slice(0,extra.length?3:4);
@@ -1159,8 +1180,8 @@ function buildPicker(){
   document.querySelectorAll('#tokpick button').forEach(b=>b.onclick=()=>{closeCard();loadToken(TOKENS.find(t=>t.sym===b.dataset.sym));toastMsg(`Aquarium switched to <b>$${cur.sym}</b>`,'var(--muted)')});
 }
 /* views */
-const VIEW_T={aquarium:['Whalarium','Every wallet is a fish. Top 100, live from Base.'],holders:['Top holders','The top 100 wallets of this token, ranked by balance.'],wallets:['Ecosystem Whales','Every wallet that sits in a top 100, across all tracked tokens.'],flows:['Flows','Are the biggest wallets buying or selling?'],alerts:['Alerts','What the biggest wallets just did.'],watch:['Watchlist','Wallets you follow.'],wallet:['Wallet','One wallet, across every tracked token.'],mini:['Token lookup','Any Base token by contract address.'],profile:['Account','Your accounts, plan, fish and claimed wallets.']};
-function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>{b.classList.toggle('on',b.dataset.view===v);b.classList.toggle('parent-on',b.dataset.view==='aquarium'&&v==='holders')});
+const VIEW_T={aquarium:['Whalarium','Every wallet is a fish. Top 100, live from Base.'],holders:['Top holders','The top 100 wallets of this token, ranked by balance.'],wallets:['Ecosystem Whales','Every wallet that sits in a top 100, across all tracked tokens.'],flows:['Flows','Are the biggest wallets buying or selling?'],alerts:['Alerts','What the biggest wallets just did.'],lockers:['Lockers','Locked, vesting and staked supply — who holds the keys.'],watch:['Watchlist','Wallets you follow.'],wallet:['Wallet','One wallet, across every tracked token.'],mini:['Token lookup','Any Base token by contract address.'],profile:['Account','Your accounts, plan, fish and claimed wallets.']};
+function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>{const sub=b.dataset.atab;b.classList.toggle('on',b.dataset.view===v&&(!sub||sub===alertTab));b.classList.toggle('parent-on',(b.dataset.view==='aquarium'&&v==='holders')||(b.dataset.view==='alerts'&&!sub&&v==='alerts'))});
   {const t=VIEW_T[v]||VIEW_T.aquarium;const a=document.getElementById('viewTitle'),b=document.getElementById('viewSub');if(a)a.textContent=t[0];if(b)b.textContent=t[1];}
   document.querySelector('.app').classList.toggle('noRail',v!=='aquarium');
   document.querySelector('.app').classList.toggle('wview',v==='wallets'||v==='watch');
@@ -1171,6 +1192,8 @@ function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>{
   document.getElementById('watchView').classList.toggle('show',v==='watch');
   document.getElementById('flowsView').classList.toggle('show',v==='flows');
   document.getElementById('alertsView').classList.toggle('show',v==='alerts');
+  document.getElementById('lockersView').classList.toggle('show',v==='lockers');
+  if(v==='lockers')renderLockers();
   document.getElementById('miniView').classList.toggle('show',v==='mini');
   document.getElementById('walletPage').classList.toggle('show',v==='wallet');
   document.getElementById('profileView').classList.toggle('show',v==='profile');
@@ -1275,8 +1298,12 @@ async function searchAll(q){
   }
   if(ql.length<2)return out;
   const seen=new Set();
+  // tracked tokens first (instant); every other Base token by ticker arrives from DexScreener via out.more (ranked + merged by the caller)
   for(const tk of TOKENS){
-    if(tk.sym.toLowerCase().includes(ql)||tk.name.toLowerCase().includes(ql))out.push({type:'token',sym:tk.sym,label:'$'+tk.sym+' — '+tk.name});
+    if(tk.sym.toLowerCase().includes(ql)||tk.name.toLowerCase().includes(ql))out.push({type:'token',sym:tk.sym,ca:(tk.contract||'').toLowerCase(),name:tk.name,logo:tk.logo,mcap:tk.mcap,tracked:true,score:tokScore(tk.sym,tk.name,ql,tk.mcap||0,0)+300,label:'$'+tk.sym+' — '+tk.name});
+  }
+  if(!/^0x/i.test(ql))out.more=searchDex(ql).catch(()=>[]);
+  for(const tk of TOKENS){
     const d=REAL?await tokData(tk.sym):null;if(!d)continue;
     for(const h of d.holdersTop||[]){
       const a=h.addr.toLowerCase();if(seen.has(a))continue;
@@ -1287,22 +1314,44 @@ async function searchAll(q){
   }
   return out.slice(0,9);
 }
+/* ranking a ticker search: exact symbol ≫ symbol prefix ≫ name match, then liquidity and market cap decide between namesakes */
+function tokScore(sym,name,ql,mcap,liq){const S=String(sym||'').toLowerCase(),N=String(name||'').toLowerCase();let sc=0;
+  if(S===ql)sc+=1000;else if(S.startsWith(ql))sc+=400;else if(S.includes(ql))sc+=150;
+  if(N===ql)sc+=300;else if(N.startsWith(ql))sc+=120;else if(N.includes(ql))sc+=60;
+  sc+=Math.log10(1+(liq||0))*20+Math.log10(1+(mcap||0))*10;return sc}
+async function searchDex(ql){
+  const r=await fetch('https://api.dexscreener.com/latest/dex/search?q='+encodeURIComponent(ql));if(!r.ok)return[];const j=await r.json();
+  const by={};for(const p of (j.pairs||[])){if(p.chainId!=='base'||!p.baseToken||!p.baseToken.address)continue;const ca=p.baseToken.address.toLowerCase();
+    const o=by[ca]=by[ca]||{type:'mini',ca,sym:p.baseToken.symbol,name:p.baseToken.name,liq:0,vol:0,mcap:0,logo:p.info&&p.info.imageUrl||null,price:+p.priceUsd||0};
+    o.liq+=(p.liquidity&&p.liquidity.usd)||0;o.vol+=(p.volume&&p.volume.h24)||0;o.mcap=Math.max(o.mcap,p.marketCap||p.fdv||0);if(!o.logo&&p.info&&p.info.imageUrl)o.logo=p.info.imageUrl}
+  return Object.values(by).map(o=>({...o,score:tokScore(o.sym,o.name,ql,o.mcap,o.liq),label:'$'+o.sym+' — '+o.name})).filter(o=>o.liq>=1000||o.mcap>=10000).sort((a,b)=>b.score-a.score).slice(0,8)}
 {const hq=document.getElementById('hq'),drop=document.getElementById('hqDrop');let tmr=null;
- const go=r=>{drop.style.display='none';hq.value='';if(r.type==='token')jumpToken(r.sym);else if(r.type==='mini')openMini(r.ca,r.info);else openProfileByAddr(r.addr)};
- const paint=rs=>{drop.innerHTML=rs.map((r,i)=>`<button data-i="${i}">${r.label}${r.sub?` <small>· ${r.sub}</small>`:''}</button>`).join('')+(rs.some(r=>r.pending)?'<button disabled style="color:var(--dim)">⏳ checking if this is a token…</button>':'');drop.style.display='block';drop.querySelectorAll('button[data-i]').forEach(b=>b.onclick=()=>go(rs[+b.dataset.i]))};
- hq.oninput=()=>{clearTimeout(tmr);tmr=setTimeout(async()=>{const rs=await searchAll(hq.value);
-   if(!rs.length){drop.style.display=hq.value.trim().length>1?'block':'none';drop.innerHTML='<button disabled style="color:var(--dim)">no match in tracked top-100s</button>';return}
-   paint(rs);
-   const pr=rs.find(r=>r.pending);if(pr){const v=hq.value;pr.pending.then(info=>{if(hq.value!==v||!info)return;delete pr.pending;
-     if(info.tracked){const t2=TOKENS.find(t=>t.sym===info.sym);if(t2)rs.unshift({type:'token',sym:t2.sym,label:'$'+t2.sym+' — open aquarium'})}
-     else if(info.isToken)rs.unshift({type:'mini',ca:pr.addr.toLowerCase(),info,label:`$${esc(info.sym)} — ${esc(info.name)} · <b>preview top holders</b>`,sub:'not tracked yet'});
-     paint(rs)})}
+ const go=r=>{drop.style.display='none';hq.value='';if(r.type==='token')jumpToken(r.sym);else if(r.type==='mini')openMini(r.ca,r.info&&r.info.holders?r.info:null);else if(r.addr)openProfileByAddr(r.addr)};
+ const tokRow=(r,i,main)=>`<button data-i="${i}" class="hqt ${main?'main':''}"><span class="hqin"><span class="hql">${r.logo?`<img src="${r.logo}" onerror="this.style.display='none'">`:`<i style="background:${(TOKENS.find(t=>t.sym===r.sym)||{}).color||'#9AA0A6'}"></i>`}</span><span style="min-width:0"><b>$${esc(r.sym)}</b> <span style="color:var(--muted)">${esc(String(r.name||'').slice(0,28))}</span>${main?'<span class="pill" style="margin-left:8px;color:var(--accent);border:1px solid var(--accent-line);height:16px;font-size:9px;padding:0 5px">best match</span>':''}<br><small>${r.tracked?'tracked · open aquarium':'not tracked · preview top holders'}${r.mcap?` · mcap ${usd(r.mcap)}`:''}${r.liq?` · liq ${usd(r.liq)}`:''}</small></span></span></button>`;
+ const paint=rs=>{const toks=rs.filter(r=>r.type==='token'||r.type==='mini'),rest=rs.filter(r=>r.type!=='token'&&r.type!=='mini');
+   drop.innerHTML=(toks.length?`<div class="hqh">Tokens</div>`:'')+toks.map((r)=>tokRow(r,rs.indexOf(r),r===toks[0]&&toks.length>0&&(r.score||0)>0)).join('')+(rest.length?`<div class="hqh">Wallets</div>`:'')+rest.map((r)=>`<button data-i="${rs.indexOf(r)}">${r.label}${r.sub?` <small>· ${r.sub}</small>`:''}</button>`).join('')+(rs.some(r=>r.pending)?'<button disabled style="color:var(--dim)">⏳ checking if this is a token…</button>':'')+(rs.more?'<button disabled style="color:var(--dim)">⏳ searching every Base token…</button>':'');
+   drop.style.display='block';drop.querySelectorAll('button[data-i]').forEach(b=>b.onclick=()=>go(rs[+b.dataset.i]))};
+ hq.oninput=()=>{clearTimeout(tmr);tmr=setTimeout(async()=>{const v=hq.value;const rs=await searchAll(v);if(hq.value!==v)return;
+   const isTok=r=>r.type==='token'||r.type==='mini';
+   // tokens ranked by score (tracked and DexScreener together, deduped by contract), wallets underneath in their own order
+   const rank=list=>{const seenCa=new Set();const toks=list.filter(isTok).sort((a,b)=>(b.score||0)-(a.score||0)).filter(r=>{const k=r.ca||r.sym;if(seenCa.has(k))return false;seenCa.add(k);return true});return [...toks,...list.filter(r=>!isTok(r))]};
+   let list=rank(rs);list.more=rs.more;
+   const empty=msg=>{drop.style.display='block';drop.innerHTML=`<button disabled style="color:var(--dim)">${msg}</button>`};
+   if(!list.length&&!rs.more){if(v.trim().length>1)empty('no match in tracked top-100s');else drop.style.display='none';return}
+   paint(list);
+   if(rs.more)rs.more.then(dx=>{if(hq.value!==v)return;const tracked=new Map(TOKENS.map(t=>[(t.contract||'').toLowerCase(),t]));
+     const extra=dx.filter(o=>!list.some(r=>r.ca===o.ca)).map(o=>{const t=tracked.get(o.ca);return t?{...o,type:'token',sym:t.sym,tracked:true,score:o.score+300,label:'$'+t.sym+' — '+t.name}:{...o,info:{sym:o.sym,name:o.name,logo:o.logo,price:o.price,mcap:o.mcap}}});
+     list=rank([...list,...extra]);if(list.length)paint(list);else empty('no token or wallet matches — paste a contract address to look one up')});
+   const pr=list.find(r=>r.pending);if(pr)pr.pending.then(info=>{if(hq.value!==v||!info)return;delete pr.pending;
+     if(info.tracked){const t2=TOKENS.find(t=>t.sym===info.sym);if(t2)list.unshift({type:'token',sym:t2.sym,ca:(t2.contract||'').toLowerCase(),name:t2.name,logo:t2.logo,mcap:t2.mcap,tracked:true,score:1,label:'$'+t2.sym+' — open aquarium'})}
+     else if(info.isToken)list.unshift({type:'mini',ca:pr.addr.toLowerCase(),info,sym:info.sym,name:info.name,logo:info.logo,mcap:info.mcap,score:1,label:`$${esc(info.sym)} — ${esc(info.name)}`,sub:'not tracked yet'});
+     paint(list)});
  },220)};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&tierFocus){setTierFocus(null);return}});
 document.addEventListener('keydown',e=>{if(e.key==='/'&&!/input|textarea|select/i.test(document.activeElement&&document.activeElement.tagName||'')){e.preventDefault();hq.focus();hq.select()}});
  hq.onkeydown=e=>{if(e.key==='Enter'){const first=drop.querySelector('button[data-i]');if(first){first.click();return}searchAll(hq.value).then(rs=>{if(rs.length)go(rs[0])})}if(e.key==='Escape'){drop.style.display='none';hq.blur()}};
  document.addEventListener('click',e=>{if(!e.target.closest('.hsearch'))drop.style.display='none'});}
-document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{if(b.querySelector('.soon'))return toastMsg(`<b>${b.querySelector('span').textContent}</b> isn't ready. The prophecy says soon.`,'var(--dim)');closeCard();setView(b.dataset.view)});
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{if(b.querySelector('.soon'))return toastMsg(`<b>${b.querySelector('span').textContent}</b> isn't ready. The prophecy says soon.`,'var(--dim)');closeCard();if(b.dataset.atab)alertTab=b.dataset.atab;else if(b.dataset.view==='alerts')alertTab='global';setView(b.dataset.view)});
 document.getElementById('viewAll').onclick=()=>setView('holders');
 document.getElementById('aboutBtn').onclick=()=>document.getElementById('modal').classList.add('show');
 document.getElementById('modalClose').onclick=()=>document.getElementById('modal').classList.remove('show');
@@ -1384,7 +1433,8 @@ GLYPH.school=G10('<rect x="0" y="0" width="3" height="3"/><rect x="7" y="0" widt
 GLYPH.watch=G10('<rect x="2" y="2" width="6" height="1"/><rect x="0" y="4" width="10" height="2"/><rect x="2" y="7" width="6" height="1"/><rect x="1" y="3" width="1" height="1"/><rect x="8" y="3" width="1" height="1"/><rect x="1" y="6" width="1" height="1"/><rect x="8" y="6" width="1" height="1"/><rect x="4" y="4" width="2" height="2" fill="#fff"/>');
 const AICON=new Proxy({},{get:(_,k)=>{const K=AKIND[k];return `<span class="tg" style="color:${K?K.c:'var(--dim)'};display:inline-flex;vertical-align:-1px">${GLYPH[k]||GLYPH.TAG}</span>`}});
 const akindChip=k=>{const K=AKIND[k]||{n:k,c:'#5B616E',t:''};return `<span class="pill tagp" style="color:${K.c};border-color:${K.c}99;height:18px;font-size:9.5px;padding:0 5px;gap:4px" title="${esc(K.t)}">${GLYPH[k]||GLYPH.TAG}${esc(K.n)}</span>`};
-let ALERTS=[],alertTokFilter='ALL',alertMode='feed',alertTab='global'; // global = everyone's feed · mine = my wallets / my tokens / private hits
+let ALERTS=[],alertTokFilter='ALL',alertMode='feed',alertTab='global',alertKinds=new Set(); // global = everyone's feed · mine = my wallets / my tokens / private hits · alertKinds = kind filter (empty = all)
+function toggleAlertKind(k){if(k==='ALL')alertKinds.clear();else if(alertKinds.has(k))alertKinds.delete(k);else alertKinds.add(k);renderAlerts()}
 const aTx=a=>{if(a.hash)return `<a href="https://basescan.org/tx/${a.hash}" target="_blank" rel="noopener" style="color:var(--dim);font-weight:700;font-size:11px">tx ↗</a>`;const t=TOKENS.find(x=>x.sym===a.sym);return a.addr&&t&&t.contract?`<a href="https://basescan.org/token/${t.contract}?a=${a.addr}" target="_blank" rel="noopener" title="No single tx attached — this alert came from a balance change between two snapshots. Opens this wallet's transfers of the token." style="color:var(--dim);font-weight:700;font-size:11px">transfers ↗</a>`:''};
 const aUsd=a=>(a.usd!=null&&a.usd>0&&/\bsent\b/.test(a.title||''))?-a.usd:a.usd; // older feed entries stored sends as positive // feed = newest first · wallet = grouped by actor
 const FEED_RAW='https://raw.githubusercontent.com/beeonchain/basefish/main/data/alerts.json';
@@ -1418,7 +1468,8 @@ async function renderAlerts(){
   const toks=['ALL',...TOKENS.map(t=>t.sym)];
   const mineW=new Set(((ACCT.user&&ACCT.user.watches)||[]).map(w=>w.w.toLowerCase())),mineT=new Set((ACCT.user&&ACCT.user.tokens)||[]);
   const isMine=a=>(a.addr&&mineW.has(a.addr.toLowerCase()))||(a.sym&&mineT.has(a.sym));
-  const rows=ALERTS.filter(a=>(alertTokFilter==='ALL'||a.sym===alertTokFilter)&&(alertTab!=='mine'||isMine(a)));
+  const rows=ALERTS.filter(a=>(alertTokFilter==='ALL'||a.sym===alertTokFilter)&&(alertTab!=='mine'||isMine(a))&&(!alertKinds.size||alertKinds.has(a.kind)));
+  const kindCount={};for(const a of ALERTS){if((alertTokFilter==='ALL'||a.sym===alertTokFilter)&&(alertTab!=='mine'||isMine(a)))kindCount[a.kind]=(kindCount[a.kind]||0)+1}
   // group by actor: wallet address, or school id
   const groups=new Map();
   for(const a of rows){
@@ -1459,20 +1510,20 @@ async function renderAlerts(){
       <div style="padding:9px 14px;font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)">${title} <span style="color:var(--dim);font-weight:400">· ${gs.length}</span></div>${gs.map(row).join('')}</div>`:'';
   el.innerHTML=`<div style="padding:16px;display:flex;flex-direction:column;gap:14px">
     <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-      <span style="display:inline-flex;border:1px solid var(--line2)">${[['global','Global alerts'],['mine','My alerts']].map(([k,l])=>`<button onclick="alertTab='${k}';renderAlerts()" style="height:30px;padding:0 14px;font-weight:700;font-size:12.5px;${alertTab===k?'background:var(--text);color:#fff':'color:var(--muted)'}">${l}</button>`).join('')}</span>
+      <h3 style="margin:0;font-size:16px">${alertTab==='mine'?'Personal alerts':'Global alerts'}</h3>
       <span class="t3" style="font-size:12px">${alertTab==='mine'?'Only what touches the wallets and tokens you watch, plus your private hits.':'What the biggest wallets of every tracked token just did — instantly on-chain and at every refresh.'}</span>
       <span style="margin-left:auto;display:flex;gap:8px;align-items:center">
         <select onchange="alertTokFilter=this.value;renderAlerts()" style="height:28px;padding:0 8px;font-size:12px;font-weight:700">${toks.map(s=>`<option value="${s}" ${alertTokFilter===s?'selected':''}>${s==='ALL'?'All tokens':'$'+s}</option>`).join('')}</select>
         <span style="display:inline-flex;border:1px solid var(--line)">${[['feed','Latest first'],['wallet','By wallet']].map(([m,l])=>`<button onclick="alertMode='${m}';renderAlerts()" style="padding:0 10px;height:26px;font-size:11px;font-weight:700;${alertMode===m?'background:var(--text);color:#fff':'color:var(--muted)'}">${l}</button>`).join('')}</span>
       </span></div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:11px;color:var(--dim)">${Object.keys(AKIND).map(akindChip).join('')}<span style="margin-left:4px">· hover a kind for what it means · $ = size of the move at current prices</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:11px;color:var(--dim)"><span class="t2" style="margin-right:2px">Filter</span><button class="akf ${alertKinds.size?'':'on'}" onclick="toggleAlertKind('ALL')">All kinds</button>${Object.keys(AKIND).map(k=>`<button class="akf ${alertKinds.has(k)?'on':''}" onclick="toggleAlertKind('${k}')" title="${esc(AKIND[k].t)}${kindCount[k]?' · '+kindCount[k]+' in this view':''}">${akindChip(k)}<small>${kindCount[k]||0}</small></button>`).join('')}<span style="margin-left:4px">· click a kind to show only those · $ = size of the move at current prices</span></div>
     ${latest.length?`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">${latest.map(a=>`<button class="flowrow" style="border:1px solid var(--line);background:var(--panel);padding:10px 12px;display:block;text-align:left" ${a.addr?`onclick="openProfileByAddr('${a.addr}')"`:''}>
         <small style="color:var(--dim);font-size:10px;letter-spacing:.4px;text-transform:uppercase">${AICON[a.kind]} latest · ${agoStr(a.ts)} ago</small><br><b style="font-size:12px">${esc(a.title)}</b></button>`).join('')}</div>`:''}
     ${alertTab==='mine'?acctPanel():''}
     ${alertTab==='mine'&&!feed.length&&ACCT.user?'<div class="st" style="border:1px solid var(--line)">Nothing yet for your watches. Add a wallet or a token above — wallet watches fire on every transfer within seconds; token watches bring you every whale move, entry, exit and exchange flow for that token.</div>':''}
     ${alertTab==='global'&&TG_BOT?`<div style="border:1px solid var(--line);background:var(--panel2);padding:10px 14px;font-size:12px">Instant alerts in Telegram → <a href="https://t.me/${TG_BOT}" target="_blank" rel="noopener" style="color:var(--teal);font-weight:800">@${TG_BOT}</a> — /start subscribes, /watch 0x… TOKEN follows any wallet live</div>`:''}
     ${alertMode==='feed'?(feed.length?`<div style="border:1px solid var(--line);background:var(--panel)"><div style="padding:9px 14px;font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)">Latest <span style="color:var(--dim);font-weight:400">· ${feed.length}</span></div>${feed.slice(0,feedN).map(feedRow).join('')}${feed.length>feedN?`<button onclick="alertOpen.add('feed:all');renderAlerts()" style="padding:10px 14px;font-size:11px;font-weight:700;color:var(--teal)">show all ${feed.length} →</button>`:''}</div>`:''):`${section('Wallets',wallets)}${section('Schools',schools)}`}
-    ${!list.length&&alertTab==='global'?'<div class="st" style="border:1px solid var(--line)">No alerts for this token yet. Whale moves, top-20 entries and exchange flows show up here as they happen.</div>':''}
+    ${!list.length&&alertTab==='global'?`<div class="st" style="border:1px solid var(--line)">${alertKinds.size?'No alerts of that kind in this view — <button onclick="toggleAlertKind(\'ALL\')" style="color:var(--teal);font-weight:700">show all kinds</button>.':'No alerts for this token yet. Whale moves, top-20 entries and exchange flows show up here as they happen.'}</div>`:''}
     <div style="color:var(--dim);font-size:11px">"By wallet" folds every alert of the same wallet into one row (net = sum of its alerted moves at current prices) · not financial advice</div>
   </div>`;
 }
@@ -1517,10 +1568,16 @@ async function acctSignOut(rerender=true){try{if(ACCT.privy)await ACCT.privy.log
 function requireAuth(fn){if(ACCT.user){fn&&fn();return true}ACCT.after=fn||null;openSignIn('login');return false}
 /* ---- sign-in / link modal ---- */
 let SI={mode:'login',email:'',step:'start'};
-function openSignIn(mode){SI={mode:mode||'login',email:'',step:'start'};renderSignIn();document.getElementById('signin').classList.add('show');setTimeout(()=>{const i=document.getElementById('siEmail');i&&i.focus()},50)}
+function openSignIn(mode,addr){SI={mode:mode||'login',email:'',step:'start',addr:addr?String(addr).toLowerCase():null};renderSignIn();document.getElementById('signin').classList.add('show');setTimeout(()=>{const i=document.getElementById('siEmail');i&&i.focus()},50)}
 function closeSignIn(){const m=document.getElementById('signin');if(m)m.classList.remove('show')}
 function renderSignIn(){const link=SI.mode==='link';const el=document.getElementById('signinIn');if(!el)return;
   const btn=(l,f,ic)=>`<button class="sib" onclick="${f}">${ic||''}<span>${l}</span></button>`;
+  if(SI.mode==='claim'){ // claiming an identity = proving control of that exact wallet. One path only: a gas-free signature from it.
+    el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline"><h4 style="margin:0">Claim this wallet</h4><button onclick="closeSignIn()" style="color:var(--dim);font-weight:800">✕</button></div>
+    <p>Prove you control <span class="mono" style="font-weight:700">${cpa(SI.addr,SI.addr)}</span> with one gas-free signature from that wallet. No email, Google or X login can claim a wallet — only its keys.</p>
+    <div class="sigrid" style="grid-template-columns:1fr">${btn('Verify with wallet ownership',"siWallet()",'<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" shape-rendering="crispEdges"><rect x="1" y="3" width="14" height="10"/><rect x="10" y="7" width="3" height="2" fill="#fff"/></svg>')}</div>
+    <div id="siMsg" style="min-height:16px;color:var(--coral);font-size:11.5px;margin-top:8px"></div>
+    <div style="color:var(--dim);font-size:11px;margin-top:6px">In your wallet, select the account ${short(SI.addr)} before signing. We never ask for a transaction. Powered by Privy.</div>`;return}
   el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline"><h4 style="margin:0">${link?'Link another account':'Sign in to Whalarium'}</h4><button onclick="closeSignIn()" style="color:var(--dim);font-weight:800">✕</button></div>
     <p>${link?'Prove you own another wallet, or attach an email / X handle to this account.':'One account for your watches, alerts, claimed wallets and token fetches. Free.'}</p>
     ${SI.step==='code'?`<div class="sirow"><input id="siCode" placeholder="6-digit code from your email" inputmode="numeric" autocomplete="one-time-code" onkeydown="if(event.key==='Enter')siEmailCode()"><button class="btn primary" onclick="siEmailCode()">${link?'Link email':'Sign in'}</button></div><div style="color:var(--dim);font-size:11.5px;margin:-4px 0 10px">Code sent to <b>${esc(SI.email)}</b> · <button onclick="SI.step='start';renderSignIn()" style="color:var(--teal);font-weight:700">change</button></div>`
@@ -1591,7 +1648,11 @@ const errText=e=>{const m=(e&&(e.message||e.error||e.code))||'';return typeof m=
 async function siWallet(){const eth=window.ethereum;if(!eth){siMsg('No wallet found in this browser — install MetaMask, Coinbase Wallet or Rabby, or use email.');return}
   try{siMsg('Waiting for your wallet…');const p=await privyInit();
     let raw;
-    if(SI.mode==='link'){ // the extension only hands us accounts already connected to the site — ask for the account picker so a *different* one can be chosen
+    if(SI.mode==='claim'){ // must sign with the wallet being claimed: open the account picker, then insist on that account
+      try{await eth.request({method:'wallet_requestPermissions',params:[{eth_accounts:{}}]})}catch(e){if(e&&e.code===4001)throw e}
+      const accts=(await eth.request({method:'eth_accounts'}))||[];raw=accts.find(x=>String(x).toLowerCase()===SI.addr);
+      if(!raw){siMsg(`Your wallet is connected as ${accts[0]?short(accts[0]):'another account'} — select ${short(SI.addr)} in the wallet and try again.`);return}
+    }else if(SI.mode==='link'){ // the extension only hands us accounts already connected to the site — ask for the account picker so a *different* one can be chosen
       try{await eth.request({method:'wallet_requestPermissions',params:[{eth_accounts:{}}]})}catch(e){if(e&&e.code===4001)throw e}
       const accts=(await eth.request({method:'eth_accounts'}))||[];const mine=new Set((ACCT.user&&ACCT.user.wallets||[]).map(x=>x.toLowerCase()));
       raw=accts.find(x=>!mine.has(String(x).toLowerCase()));
@@ -1600,7 +1661,11 @@ async function siWallet(){const eth=window.ethereum;if(!eth){siMsg('No wallet fo
     await ensureBase(eth);
     const addr=toChecksum(raw);const wallet={address:addr,chainId:'eip155:8453'};const {message}=await p.auth.siwe.init(wallet,location.host,location.origin);
     siMsg('Sign the message in your wallet (gas-free)…');const sig=await eth.request({method:'personal_sign',params:[message,raw]});
-    siMsg('Verifying…');if(SI.mode==='link')await p.auth.siwe.linkWithSiwe(sig,wallet,message);else await p.auth.siwe.loginWithSiwe(sig,wallet,message,'login-or-sign-up');
+    siMsg('Verifying…');
+    if(SI.mode==='claim'){const already=ACCT.user&&(ACCT.user.wallets||[]).map(x=>x.toLowerCase()).includes(SI.addr);
+      if(ACCT.user&&!already)await p.auth.siwe.linkWithSiwe(sig,wallet,message);else if(!ACCT.user)await p.auth.siwe.loginWithSiwe(sig,wallet,message,'login-or-sign-up');
+      await acctAfterLogin('Wallet verified');closeSignIn();await claimWallet(SI.addr,true);return}
+    if(SI.mode==='link')await p.auth.siwe.linkWithSiwe(sig,wallet,message);else await p.auth.siwe.loginWithSiwe(sig,wallet,message,'login-or-sign-up');
     await acctAfterLogin(SI.mode==='link'?'Wallet linked':'Signed in');if(SI.mode==='link')renderProfile()}catch(e){console.error('sign-in',e);siMsg('Sign-in failed: '+errText(e));toastMsg('Sign-in failed: '+esc(errText(e)),'var(--coral)')}}
 /* ---- watches (Alerts tab) ---- */
 async function acctAdd(){const w=(document.getElementById('acctW').value||'').trim(),t=document.getElementById('acctT').value;if(!/^0x[0-9a-fA-F]{40}$/.test(w)){toastMsg('Paste a full wallet address (0x…40 hex).','var(--coral)');return}
@@ -1662,9 +1727,36 @@ function renderProfile(){const el=document.getElementById('profileView');if(!el)
           <div><span style="color:var(--muted);display:inline-block;width:70px">Colour</span>${Object.entries(AV.color).map(([k,c])=>`<button onclick="avatarPick('color','${k}')" class="pill ${av.color===k?'id':''}" style="margin-right:4px;cursor:pointer"><i class="tg" style="background:${c.c};width:8px;height:8px"></i>${c.n}</button>`).join('')}</div>
           <div><span style="color:var(--muted);display:inline-block;width:70px">Accessory</span>${Object.entries(AV.acc).map(([k,n])=>`<button onclick="avatarPick('acc','${k}')" class="pill ${av.acc===k?'id':''}" style="margin-right:4px;cursor:pointer">${n}</button>`).join('')}</div></div></div>
         <div style="color:var(--dim);font-size:11px;margin-top:10px">Your fish swims in every tank where one of your claimed wallets is in the top 100. <span class="pill ctx">1/1 NFT of your fish — coming soon</span></div>`,'saved automatically')}
+      ${box('Fetched tokens',(u.fetched||[]).length?`<div style="display:flex;flex-direction:column;gap:6px">${u.fetched.map(f=>{const t=TOKENS.find(x=>(x.contract||'').toLowerCase()===f.ca);return `<button class="flowrow" onclick="${t?`jumpToken('${t.sym}')`:`openMini('${f.ca}',null)`}"><span style="min-width:0"><b>$${esc(t?t.sym:(f.sym||'TOKEN'))}</b> <span class="mono t3">${short(f.ca)}</span></span><span class="t3">${t?'live · open →':'building… preview →'} · ${agoStr(f.ts)} ago</span></button>`}).join('')}</div>`:'<div style="color:var(--dim);font-size:12px">No tokens fetched yet. Paste a contract address in the search box and press <b>Fetch full data</b> — it lands here and at the top of the token menu.</div>')}
       ${box('Claimed wallets',claims||'<div style="color:var(--dim);font-size:12px">Nothing claimed yet. Open the wallet page of one of your linked wallets and press <b>Claim this wallet</b> — your name and fish replace the anonymous one.</div>')}
     </div></div>`}
 acctInit();
+/* ---- Lockers: locked / vesting / staked supply of the current token — the contracts that hold coins that cannot move (yet) ---- */
+const LOCK_PROTO=[['Sablier',/sablier/i,'sablier.com'],['Streamflow',/streamflow/i,'streamflow.finance'],['Team Finance',/team ?finance/i,'team.finance'],['UNCX (Unicrypt)',/uncx|unicrypt/i,'uncx.network'],['PinkSale',/pink ?lock|pinksale/i,'pinksale.finance'],['Hedgey',/hedgey/i,'hedgey.finance'],['Magna',/\bmagna\b/i,'magna.so'],['Tokensoft',/tokensoft/i,'tokensoft.io'],['TrustSwap',/trustswap/i,'trustswap.org'],['Aerodrome (veNFT)',/aerodrome|velodrome|voting ?escrow|\bve[A-Z]/,'aerodrome.finance'],['Staking',/stak/i,null],['Vesting',/vest|cliff|timelock|time ?lock|escrow/i,null],['Locker',/lock/i,null]];
+const LOCK_RX=/lock|vest|cliff|timelock|escrow|stak|sablier|streamflow|team ?finance|uncx|unicrypt|pinksale|hedgey|\bmagna\b|tokensoft|trustswap|voting ?escrow/i;
+function lockProto(label){for(const [n,rx,dom] of LOCK_PROTO)if(rx.test(label||''))return {n,dom};return {n:'Locker',dom:null}}
+function renderLockers(){
+  const el=document.getElementById('lockersView');if(!el)return;const sym=cur.sym,price=cur.price||0;
+  const seen=new Set();const rows=[];
+  const add=(x,src)=>{const a=x.addr.toLowerCase();if(seen.has(a))return;const label=x.label||x.entity||'';if(!(x.kind==='locker'||LOCK_RX.test(label)||x.entityType==='locker'))return;seen.add(a);rows.push({addr:a,label,amount:x.amount||0,pct:x.pct||0,usd:(x.amount||0)*price,proto:lockProto(label),src})};
+  (cur.infra||[]).forEach(x=>add(x,'infra'));(data&&data.list||[]).forEach(h=>add(h,'top100'));
+  rows.sort((a,b)=>b.amount-a.amount);
+  const totAmt=rows.reduce((t,r)=>t+r.amount,0),totPct=rows.reduce((t,r)=>t+r.pct,0);
+  const byProto={};rows.forEach(r=>{byProto[r.proto.n]=(byProto[r.proto.n]||0)+r.amount});
+  const tile=(t2,big,facts,tip)=>`<div class="tile"><span class="t2">${t2}${tip?`<span class="ib" title="${esc(tip)}">i</span>`:''}</span><span class="t1">${big}</span><span class="kv2">${facts.map(([k,v])=>`<span>${k}<b>${v}</b></span>`).join('')}</span></div>`;
+  const ico=r=>r.proto.dom?`<img src="https://www.google.com/s2/favicons?domain=${r.proto.dom}&sz=32" style="width:14px;height:14px;border:1px solid var(--line);vertical-align:-3px;margin-right:6px" onerror="this.style.display='none'">`:`<span class="tg" style="color:${KIND.locker.c};display:inline-flex;vertical-align:-2px;margin-right:6px">${GLYPH.contract||''}</span>`;
+  el.innerHTML=`<div style="padding:16px;display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><h3 style="margin:0;font-size:16px">Lockers</h3>${tokTag(sym)}<span class="t3">supply that is locked, vesting or staked — held by contracts, not by people</span></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      ${tile('Locked supply',`${tokAmt(totAmt)} <small style="font-size:12px;font-weight:600;color:var(--muted)">${esc(sym)}</small>`,[['of supply',totPct.toFixed(2)+'%'],['value','~'+usd(totAmt*price)]],'Sum of the balances held by locker, vesting, timelock and staking contracts we can identify among the largest holders')}
+      ${tile('Contracts',String(rows.length),Object.entries(byProto).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v])=>[k,tokAmt(v)]))}
+      ${tile('vs the top 100',rows.length&&data&&data.topShare?`${(totPct/(data.topShare*100)*100).toFixed(1)}%`:'—',[['top 100 hold',data&&data.topShare?(data.topShare*100).toFixed(1)+'% of supply':'—']],'Locked supply as a share of what the 100 biggest real holders own — a rough sense of how much of the visible float cannot move')}
+    </div>
+    <div class="fbox"><div class="fh"><span class="t2">Locker & vesting contracts holding $${esc(sym)}</span><span class="t3">${rows.length} found · from labels on the largest holders</span></div>
+      <div class="fb" style="padding:0">${rows.length?`<div style="overflow-x:auto"><table style="min-width:720px"><thead><tr><th>Protocol</th><th>Label</th><th>Contract</th><th class="r">Amount</th><th class="r">% supply</th><th class="r">Value</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr><td style="white-space:nowrap">${ico(r)}<b>${esc(r.proto.n)}</b></td><td>${esc(r.label||'—')}${r.src==='top100'?' <span class="pill ctx" title="counted inside the top 100 — labeled as a locker but not excluded from the ranking">in top 100</span>':''}</td><td class="mono" style="white-space:nowrap">${cpa(r.addr)} <button class="ico" onclick="navigator.clipboard&&navigator.clipboard.writeText('${r.addr}');toastMsg('Address copied','var(--teal)')" title="Copy address"><svg viewBox="0 0 16 16"><rect x="5" y="5" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="2" y="2" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button> <a class="ico" href="https://basescan.org/token/${cur.contract}?a=${r.addr}" target="_blank" rel="noopener" title="Holdings on Basescan"><img src="assets/cex/basescan.png" alt="Basescan" onerror="this.onerror=null;this.src='https://www.google.com/s2/favicons?domain=basescan.org&sz=32'"></a></td><td class="r mono">${num(r.amount)}</td><td class="r mono">${r.pct.toFixed(2)}%</td><td class="r mono">${usd(r.usd)}</td><td class="r"><button onclick="openProfileByAddr('${r.addr}')" style="color:var(--teal);font-weight:700;font-size:11px">open →</button></td></tr>`).join('')}</tbody></table></div>`:`<div class="st">No locker, vesting or staking contract identified among the largest $${esc(sym)} holders. Either the supply is fully liquid, or the locker is not labeled yet — open the contract's wallet page and use <b>Suggest a tag</b>.</div>`}</div></div>
+    <div class="t3">Identified from holder labels (Arkham, Frontrun, our own list) matching locker / vesting / timelock / staking protocols such as Sablier, Streamflow, Team Finance, UNCX, PinkSale and Hedgey. Unlock schedules are not read yet — open the contract on Basescan for the stream details. Not financial advice.</div>
+  </div>`;
+}
 /* ---- Mini aquarium: any Base token by contract address, on demand (holders as of yesterday via Bitquery) ---- */
 let MINI=null;
 async function openMini(ca,info){
@@ -1696,10 +1788,34 @@ async function trackMini(ca){
   if(!ACCT.user){requireAuth(()=>trackMini(ca));return}
   try{const j=await acctApi('/api/track',{ca});
     if(j.already){toastMsg(`$${esc(j.sym)} is already tracked`,'var(--muted)');jumpToken(j.sym);return}
-    toastMsg(`<b>$${esc(j.sym)}</b> added — full aquarium in ~10 min${j.dispatched?'':' (refresh queued)'}`,'var(--teal)');
+    toastMsg(`<b>$${esc(j.sym)}</b> added — building the full aquarium now`,'var(--teal)');
     const b=document.querySelector('#miniView button[onclick^="trackMini"]');if(b){b.disabled=true;b.textContent='Added · building…';b.style.opacity=.6}
+    fetchJobStart({sym:j.sym,ca:j.ca||ca,since:j.startedAt||new Date().toISOString(),t0:Date.now(),dispatched:j.dispatched});
   }catch(e){toastMsg(esc(e.message),'var(--coral)')}
 }
+/* ---- fetch progress: a sticky panel that follows the single-token pipeline run until the token is live ---- */
+let FETCHJOB=null,FETCHTMR=null;
+const FETCH_STEPS=[[0,'Queued — waiting for a runner'],[8,'Reading token metadata & price'],[25,'Fetching the top holders'],[55,'Live balances on-chain'],[80,'Labels, exchanges & pools'],[105,'Flows: balances at three blocks'],[135,'Coin tracing for every mover'],[160,'Instant-alert watchlist'],[180,'Building the tank & committing data']];
+function fetchJobStart(job){FETCHJOB={...job,state:'queued',elapsed:0,pct:3};try{localStorage.setItem('bf_fetchjob',JSON.stringify(FETCHJOB))}catch{}fetchJobPaint();clearInterval(FETCHTMR);FETCHTMR=setInterval(fetchJobPoll,8000);fetchJobPoll()}
+function fetchJobResume(){try{const j=JSON.parse(localStorage.getItem('bf_fetchjob')||'null');if(j&&Date.now()-j.t0<40*60e3&&j.state!=='done'){FETCHJOB=j;fetchJobPaint();clearInterval(FETCHTMR);FETCHTMR=setInterval(fetchJobPoll,8000);fetchJobPoll()}}catch{}}
+function fetchJobClose(){FETCHJOB=null;clearInterval(FETCHTMR);try{localStorage.removeItem('bf_fetchjob')}catch{}const el=document.getElementById('fetchbar');if(el)el.remove()}
+async function fetchJobPoll(){if(!FETCHJOB)return;try{const r=await fetch(`/api/fetchstatus?sym=${encodeURIComponent(FETCHJOB.sym)}&since=${encodeURIComponent(FETCHJOB.since)}`,{cache:'no-store'});if(!r.ok)return;const st=await r.json();
+    FETCHJOB.state=st.state;FETCHJOB.elapsed=st.elapsed||Math.round((Date.now()-FETCHJOB.t0)/1000);
+    const e=FETCHJOB.state==='running'?FETCHJOB.elapsed:0;
+    FETCHJOB.pct=st.state==='done'?100:st.state==='finishing'?96:st.state==='running'?Math.min(92,10+Math.round(e/190*82)):st.state==='failed'?FETCHJOB.pct:Math.min(8,3+Math.round((Date.now()-FETCHJOB.t0)/60e3));
+    FETCHJOB.step=st.state==='done'?'Ready':st.state==='finishing'?'Publishing to the site…':st.state==='failed'?'The run failed — we will retry on the next refresh':st.state==='running'?(FETCH_STEPS.filter(x=>x[0]<=e).pop()||FETCH_STEPS[1])[1]:FETCH_STEPS[0][1];
+    try{localStorage.setItem('bf_fetchjob',JSON.stringify(FETCHJOB))}catch{}
+    if(st.state==='done'){clearInterval(FETCHTMR);await reloadTokens();toastMsg(`<b>$${esc(FETCHJOB.sym)}</b> is live — full aquarium ready`,'var(--teal)')}
+    if(st.state==='failed')clearInterval(FETCHTMR);
+    fetchJobPaint()}catch{}}
+function fetchJobPaint(){const J=FETCHJOB;if(!J)return;let el=document.getElementById('fetchbar');if(!el){el=document.createElement('div');el.id='fetchbar';document.body.appendChild(el)}
+  const done=J.state==='done',fail=J.state==='failed';const mins=Math.max(0,Math.round((200-(J.state==='running'?J.elapsed:0))/60));
+  el.innerHTML=`<div class="fbh"><span class="t2">${done?'Token ready':fail?'Fetch failed':'Fetching full data'}</span><b class="mono">${J.pct}%</b><button onclick="fetchJobClose()" title="Hide">✕</button></div>
+    <div class="fbt"><b>$${esc(J.sym)}</b> <span class="mono t3">${short(J.ca)}</span></div>
+    <div class="fbp"><i style="width:${J.pct}%;${fail?'background:var(--coral)':''}"></i></div>
+    <div class="fbs">${esc(J.step||'Starting…')}${!done&&!fail?` · ${J.state==='queued'?'starting':'~'+mins+' min left'}`:''}</div>
+    ${done?`<button class="btn primary" style="margin-top:8px;width:100%" onclick="jumpToken('${esc(J.sym)}');fetchJobClose()">Open $${esc(J.sym)} →</button>`:''}`}
+async function reloadTokens(){try{const r=await fetch('data/index.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const idx=await r.json();if(idx.tokens&&idx.tokens.length){const have=new Set(TOKENS.map(t=>t.sym));idx.tokens.forEach(t=>{if(!have.has(t.sym))TOKENS.push(t)});buildPicker()}}catch{}}
 /* ---- Flows view: where the top-100's money is moving ---- */
 let flowWin='7d',FLOWSNAPS={},FLOWPTS=null;// window: '1d' | '7d' | '30d'; numbers come from the pipeline's exact two-block arithmetic (flows.win), history from data/hist
 const FLOW_WINS=[['1d','24h',1],['7d','7 days',7],['30d','30 days',30]];
@@ -1973,7 +2089,7 @@ async function openProfile(h){
   {const a=h.addr.toLowerCase(),cl=document.getElementById('wpclaim');const mine=ACCT.user&&(ACCT.user.wallets||[]).includes(a),claimed=ACCT.user&&ACCT.user.claims&&ACCT.user.claims[a];
     cl.innerHTML=claimed?`<button class="wb on" onclick="claimWallet('${a}',false)" title="Claimed by you · click to unclaim">✓ Claimed</button><span class="pill ctx" style="align-self:center">1/1 NFT · coming soon</span>`
       :mine?`<button class="wb" style="border-color:var(--teal);color:var(--teal)" onclick="claimWallet('${a}',true)">Claim this wallet</button>`
-      :`<button class="wb" onclick="requireAuth(()=>{openSignIn('link')})" title="Sign in and verify this wallet (one gas-free signature) to claim it">Claim this wallet</button>`;}
+      :`<button class="wb" onclick="openSignIn('claim','${a}')" title="Verify this wallet with one gas-free signature to claim it">Claim this wallet</button>`;}
   document.getElementById('wpshare').onclick=()=>{const u=location.origin+location.pathname+'?token='+cur.sym.toLowerCase()+'%23w='+h.addr;navigator.clipboard&&navigator.clipboard.writeText(location.href);toastMsg('Wallet link copied','var(--teal)')};
   const wb=document.getElementById('wpwatch');
   const wSync=()=>{const on=WATCH.has(h.addr);wb.innerHTML=`<svg viewBox="0 0 16 16"><rect x="7" y="1" width="2" height="3"/><rect x="6" y="4" width="4" height="2"/><rect x="2" y="6" width="12" height="2"/><rect x="4" y="8" width="8" height="2"/><rect x="3" y="10" width="4" height="2"/><rect x="9" y="10" width="4" height="2"/><rect x="2" y="12" width="3" height="2"/><rect x="11" y="12" width="3" height="2"/></svg>${on?'Watching':'Watch'}`;wb.classList.toggle('on',on);wb.title=on?'On your watchlist · click to remove':'Add to your watchlist'};
@@ -2020,6 +2136,8 @@ async function openProfile(h){
      if(uIn>uOut*3)flowLine=`<div style="padding:2px 0 10px;font-size:12.5px">Accumulating${via}. <span style="color:var(--muted)">${nIn} inbound / ${nOut} outbound in recent transfers.</span></div>`;
      else if(uOut>uIn*3)flowLine=`<div style="padding:2px 0 10px;font-size:12.5px">Distributing${via}. <span style="color:var(--muted)">${nOut} outbound / ${nIn} inbound in recent transfers.</span></div>`;
    }}
+  const portfolioBox=`<div class="wbox"><h5>Portfolio <small>${holdings.length?holdings.length+' assets · by Arkham':''}</small></h5>${holdings.length?`<table><thead><tr><th>Asset</th><th>Chain</th><th class="r">Holdings</th><th class="r">Value</th></tr></thead><tbody>${holdings.map(x=>`<tr><td><b>${x.sym}</b>${x.name?` <span style="color:var(--dim);font-size:11px">${x.name}</span>`:''}</td><td>${x.chain?`<span class="chainpill">${x.chain}</span>`:''}</td><td class="r mono">${num(x.amount)}</td><td class="r mono">${usd(x.usd)}</td></tr>`).join('')}</tbody></table>`:`<div class="empty2">${REAL?'Not enriched yet. The fish keeps its secrets until the next refresh.':'Needs live mode.'}</div>`}</div>`;
+  const cpBox=`<div class="wbox"><h5>Top counterparties <small>from recent transfers</small></h5>${flowLine}${cplist.length?cplist.map(c=>`<div class="cprow" ${c.addr?`style="cursor:pointer" onclick="openProfileByAddr('${c.addr}')" title="Open wallet page"`:''}><div><b style="${c.label?'color:var(--teal)':''}">${c.k}</b> <span style="color:var(--dim);font-size:11px">· ${c.n} transfer${c.n>1?'s':''}</span><div class="bar3"><i style="width:${(c.inU/cpmax*100)}%;background:var(--teal)"></i><i style="width:${(c.outU/cpmax*100)}%;background:var(--coral)"></i></div></div><b class="mono">${usd(c.inU+c.outU)}</b></div>`).join('')+'<div class="empty2" style="padding-top:8px"><span style="color:var(--teal)">■</span> received&nbsp;&nbsp;<span style="color:var(--coral)">■</span> sent</div>':'<div class="empty2">No transfer data yet. Still waters.</div>'}</div>`;
   grid.innerHTML=`
     <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
       <div class="wbox"><h5>Positions across Whalarium tokens</h5>${positions.length?`<table><thead><tr><th>Token</th><th class="r">Rank</th><th class="r">Amount</th><th class="r">% supply</th><th class="r">Value</th></tr></thead><tbody>${positions.map(x=>`<tr style="cursor:pointer" onclick="jumpToken('${x.sym}')"><td style="white-space:nowrap">${tokLogo(x.sym,18)} <b style="vertical-align:middle">${x.sym}</b></td><td class="r mono">#${x.rank}</td><td class="r mono">${num(x.amount)}</td><td class="r mono">${x.pct.toFixed(2)}%</td><td class="r mono">${usd(x.usd)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty2">Not in any tracked top 100. A free swimmer.</div>'}</div>
@@ -2051,11 +2169,12 @@ async function openProfile(h){
           ${pts?`<div class="hrow"><span>Combined holdings</span><span></span><b class="mono" style="font-size:11px">${pts}</b></div>`:''}
           <div style="padding-top:6px"><b style="font-size:10.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em">Why we think this</b>${evLines||'<div style="font-size:11px;color:var(--dim)">linked through other members of this school</div>'}</div>
           <div style="color:var(--dim);font-size:10.5px;padding-top:8px">Based on on-chain evidence (direct transfers, shared private funding). Not proof of common ownership.</div></div>`})()}
-      <div class="wbox"><h5>Portfolio <small>${holdings.length?holdings.length+' assets · by Arkham':''}</small></h5>${holdings.length?`<table><thead><tr><th>Asset</th><th>Chain</th><th class="r">Holdings</th><th class="r">Value</th></tr></thead><tbody>${holdings.map(x=>`<tr><td><b>${x.sym}</b>${x.name?` <span style="color:var(--dim);font-size:11px">${x.name}</span>`:''}</td><td>${x.chain?`<span class="chainpill">${x.chain}</span>`:''}</td><td class="r mono">${num(x.amount)}</td><td class="r mono">${usd(x.usd)}</td></tr>`).join('')}</tbody></table>`:`<div class="empty2">${REAL?'Not enriched yet. The fish keeps its secrets until the next refresh.':'Needs live mode.'}</div>`}</div>
-      <div class="wbox"><h5>Top counterparties <small>from recent transfers</small></h5>${flowLine}${cplist.length?cplist.map(c=>`<div class="cprow" ${c.addr?`style="cursor:pointer" onclick="openProfileByAddr('${c.addr}')" title="Open wallet page"`:''}><div><b style="${c.label?'color:var(--teal)':''}">${c.k}</b> <span style="color:var(--dim);font-size:11px">· ${c.n} transfer${c.n>1?'s':''}</span><div class="bar3"><i style="width:${(c.inU/cpmax*100)}%;background:var(--teal)"></i><i style="width:${(c.outU/cpmax*100)}%;background:var(--coral)"></i></div></div><b class="mono">${usd(c.inU+c.outU)}</b></div>`).join('')+'<div class="empty2" style="padding-top:8px"><span style="color:var(--teal)">■</span> received&nbsp;&nbsp;<span style="color:var(--coral)">■</span> sent</div>':'<div class="empty2">No transfer data yet. Still waters.</div>'}</div>
+      ${h.school&&schoolOf(h.school)?'':portfolioBox}
+      ${h.school&&schoolOf(h.school)?'':cpBox}
     </div>
     <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
       <div class="wbox"><h5 id="wphtitle" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span id="wphlabel">Balance history</span><span id="wpranges" style="display:inline-flex;border:1px solid var(--line)"></span></h5><div style="padding:10px 8px"><canvas class="hist" id="wphist" style="cursor:crosshair"></canvas></div></div>
+      ${h.school&&schoolOf(h.school)?portfolioBox+cpBox:''}
       <div class="wbox"><h5>Transfers <small>${transfers.length} recent · by Arkham</small></h5>${transfers.length?`<div style="max-height:430px;overflow:auto"><table><thead><tr><th>Time</th><th>Dir</th><th>Counterparty</th><th>Token</th><th class="r">USD</th><th class="r">Link</th></tr></thead><tbody>${transfers.map(x=>`<tr class="txrow"><td style="color:var(--muted);white-space:nowrap">${x.ts?agoStr(x.ts)+' ago':''}</td><td><span style="color:${x.dir==='out'?'var(--coral)':'var(--teal)'}">${x.dir==='out'?'OUT':'IN'}</span></td><td onclick="openProfileByAddr('${x.cp||''}')" title="Open wallet page">${x.cpLabel?`<b style="color:var(--teal)">${cexIcon(x.cpLabel)}${x.cpLabel}</b>`:(x.cp?`<span class="mono">${cpa(x.cp)}</span>`:'?')}${x.chain?` <span class="chainpill">${x.chain}</span>`:''}</td><td>${x.token||'<span style="color:var(--dim)">—</span>'}</td><td class="r mono">${x.usd?usd(x.usd):num(x.amount)}</td><td class="r">${x.hash?`<a href="https://basescan.org/tx/${x.hash}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--dim);font-weight:700">tx ↗</a>`:''}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty2">No transfers captured yet. The fish is patient.</div>'}</div>
       <div class="empty2" style="border:0">Portfolio & transfer data by <a href="${ark}" target="_blank" rel="noopener" style="color:var(--muted)">Arkham Intelligence</a> · labels by Arkham & <a href="https://frontrun.pro" target="_blank" rel="noopener" style="color:var(--muted)">Frontrun</a>${p?` · profile updated ${agoStr(p.updated)} ago`:''}</div>
     </div>`;
@@ -2126,7 +2245,7 @@ async function boot(){
     const r=await fetch('data/index.json?t='+Date.now(),{cache:'no-store'});
     if(r.ok){const idx=await r.json();if(idx.tokens&&idx.tokens.length){TOKENS=idx.tokens;REAL=true}}
   }catch(e){}
-  buildPicker();
+  buildPicker();fetchJobResume();
   const badge=document.getElementById('modeNote');
   if(badge)badge.innerHTML=REAL?'<b>On-chain snapshots</b> · top 100 holders per token · refreshed every ~2h':'Data shown here is <b>simulated</b> — live data loads when deployed with the fetch pipeline';
   const q=new URLSearchParams(location.search).get('token');

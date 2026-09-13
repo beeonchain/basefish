@@ -677,12 +677,12 @@ const infraKind = (label) => { const l = String(label || '').toLowerCase();
   if (/binance|coinbase|bybit|okx|\bgate\b|kucoin|mexc|bitget|htx|kraken|crypto\.com|bitpanda|bitvavo|bitstamp|gemini|robinhood|upbit|bithumb|exchange|cex/.test(l)) return 'cex';
   if (/bridge/.test(l)) return 'bridge';
   if (/uniswap|aerodrome|pancake|sushi|baseswap|alien.?base|pool|liquidity|\blp\b|\bdex\b/.test(l)) return 'pool';
-  if (/locker|timelock|vesting|staking/.test(l)) return 'locker';
+  if (/locker|timelock|time lock|vesting|staking|sablier|streamflow|team ?finance|uncx|unicrypt|pinksale|pink ?lock|hedgey|\bmagna\b|tokensoft|trustswap|escrow/.test(l)) return 'locker';
   if (/wintermute|market maker|\bmm\b/.test(l)) return 'mm';
   if (/burn|dead/.test(l)) return 'burn';
   if (/treasury|vesting|team wallet|token vault|airdrop distributor|reserve|project/.test(l)) return 'project';
   return 'contract'; };
-const EXCLUDE_RX = /uniswap|aerodrome|pancake|sushi|baseswap|alien.?base|pool|liquidity|\blp\b|exchange|binance|coinbase|bybit|okx|gate|kucoin|mexc|bitget|htx|kraken|crypto\.com|bridge|locker|timelock|vesting|multisig deployer|wintermute|market maker/i;
+const EXCLUDE_RX = /uniswap|aerodrome|pancake|sushi|baseswap|alien.?base|pool|liquidity|\blp\b|exchange|binance|coinbase|bybit|okx|gate|kucoin|mexc|bitget|htx|kraken|crypto\.com|bridge|locker|timelock|vesting|sablier|streamflow|team ?finance|uncx|unicrypt|pinksale|hedgey|tokensoft|trustswap|multisig deployer|wintermute|market maker/i;
 
 async function j(url, tries = 3) {
   for (let i = 0; i < tries; i++) {

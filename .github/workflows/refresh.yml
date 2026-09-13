@@ -16,8 +16,10 @@ on:
 permissions:
   contents: write
 
+# single-token fetches (inputs.only) run in their own lane so a user's "Fetch full data" never waits behind the 2-hourly refresh
+run-name: ${{ github.event.inputs.only != '' && format('fetch {0}', github.event.inputs.only) || format('refresh {0}', github.event.inputs.tier || 'hot') }}
 concurrency:
-  group: refresh
+  group: ${{ github.event.inputs.only != '' && format('fetch-{0}', github.event.inputs.only) || 'refresh' }}
   cancel-in-progress: false
 
 jobs:

@@ -46,7 +46,7 @@ async function main(){
   if(!token){document.getElementById('who').textContent='not signed in';document.getElementById('main').innerHTML='<div style="padding:20px">Sign in on the <a href="/">main site</a> first (same browser), then come back here.</div>';return}
   try{DATA=await api();}catch(e){document.getElementById('who').textContent='signed in';document.getElementById('main').innerHTML=`<div style="padding:20px;color:#E5484D">${esc(e.message)} — add your DID / email / wallet to <code>ADMIN_IDS</code> in the Netlify environment.</div>`;return}
   document.getElementById('who').textContent='admin';render()}
-async function op(body,msg){try{await api(body);toast(msg||'done');DATA=await api();render()}catch(e){toast(e.message,true)}}
+async function op(body,msg){try{await api(body);toast(msg||'done');if(body.op==='proposal'&&DATA)DATA.proposals=(DATA.proposals||[]).filter(p=>p.id!==body.id);render();DATA=await api();render()}catch(e){toast(e.message,true)}}
 function render(){const d=DATA,m=document.getElementById('main');
   const users=d.users.map(u=>`<tr><td><b>${esc(u.label)}</b><br><span class="dim mono" style="font-size:10.5px">${esc(u.id)}</span></td><td>${u.email?esc(u.email):'<span class="dim">—</span>'}<br>${u.x?'@'+esc(u.x):''}</td><td class="mono" style="font-size:11px">${u.wallets.map(w=>`<a href="/#w=${w}" target="_blank" style="color:inherit">${short(w)}</a>`).join('<br>')||'<span class="dim">—</span>'}</td>
     <td><select onchange="op({op:'setPlan',uid:'${u.id}',plan:this.value},'plan updated')">${Object.keys(d.plans).map(p=>`<option ${u.plan===p?'selected':''}>${p}</option>`).join('')}</select></td>

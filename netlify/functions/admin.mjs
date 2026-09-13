@@ -2,7 +2,7 @@
 // GET  → users (usage per account), tokens, bot pause state, last run, proposals
 // POST {op:'setPlan',uid,plan} | {op:'setLimit',uid,limit} | {op:'addCredits',uid,n} | {op:'addToken',ca} | {op:'curate',sym,on}
 //      | {op:'removeToken',sym} | {op:'pause',on} | {op:'proposal',id,decision:'approve'|'reject'}
-import { readSession, readRaw, updateJson, USERS_PATH, SUBS_PATH, json, isAdmin, fetchLimit, PLANS } from '../lib/store.mjs';
+import { readJson, readSession, readRaw, updateJson, USERS_PATH, SUBS_PATH, json, isAdmin, fetchLimit, PLANS } from '../lib/store.mjs';
 
 const CFG = 'tokens.config.json', PROPS = 'data/proposals.json', TAGS = 'data/tags_manual.json';
 const PALETTE = ['#4C8DFF', '#F2C14E', '#A78BFA', '#22C55E', '#F97316', '#EC4899', '#14B8A6', '#EAB308', '#8B5CF6', '#EF4444', '#06B6D4', '#84CC16'];
@@ -19,10 +19,10 @@ export default async (req) => {
   if (!isAdmin(uid, me)) return json({ error: 'not an admin' }, 403);
 
   if (req.method === 'GET') {
-    const cfg = await readRaw(CFG, { tokens: [] });
+    const cfg = (await readJson(CFG, { tokens: [] })).data; // GitHub API, not the raw CDN — must reflect writes made seconds ago
     const subs = await readRaw(SUBS_PATH, { chats: {} });
     const run = await readRaw('data/run_log.json', null);
-    const props = await readRaw(PROPS, { items: [] });
+    const props = (await readJson(PROPS, { items: [] })).data;
     const list = Object.entries(users.users || {}).map(([id, u]) => ({ id, label: u.label, email: u.email || null, x: u.x || null, wallets: u.wallets || [], plan: u.plan || 'free', fetches: u.fetches || 0, limit: fetchLimit(u), fetchLog: (u.fetchLog || []).slice(-10), watches: (u.watches || []).length, claims: Object.keys(u.claims || {}).length, tg: !!u.tg, created: u.created || null, seen: u.seen || null }))
       .sort((a, b) => (b.seen || 0) - (a.seen || 0));
     const tokens = (cfg.tokens || []).map((t) => ({ sym: t.sym, name: t.name, contract: t.contract, auto: !!t.auto, curated: !t.auto && !t.addedBy, addedBy: t.addedBy || null, tier: t.tier || 'hot', cap: t.cap || null, trending: !!t.trending }));

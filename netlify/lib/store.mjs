@@ -99,7 +99,7 @@ export const fetchLimit = (u) => (u && u.fetchLimit != null ? u.fetchLimit : pla
 export function publicUser(u, uid, extra = {}) {
   return { id: uid, label: u.label, email: u.email || null, wallets: u.wallets || [], x: u.x || null, plan: u.plan || 'free', fetches: { used: u.fetches || 0, limit: fetchLimit(u) },
     watches: u.watches || [], tokens: u.tokens || [], hits: (u.hits || []).slice(0, MAX_HITS), tg: !!u.tg, link: u.link && u.link.exp > Date.now() ? u.link.code : null,
-    claims: u.claims || {}, avatar: u.avatar || null, created: u.created || null, ...extra };
+    claims: u.claims || {}, avatar: u.avatar || null, created: u.created || null, fetched: (u.fetchLog || []).slice(-30).reverse().map((f) => ({ ca: f.ca, sym: f.sym || null, ts: f.ts })), ...extra };
 }
 export const labelFor = (u) => (u.x ? '@' + u.x : u.email ? u.email.replace(/^(..).*@/, '$1…@') : (u.wallets && u.wallets[0]) ? u.wallets[0].slice(0, 6) + '…' + u.wallets[0].slice(-4) : 'whale');
 export const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
