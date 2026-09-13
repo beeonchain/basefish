@@ -1008,8 +1008,8 @@ function renderChrome(){
   document.getElementById('holdList').innerHTML=L.map((h,i)=>`<button data-i="${i}"><span class="n">${h.rank}</span><span style="width:26px;height:19px;flex:none"><img src="assets/tank/${h.rank===1?'king':h.tier}.webp" style="width:26px;height:19px;object-fit:contain" onerror="this.style.display='none'"></span><span><div class="a">${short(h.addr)}</div>${(h.entity||h.label)?`<div style="font-size:10px;font-weight:600;color:${cexOf(h.entity)?cexOf(h.entity)[1]:'var(--muted)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc((h.entity||h.label).slice(0,26))}</div>`:''}<div class="bar2"><i style="width:${Math.min(100,h.pct/L[0].pct*100)}%"></i></div></span><span class="p mono">${h.pct.toFixed(2)}%<small>${usd(h.value)}</small></span></button>`).join('');
   document.querySelectorAll('#holdList button').forEach(b=>b.onclick=()=>{setView('aquarium');select(fish[+b.dataset.i])});
   drawMinis();drawDonut();renderTable();freshTick();if(view==='flows')renderFlows();
-  if(![...document.querySelectorAll('#tokpick button')].some(b=>b.dataset.sym===t.sym))buildPicker();
-  document.querySelectorAll('#tokpick button').forEach(b=>b.classList.toggle('on',b.dataset.sym===t.sym));
+  buildPicker();
+  document.querySelectorAll('#tokpick button').forEach(b=>{b.classList.toggle('on',b.dataset.sym===t.sym);if(b.dataset.sym===t.sym&&b.scrollIntoView)b.scrollIntoView({block:'nearest',inline:'nearest'})});
   const f=document.getElementById('feed');f.innerHTML='';
   if(REAL)renderRealFeed();else for(let i=0;i<5;i++)pushFeed(true);
 }
@@ -1150,10 +1150,11 @@ function renderTokMenu(q){
   m.querySelectorAll('.trow').forEach(b=>b.onclick=()=>{m.classList.remove('open');closeCard();loadToken(TOKENS.find(t=>t.sym===b.dataset.sym));toastMsg(`Aquarium switched to <b>$${b.dataset.sym}</b>`,'var(--muted)')});
 }
 function buildPicker(){
-  const many=TOKENS.length>6;const inline=many?[...TOKENS.slice(0,4),...TOKENS.slice(4).filter(t=>cur&&t.sym===cur.sym)]:TOKENS;
+  const many=TOKENS.length>6;const extra=cur&&!TOKENS.slice(0,4).some(t=>t.sym===cur.sym)?TOKENS.filter(t=>t.sym===cur.sym):[];const top=TOKENS.slice(0,extra.length?3:4);
+  const inline=many?[...extra,...top]:TOKENS; // the selected token goes first when it isn't one of the top 4, so it is never clipped off the end of the row
   document.getElementById('tokall').style.display=many?'':'none';
   if(many){const ta=document.getElementById('tokallBtn');ta.textContent=`All ${TOKENS.length} tokens ▾`;ta.onclick=e=>{e.stopPropagation();const m=document.getElementById('tokmenu');m.classList.toggle('open');if(m.classList.contains('open')){renderTokMenu('');const i=m.querySelector('input');if(i){i.value='';i.focus()}}};
-    document.addEventListener('click',e=>{if(!e.target.closest('.tokall'))document.getElementById('tokmenu').classList.remove('open')})}
+    if(!buildPicker.bound){buildPicker.bound=true;document.addEventListener('click',e=>{if(!e.target.closest('.tokall'))document.getElementById('tokmenu').classList.remove('open')})}}
   document.getElementById('tokpick').innerHTML=inline.map(t=>`<button data-sym="${t.sym}" title="${esc(t.name||t.sym)}">${t.logo?`<img src="${t.logo}" onerror="this.style.display='none'">`:`<i style="background:${t.color}"></i>`}${t.sym}</button>`).join('');
   document.querySelectorAll('#tokpick button').forEach(b=>b.onclick=()=>{closeCard();loadToken(TOKENS.find(t=>t.sym===b.dataset.sym));toastMsg(`Aquarium switched to <b>$${cur.sym}</b>`,'var(--muted)')});
 }
