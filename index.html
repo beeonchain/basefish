@@ -1781,7 +1781,11 @@ function tokAmt(v,signed){const x=Math.abs(v);const s=x>=1e9?(x/1e9).toFixed(2)+
 function flowName(a){const h=data.list.find(x=>x.addr.toLowerCase()===a.toLowerCase());return h?(h.entity||h.basename||short(a)):short(a)}
 async function renderFlows(){
   const el=document.getElementById('flowsView'),F=cur.flows,sym=cur.sym;
-  if(!F||!F.win){el.innerHTML=`<div style="padding:30px;color:var(--muted)">Flows for <b>$${sym}</b> are computed on the next data refresh (every ~2h for hot tokens). Check back soon.</div>`;return}
+  if(F&&!F.win&&F.series&&F.series.length>=2){ // data written by the previous pipeline: show it, clearly marked, until the exact numbers land on the next refresh
+    const leg=(n,mv)=>n?{days:n.days,amt:n.amt,pct:n.pct,usd:n.usd,refTs:Date.now()-n.days*864e5,refBlock:'—',nowTs:F.updated||Date.now(),nowBlock:'—',nowAmt:F.series[F.series.length-1].amt,movers:mv?[...(F.moversUp||[]),...(F.moversDown||[])]:[],nMovers:mv?(F.dest7movers||0):0,entries:mv?(F.entries||[]).map(e=>({...e,added:e.amt||0})):null,exits:mv?(F.exits||[]).map(e=>({...e,then:e.amt||0,now:0,amt:-(e.amt||0),usd:-(e.usd||0),thenUsd:e.usd||0})):null,membership:!!mv,dest:null,cex:mv?F.cex7:null}:null;
+    F.win={'7d':leg(F.net7,true),'30d':leg(F.net30,false),'1d':null};F.legacy=true;}
+  if(!F||!F.win||!F.win[flowWin]&&!F.win['7d']){el.innerHTML=`<div style="padding:30px;color:var(--muted)">Flows for <b>$${sym}</b> are computed on the next data refresh (every ~2h for hot tokens). Check back soon.</div>`;return}
+  if(!F.win[flowWin])flowWin='7d';
   if(!FLOW_WINS.some(w=>w[0]===flowWin))flowWin='7d';
   const W=FLOW_WINS.find(w=>w[0]===flowWin),C=F.win[flowWin],days=W[2];
   el.innerHTML=`<div style="padding:30px;color:var(--dim)">Loading ${sym} history…</div>`;
@@ -1809,7 +1813,8 @@ async function renderFlows(){
   el.innerHTML=`
   <div style="padding:16px;display:flex;flex-direction:column;gap:14px">
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><h3 style="margin:0;font-size:16px">Flows</h3>${tokTag(sym)}<span class="t3">are the biggest wallets buying or selling?</span>
-      <span style="margin-left:auto;display:inline-flex;border:1px solid var(--line)">${FLOW_WINS.map(w=>`<button onclick="flowWin='${w[0]}';renderFlows()" style="padding:0 11px;height:28px;font-weight:700;font-size:11px;${flowWin===w[0]?'background:var(--text);color:#fff':'color:var(--muted)'}">${w[1]}</button>`).join('')}</span></div>
+      <span style="margin-left:auto;display:inline-flex;border:1px solid var(--line)">${FLOW_WINS.filter(w=>F.win[w[0]]).map(w=>`<button onclick="flowWin='${w[0]}';renderFlows()" style="padding:0 11px;height:28px;font-weight:700;font-size:11px;${flowWin===w[0]?'background:var(--text);color:#fff':'color:var(--muted)'}">${w[1]}</button>`).join('')}</span></div>
+    ${F.legacy?`<div class="t3" style="border:1px solid var(--coral);color:var(--coral);padding:8px 12px;font-size:12px;font-weight:600">Interim: these numbers come from the previous snapshot-based method. The exact on-chain version (balances read at two blocks) replaces them on the next data refresh.</div>`:''}
     <div style="border-left:3px solid ${acc?'var(--teal)':'var(--coral)'};background:var(--panel);padding:12px 14px"><div style="font-size:15px;font-weight:700;line-height:1.4">${story}</div><div class="t3" style="margin-top:4px;font-size:12px">${read}</div></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       ${tile(`Net · ${W[1]}`,`${tokAmt(C.amt,true)} <small style="font-size:12px;font-weight:600;color:var(--muted)">${esc(sym)}</small>`,[[acc?'accumulated':'distributed','~'+usd(Math.abs(C.usd))],['vs their own balance',(C.pct>=0?'+':'')+C.pct.toFixed(2)+'%']],acc?'up':'down',`On-chain balances of today's top 100 wallets, read at block ${C.refBlock} (${when(C.refTs)}) and block ${C.nowBlock} (${when(C.nowTs)}), subtracted. $ at today's price.`)}
