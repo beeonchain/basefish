@@ -1460,6 +1460,29 @@ if (process.env.ALCH_NOTIFY_TOKEN) {
     }
     try { const subs = JSON.parse(fs.readFileSync('data/tg_subs.json', 'utf8')); for (const c of Object.values(subs.chats || {})) for (const w of c.watches || []) want.add(w.w.toLowerCase()); } catch {}
     try { const us = JSON.parse(fs.readFileSync('data/users.json', 'utf8')); for (const u of Object.values(us.users || {})) for (const w of u.watches || []) want.add(w.w.toLowerCase()); } catch {}
+    // noise audit (every run): how many transfers did each candidate make in the last 24h? A real holder makes a handful;
+    // a bot / router / MM makes hundreds and would flood the webhook (Alchemy pauses it: CAPPED_CAPACITY). Evict those.
+    const NOISE_MAX = Number(process.env.WH_NOISE_MAX || 40); let audited = 0, evicted = 0;
+    if (ALCH_KEY) {
+      const rpc = async (m, ps) => { const r = await fetch(`https://base-mainnet.g.alchemy.com/v2/${ALCH_KEY}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: m, params: ps }) }); const j = await r.json(); if (j.error) throw new Error(j.error.message); return j.result; };
+      try {
+        const latest = parseInt(await rpc('eth_blockNumber', []), 16), fromBlock = '0x' + Math.max(0, latest - 43200).toString(16); // ~24h of 2s blocks
+        const cands = [...want].filter(a => !noisy[a]);
+        for (let i = 0; i < cands.length; i += 8) {
+          await Promise.all(cands.slice(i, i + 8).map(async a => {
+            try {
+              const [out, inn] = await Promise.all([
+                rpc('alchemy_getAssetTransfers', [{ fromBlock, toBlock: 'latest', fromAddress: a, category: ['erc20', 'external'], maxCount: '0x' + NOISE_MAX.toString(16), excludeZeroValue: false }]),
+                rpc('alchemy_getAssetTransfers', [{ fromBlock, toBlock: 'latest', toAddress: a, category: ['erc20', 'external'], maxCount: '0x' + NOISE_MAX.toString(16), excludeZeroValue: false }])]);
+              const n = ((out && out.transfers) || []).length + ((inn && inn.transfers) || []).length; audited++;
+              if (n >= NOISE_MAX) { noisy[a] = { ts: Date.now(), n, by: 'audit' }; want.delete(a); evicted++; }
+            } catch {}
+          }));
+        }
+        if (evicted) { try { const st = JSON.parse(fs.readFileSync('data/alerts_state.json', 'utf8')); st.noisy = noisy; fs.writeFileSync('data/alerts_state.json', JSON.stringify(st)); } catch {} }
+        console.log(`webhook noise audit: ${audited} checked, ${evicted} evicted (≥${NOISE_MAX} transfers / 24h)`);
+      } catch (e) { console.log('noise audit skipped:', e.message.slice(0, 80)); }
+    }
     const have = new Set(); let after = null;
     for (let i = 0; i < 200; i++) { // 100 per page (API max), cursor pagination
       const r = await fetch(`https://dashboard.alchemy.com/api/webhook-addresses?webhook_id=${WH}&limit=100${after ? `&after=${encodeURIComponent(after)}` : ''}`, { headers: H });
@@ -1475,7 +1498,7 @@ if (process.env.ALCH_NOTIFY_TOKEN) {
       if (!r.ok) { console.log('webhook sync patch', r.status, (await r.text()).slice(0, 100)); break; }
     }
     console.log(`webhook address sync: ${have.size} -> ${want.size} (+${add.length} / -${remove.length})`);
-    RUNLOG.webhook = { have: have.size, want: want.size, added: add.length, removed: remove.length };
+    RUNLOG.webhook = { have: have.size, want: want.size, added: add.length, removed: remove.length, audited, evicted, noisy: Object.keys(noisy).length };
   } catch (e) { console.log('webhook sync skipped:', e.message.slice(0, 100)); RUNLOG.webhook = { error: e.message.slice(0, 120) }; }
 } else RUNLOG.webhook = { skipped: 'no ALCH_NOTIFY_TOKEN' };
 

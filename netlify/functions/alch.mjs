@@ -28,7 +28,7 @@ function throttled(addr, feed) {
 // noise breaker: an address that fires this many notifications in an hour is a bot / contract, not a whale.
 // Drop it from the webhook (every notification costs compute units) and remember it so the pipeline's sync
 // doesn't add it back. Real whales never come close to this.
-const NOISE = { perHour: 40 };
+const NOISE = { perHour: 12 }; // per function instance — several instances run in parallel, so the real rate is higher
 const hourly = new Map(); // addr -> [ts...] notifications seen by this instance
 const evicted = new Set();
 async function noiseCheck(addr) {
