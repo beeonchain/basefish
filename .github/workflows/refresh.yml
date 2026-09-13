@@ -7,9 +7,7 @@ on:
         description: "hot (tier-hot tokens only) or all (every token + daily discovery)"
         default: "hot"
         required: false
-  schedule:
-    - cron: '17 */2 * * *'   # hot tier every 2 hours
-    - cron: '47 4 * * *'     # full daily run: discover tokens, refresh everything
+  # schedules live in Netlify (netlify/functions/cron_hot.mjs / cron_all.mjs) — GitHub's cron was skipping slots
 
 permissions:
   contents: write
