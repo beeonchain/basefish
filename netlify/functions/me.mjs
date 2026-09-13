@@ -4,6 +4,14 @@
 import { readRaw, updateJson, USERS_PATH, SUBS_PATH, readSession, privyUser, publicUser, labelFor, json, trackedSyms, planOf, webhookAddresses, isAdmin } from '../lib/store.mjs';
 
 const AVATAR = { fish: ['small', 'medium', 'large', 'whale'], color: ['blue', 'gold', 'coral'], acc: ['none', 'crown', 'chain'] };
+// v2 = the layered shark PFP (assets/avatar.js): one id per trait category, validated against the collection
+const SHARK = {
+  bg: ['deep', 'reef', 'base', 'mint', 'sand', 'sunset', 'lilac', 'ink', 'coral', 'abyss', 'aurora'],
+  skin: ['steel', 'blue', 'navy', 'teal', 'sand', 'coral', 'lavender', 'olive', 'rose', 'onyx', 'zombie', 'gold', 'emerald'],
+  clothes: ['none', 'tee', 'teeblue', 'hoodie', 'tank', 'suit', 'tracksuit', 'hawaiian', 'turtle', 'labcoat', 'bomber', 'tux'],
+  chain: ['none', 'gold', 'silver', 'choker', 'diamond'], eyes: ['none', 'shades', 'monocle'],
+  hat: ['none', 'cap', 'beanie', 'cowboy', 'hockey', 'army', 'crown', 'halo'],
+};
 function applyLinked(u, la) { if (!la) return; u.wallets = la.wallets; u.email = la.email; u.x = la.x; u.label = labelFor(u); }
 
 export default async (req) => {
@@ -64,8 +72,8 @@ export default async (req) => {
         const a = String(body.addr || '').toLowerCase(); if (u.claims) delete u.claims[a];
       } else if (op === 'avatar') {
         const v = body.avatar || {};
-        const pick = (k, dflt) => (AVATAR[k].includes(v[k]) ? v[k] : dflt);
-        u.avatar = { fish: pick('fish', 'medium'), color: pick('color', 'blue'), acc: pick('acc', 'none') };
+        if (v.v === 2) { const a = { v: 2 }; for (const k of Object.keys(SHARK)) a[k] = SHARK[k].includes(v[k]) ? v[k] : SHARK[k][0]; u.avatar = a; }
+        else { const pick = (k, dflt) => (AVATAR[k].includes(v[k]) ? v[k] : dflt); u.avatar = { fish: pick('fish', 'medium'), color: pick('color', 'blue'), acc: pick('acc', 'none') }; }
       } else { err = 'unknown op'; return false; }
       u.seen = Date.now();
       out = publicUser(u, uid, { admin: isAdmin(uid, u) });
