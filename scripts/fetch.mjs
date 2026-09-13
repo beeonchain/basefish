@@ -1264,7 +1264,7 @@ for (const t of RUN_TOKENS) {
             for (const tr2 of (pw.transfers || [])) {
               if (tr2.token !== t.sym) continue;
               if (Date.now() - new Date(tr2.ts).getTime() > 7 * 864e5) continue;
-              const d2 = flowDest(tr2, poolSet), side = tr2.dir === 'in' ? 'in' : 'out', u2 = tr2.usd || 0;
+              const d2 = flowDest(tr2, poolSet), side = tr2.dir === 'in' ? 'in' : 'out', u2 = Number(tr2.amount) > 0 ? Number(tr2.amount) * usd : (tr2.usd || 0); // value at today's price like the Net tile — Arkham's historical usd is unreliable for thin tokens (LAPTOP: 5M tokens priced $28M)
               dest7[side][d2] += u2; dest7.n++; any = true;
               const v = viaOf[h.addr.toLowerCase()] = viaOf[h.addr.toLowerCase()] || { in: {}, out: {} }; v[side][d2] = (v[side][d2] || 0) + u2;
               if (d2 === 'cex') { cexN++; if (side === 'in') cexIn += u2; else cexOut += u2; }
