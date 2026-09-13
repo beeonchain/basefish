@@ -5,7 +5,7 @@ import path from 'node:path';
 import { namehash } from './keccak.mjs';
 import { buildAlerts, attachTxHashes, checkWatches, writeFeed, sendTelegram } from './alerts.mjs';
 import { computeTags, applyTags } from './tags.mjs';
-import { makeRpc, classifier, traceToken, destFromTrace } from './trace.mjs';
+import { makeRpc, classifier, traceToken, destFromTrace, BOT_N } from './trace.mjs';
 let CODES = {}; try { CODES = JSON.parse(fs.readFileSync('data/codes.json', 'utf8')); } catch {}
 
 const KEY = process.env.MORALIS_API_KEY || '';
@@ -1217,6 +1217,17 @@ for (const t of RUN_TOKENS) {
         // backfill: older snapshots stored no price — attach the day's CoinGecko price so the site can value them safely
         { let fixed = 0; for (const s2 of snapsF) if (!s2.p) { const p2 = priceAt(s2.ts, null); if (p2) { s2.p = +Number(p2).toPrecision(6); fixed++; } }
           if (fixed) { fs.writeFileSync(spathF, JSON.stringify(snapsF)); console.log(`  ${t.sym}: backfilled price on ${fixed} snapshots`); } }
+        // snapshots that stored only usd per holder are valued back into token amounts with their price — but the CoinGecko
+        // daily price backfilled above is not the price those usd figures were computed with (BRETT: 2.9% off), which made
+        // EVERY wallet look like a mover and put a phantom +2.9% on the 7d net. Calibrate: the median of usd_then / amount_now
+        // across wallets present in both the old snapshot and the newest one (most wallets do not move) is the price actually used.
+        { const newest = snapsF[snapsF.length - 1]; let cal = 0;
+          if (newest && Object.values(newest.h).some(o => o.a != null)) for (const s2 of snapsF) {
+            if (Object.values(s2.h).some(o => o.a != null) || s2.pi) continue;
+            const ratios = []; for (const k in s2.h) { const o = s2.h[k], n2 = newest.h[k]; if (o.r <= 100 && n2 && n2.a > 0 && o.u > 0) ratios.push(o.u / n2.a); }
+            if (ratios.length < 20) continue; ratios.sort((a, b) => a - b); const med = ratios[Math.floor(ratios.length / 2)];
+            if (med > 0 && (!s2.p || Math.abs(med / s2.p - 1) < 0.5)) { s2.pi = +med.toPrecision(6); s2.p = s2.pi; cal++; } }
+          if (cal) { fs.writeFileSync(spathF, JSON.stringify(snapsF)); console.log(`  ${t.sym}: calibrated implied price on ${cal} snapshots`); } }
         const byDayF = new Map(); // last snapshot of each UTC day
         for (const s of snapsF) byDayF.set(new Date(s.ts).toISOString().slice(0, 10), s);
         const daily = [...byDayF.values()].sort((a, b) => a.ts - b.ts);
@@ -1285,7 +1296,10 @@ for (const t of RUN_TOKENS) {
             const who = [...new Set(ranked.map(m => m.addr.toLowerCase()))];
             const st = await traceToken({ rpc: makeRpc(ALCH_KEY), sym: t.sym, contract: t.contract.toLowerCase(), addrs: who, price: usd, classify, codes: CODES, maxAddrs: FULL ? 120 : 80, log: (m) => console.log('  ' + m) });
             const r = destFromTrace(st, 7); dest7t = r.dest; viaT = r.via;
-            cexIn = 0; cexOut = 0; cexN = 0; for (const tr of st.transfers) { if (tr.kind !== 'cex' || Date.now() - tr.ts > 7 * 864e5) continue; cexN++; if (tr.dir === 'in') cexIn += tr.usd || 0; else cexOut += tr.usd || 0; }
+            // exchange flow from the same netted, bot-free breakdown (gross per-transfer sums were dominated by router churn)
+            cexIn = dest7t.in.cex || 0; cexOut = dest7t.out.cex || 0; cexN = 0;
+            { const cnt = {}; for (const tr of st.transfers) { if (Date.now() - tr.ts > 7 * 864e5) continue; cnt[tr.addr] = (cnt[tr.addr] || 0) + 1; }
+              for (const tr of st.transfers) { if (tr.kind === 'cex' && Date.now() - tr.ts <= 7 * 864e5 && cnt[tr.addr] < BOT_N) cexN++; } }
           } catch (e) { console.log('  trace err', e.message.slice(0, 80)); }
         }
         const dest7f = dest7t || dest7, viaF = viaT || viaOf;

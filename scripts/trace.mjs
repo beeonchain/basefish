@@ -83,19 +83,32 @@ export async function traceToken({ rpc, sym, contract, addrs, price, classify, c
   return st;
 }
 
-// 7-day destination totals + per-wallet breakdown from the traced transfers
+// 7-day destination totals + per-wallet breakdown from the traced transfers.
+// Per wallet we NET each destination (in − out) before summing, so a wallet that sold $10k and bought $8k on a DEX shows
+// as $2k out — the same thing its balance did — instead of $18k of gross churn. Wallets with ≥ BOT_N transfers of the token
+// in the window (routers, market-maker bots, aggregators) are left out of the totals and counted in `bots`.
+export const BOT_N = 100;
 export function destFromTrace(st, days = 7) {
   const from = Date.now() - days * 864e5;
-  const dest = { out: { dex: 0, cex: 0, bridge: 0, contract: 0, wallet: 0, burn: 0 }, in: { dex: 0, cex: 0, bridge: 0, contract: 0, wallet: 0, burn: 0 }, n: 0, wallets: 0, traced: true };
-  const via = {}, ws = new Set();
+  const dest = { out: { dex: 0, cex: 0, bridge: 0, contract: 0, wallet: 0, burn: 0 }, in: { dex: 0, cex: 0, bridge: 0, contract: 0, wallet: 0, burn: 0 }, n: 0, wallets: 0, bots: 0, traced: true, netted: true };
+  const per = {};
   for (const t of st.transfers || []) {
     if (t.ts < from) continue;
-    const k = t.kind || 'wallet'; const side = t.dir;
-    if (dest[side][k] == null) dest[side][k] = 0;
-    dest[side][k] += t.usd || 0; dest.n++; ws.add(t.addr);
-    const v = via[t.addr] = via[t.addr] || { in: {}, out: {} }; v[side][k] = (v[side][k] || 0) + (t.usd || 0);
+    const w = per[t.addr] = per[t.addr] || { n: 0, net: {} };
+    w.n++; w.net[t.kind || 'wallet'] = (w.net[t.kind || 'wallet'] || 0) + (t.dir === 'in' ? 1 : -1) * (t.usd || 0);
   }
-  dest.wallets = ws.size;
+  const via = {};
+  for (const [addr, w] of Object.entries(per)) {
+    if (w.n >= BOT_N) { dest.bots++; continue; }
+    dest.wallets++; dest.n += w.n;
+    const v = via[addr] = { in: {}, out: {} };
+    for (const [k, net] of Object.entries(w.net)) {
+      if (!net) continue;
+      const side = net > 0 ? 'in' : 'out', u = Math.abs(net);
+      if (dest[side][k] == null) dest[side][k] = 0;
+      dest[side][k] += u; v[side][k] = u;
+    }
+  }
   for (const s of ['in', 'out']) for (const k of Object.keys(dest[s])) dest[s][k] = Math.round(dest[s][k]);
   return { dest, via };
 }
