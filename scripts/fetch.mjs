@@ -1464,7 +1464,7 @@ if (process.env.ALCH_NOTIFY_TOKEN) {
     try { const us = JSON.parse(fs.readFileSync('data/users.json', 'utf8')); for (const u of Object.values(us.users || {})) for (const w of u.watches || []) want.add(w.w.toLowerCase()); } catch {}
     // noise audit (every run): how many transfers did each candidate make in the last 24h? A real holder makes a handful;
     // a bot / router / MM makes hundreds and would flood the webhook (Alchemy pauses it: CAPPED_CAPACITY). Evict those.
-    const NOISE_MAX = Number(process.env.WH_NOISE_MAX || 100); // Bee: anything over 100 tx/day is a bot, not a whale let audited = 0, evicted = 0;
+    const NOISE_MAX = Number(process.env.WH_NOISE_MAX || 100); let audited = 0, evicted = 0; // anything over 100 tx/day is a bot, not a whale
     if (ALCH_KEY) {
       const rpc = async (m, ps) => { const r = await fetch(`https://base-mainnet.g.alchemy.com/v2/${ALCH_KEY}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: m, params: ps }) }); const j = await r.json(); if (j.error) throw new Error(j.error.message); return j.result; };
       try {
