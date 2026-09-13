@@ -7,6 +7,10 @@ on:
         description: "hot (tier-hot tokens only) or all (every token + daily discovery)"
         default: "hot"
         required: false
+      only:
+        description: "comma-separated symbols to refresh (testing), e.g. BRETT,AERO"
+        default: ""
+        required: false
   # schedules live in Netlify (netlify/functions/cron_hot.mjs / cron_all.mjs) — GitHub's cron was skipping slots
 
 permissions:
@@ -36,6 +40,7 @@ jobs:
       - name: Fetch holder data
         env:
           TIER: ${{ steps.tier.outputs.tier }}
+          ONLY: ${{ github.event.inputs.only }}
           MORALIS_API_KEY: ${{ secrets.MORALIS_API_KEY }}
           ARKHAM_API_KEY: ${{ secrets.ARKHAM_API_KEY }}
           BITQUERY_TOKEN: ${{ secrets.BITQUERY_TOKEN }}

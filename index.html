@@ -80,9 +80,9 @@
   .kv2 span b{font-family:var(--font-mono);font-weight:700;color:var(--text)}
   /* where the coins went: one table per direction */
   .dest{display:grid;grid-template-columns:1fr;gap:0;border:1px solid var(--line)}
-  .dest .dh,.dest .dr{display:grid;grid-template-columns:minmax(200px,1.4fr) 1.6fr 84px 48px;gap:12px;align-items:center;padding:7px 12px;font-size:12px}
+  .dest .dh,.dest .dr{display:grid;grid-template-columns:minmax(220px,2fr) minmax(70px,1fr) 84px 44px;gap:12px;align-items:center;padding:7px 12px;font-size:12px}
   .dest .dh{background:var(--panel2);border-bottom:1px solid var(--line)}.dest .dr{border-bottom:1px solid var(--line)}.dest .dr:last-child{border-bottom:0}
-  .dest .dr>span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:inline-flex;align-items:center;gap:6px;font-weight:600}
+  .dest .dr>span:first-child{display:inline-flex;align-items:center;gap:6px;font-weight:600;line-height:1.25}
   .dest .dbar{height:10px;background:var(--panel2);border:1px solid var(--line)}.dest .dbar>i{display:block;height:100%}
   .dest .r{text-align:right}
   .card-ui{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);padding:var(--sp-4)}
@@ -1195,7 +1195,7 @@ async function renderWallets(){
       const sorted=[...list].sort((a,b)=>(b.usd||0)-(a.usd||0));
       const p=(n)=>sorted.slice(0,n).reduce((s,h)=>s+(h.pct||0),0);
       const w6=sorted.slice(0,6).reduce((s,h)=>s+(h.usd||0),0)/totV*100;
-      tokStats.push({sym:t.sym,logo:t.logo,top10:p(10),top100:p(1000),w6,holders:d.holders,net7:d.flows&&d.flows.net7?d.flows.net7.pct:null});
+      tokStats.push({sym:t.sym,logo:t.logo,top10:p(10),top100:p(1000),w6,holders:d.holders,net7:d.flows&&d.flows.win&&d.flows.win['7d']?d.flows.win['7d'].pct:(d.flows&&d.flows.net7?d.flows.net7.pct:null)});
     }
     list.forEach(h=>{
       const k=h.addr.toLowerCase();
@@ -1701,37 +1701,19 @@ async function trackMini(ca){
   }catch(e){toastMsg(esc(e.message),'var(--coral)')}
 }
 /* ---- Flows view: where the top-100's money is moving ---- */
-let flowWin='7d',FLOWSNAPS={},FLOWPTS=null;// window: '1d' | '7d' | '30d' | 'all'; snapshots cache per token (client-side windowed maths)
-const FLOW_WINS=[['1d','24h',1],['7d','7 days',7],['30d','30 days',30],['all','All time',3650]];
+let flowWin='7d',FLOWSNAPS={},FLOWPTS=null;// window: '1d' | '7d' | '30d'; numbers come from the pipeline's exact two-block arithmetic (flows.win), history from data/hist
+const FLOW_WINS=[['1d','24h',1],['7d','7 days',7],['30d','30 days',30]];
 async function flowSnaps(sym){
   if(FLOWSNAPS[sym]&&Date.now()-FLOWSNAPS[sym].at<3e5)return FLOWSNAPS[sym].snaps;
   try{const r=await fetch(`data/snapshots/${sym.toLowerCase()}.json?t=${Math.floor(Date.now()/3e5)}`,{cache:'no-store'});if(!r.ok)throw 0;const snaps=await r.json();FLOWSNAPS[sym]={at:Date.now(),snaps};return snaps}catch{return null}
 }
-// per-wallet balance at a snapshot (exact amount when stored; else USD ÷ that day's price from the series)
-// NEVER value an old snapshot at today's price — that turns price moves into fake buys/sells. No amount + no price for that day = unknown (null).
-function snapAmt(o,s,F){if(o.a!=null)return o.a;const p=s.p||(F&&F.series&&(F.series.find(x=>Math.abs(x.ts-s.ts)<36e5)||{}).p)||0;return p?o.u/p:null}
-function flowCalc(snaps,F,days){
-  if(!snaps||snaps.length<2)return null;
-  const now=snaps[snaps.length-1],target=now.ts-days*864e5;
-  // reference = the snapshot closest to the window start (either side), so "7 days" never silently becomes 13
-  let ref=snaps[0];if(days<3650){ref=snaps.reduce((b,s)=>Math.abs(s.ts-target)<Math.abs(b.ts-target)?s:b,snaps[0]);if(ref===now)ref=snaps[Math.max(0,snaps.length-2)]}
-  if(days<3650&&now.ts-ref.ts<days*864e5*0.5)return{tooShort:true,span:(now.ts-ref.ts)/864e5};
-  const tot=s=>{let a=0;for(const k in s.h){const o=s.h[k];if(o.r<=100){const v=snapAmt(o,s,F);if(v==null)return null;a+=v}}return a};
-  const price=cur.price||0;let nowA=tot(now),refA=tot(ref);
-  if(refA==null){ // reference snapshot can't be valued (no stored amount/price): use the oldest valued snapshot inside the window
-    for(const sn of snaps){if(sn.ts<=target||sn===now)continue;const v=tot(sn);if(v!=null){ref=sn;refA=v;break}}
-    if(refA!=null&&days<3650&&(now.ts-ref.ts)<days*864e5*0.5)return{noPrice:true,span:(now.ts-ref.ts)/864e5};
-  }
-  if(nowA==null||refA==null)return{noPrice:true,span:(now.ts-ref.ts)/864e5};
-  const movers=[],entries=[],exits=[];
-  const curH=now.h,refH=ref.h;
-  for(const k in curH){const o=curH[k];if(o.r>100)continue;const r0=refH[k];const a1=snapAmt(o,now,F);
-    if(!r0){entries.push({addr:k,usd:Math.round((a1||0)*price),amt:Math.round(a1||0)});continue}
-    const a0=snapAmt(r0,ref,F);if(a1==null||a0==null)continue;const d=a1-a0;if(Math.abs(d*price)>=500)movers.push({addr:k,amt:Math.round(d),usd:Math.round(d*price)})}
-  for(const k in refH){const o=refH[k];if(o.r<=100&&!curH[k]){const a0=snapAmt(o,ref,F)||0;exits.push({addr:k,usd:Math.round(a0*price),amt:Math.round(a0)})}}
-  movers.sort((a,b)=>b.usd-a.usd);entries.sort((a,b)=>b.usd-a.usd);exits.sort((a,b)=>b.usd-a.usd);
-  return{span:(now.ts-ref.ts)/864e5,refTs:ref.ts,nowAmt:nowA,refAmt:refA,amt:nowA-refA,pct:refA?100*(nowA-refA)/refA:0,usd:(nowA-refA)*price,
-    moversUp:movers.filter(m=>m.usd>0).slice(0,6),moversDown:movers.filter(m=>m.usd<0).slice(-6).reverse(),entries:entries.slice(0,8),exits:exits.slice(0,8),nEntries:entries.length,nExits:exits.length};
+// per-wallet balance at a snapshot (exact amount when stored; else USD ÷ that day's price) — used by the wallet page's position history only
+function snapAmt(o,s,F){if(o.a!=null)return o.a;const p=s.p||0;return p?o.u/p:null}
+/* Flows history: exact on-chain balances of today's top 100 at hourly / 6-hourly / daily blocks (data/hist/<sym>.json, written by the pipeline) */
+const FLOWHIST={};
+async function flowHist(sym){
+  if(FLOWHIST[sym]&&Date.now()-FLOWHIST[sym].at<3e5)return FLOWHIST[sym].hist;
+  try{const r=await fetch(`data/hist/${sym.toLowerCase()}.json?t=${Math.floor(Date.now()/3e5)}`,{cache:'no-store'});if(!r.ok)throw 0;const hist=await r.json();FLOWHIST[sym]={at:Date.now(),hist};return hist}catch{return null}
 }
 /* where coins went / came from — same rules as the pipeline (labels: exchanges → CEX, pools/routers → DEX, bridges, else wallet) */
 const DEST={dex:{n:'DEX',c:'#8E4EC6',t:'traded on a DEX (pool / router)'},cex:{n:'CEX',c:'#E5484D',t:'exchange deposit / withdrawal'},bridge:{n:'BRIDGE',c:'#F76B15',t:'bridged to / from another chain'},contract:{n:'CONTRACT',c:'#0E9F8A',t:'another smart contract (staking, vault, locker…)'},wallet:{n:'WALLET',c:'#5B616E',t:'moved to / from another wallet'},burn:{n:'BURN',c:'#1F2937',t:'burned / minted'}};
@@ -1799,72 +1781,69 @@ function tokAmt(v,signed){const x=Math.abs(v);const s=x>=1e9?(x/1e9).toFixed(2)+
 function flowName(a){const h=data.list.find(x=>x.addr.toLowerCase()===a.toLowerCase());return h?(h.entity||h.basename||short(a)):short(a)}
 async function renderFlows(){
   const el=document.getElementById('flowsView'),F=cur.flows,sym=cur.sym;
-  if(!F||!F.series||F.series.length<2){el.innerHTML=`<div style="padding:30px;color:var(--muted)">Flow history for <b>$${sym}</b> is still accumulating. It builds automatically with every refresh — check back soon.</div>`;return}
-  el.innerHTML=`<div style="padding:30px;color:var(--dim)">Crunching ${sym} history…</div>`;
-  const snaps=await flowSnaps(sym);if(cur.sym!==sym||view!=='flows')return;
-  const W=FLOW_WINS.find(w=>w[0]===flowWin)||FLOW_WINS[1],days=W[2];
-  let C=flowCalc(snaps,F,days);
-  // fallback to the pipeline's 7d numbers when snapshots can't be read
-  const pipe=(n,withMovers)=>n?{span:n.days,amt:n.amt,pct:n.pct,usd:n.usd,moversUp:withMovers?(F.moversUp||[]):[],moversDown:withMovers?(F.moversDown||[]):[],entries:withMovers?(F.entries||[]):[],exits:withMovers?(F.exits||[]):[],nEntries:withMovers?(F.entries||[]).length:0,nExits:withMovers?(F.exits||[]).length:0,nowAmt:F.series[F.series.length-1].amt,pipeline:true}:null;
-  if((!C||C.noPrice)&&flowWin==='7d')C=pipe(F.net7,true)||C;
-  if((!C||C.noPrice)&&flowWin==='30d')C=pipe(F.net30,false)||C;
-  if(C&&C.noPrice)C={tooShort:true,span:C.span};
-  // chart points: every snapshot in the window (~2h apart) when we can value them, else the pipeline's daily series
+  if(!F||!F.win){el.innerHTML=`<div style="padding:30px;color:var(--muted)">Flows for <b>$${sym}</b> are computed on the next data refresh (every ~2h for hot tokens). Check back soon.</div>`;return}
+  if(!FLOW_WINS.some(w=>w[0]===flowWin))flowWin='7d';
+  const W=FLOW_WINS.find(w=>w[0]===flowWin),C=F.win[flowWin],days=W[2];
+  el.innerHTML=`<div style="padding:30px;color:var(--dim)">Loading ${sym} history…</div>`;
+  const hist=await flowHist(sym);if(cur.sym!==sym||view!=='flows')return;
+  const price=cur.price||0;
+  // chart points: exact balances inside the window (hourly for 24h, 6-hourly for 7d, daily for 30d)
   FLOWPTS=null;
-  if(snaps&&snaps.length>=2){const tot=sn=>{let a=0;for(const k in sn.h){const o=sn.h[k];if(o.r<=100){const v=snapAmt(o,sn,F);if(v==null)return null;a+=v}}return a};
-    const from=days>=3650?0:Date.now()-days*864e5-36e5;let pts=[];
-    for(const sn of snaps){if(sn.ts<from)continue;const a=tot(sn);if(a==null)continue;pts.push({ts:sn.ts,amt:Math.round(a),p:sn.p||0,snap:sn})}
-    if(days>=3650&&pts.length>200){const keep=[];let last=0;for(const q of pts){if(q.ts-last>=864e5*0.9||q===pts[pts.length-1]){keep.push(q);last=q.ts}}pts=keep}
-    if(pts.length>=2)FLOWPTS=pts}
-  const series=FLOWPTS||(days>=3650?F.series:F.series.filter(p=>p.ts>=Date.now()-days*864e5-36e5));
+  if(hist&&hist.points&&hist.points.length>=2){const step=days<=1?'h':days<=7?'q':'d';const keep=p=>p.k==='now'||p.k==='d'||(step!=='d'&&p.k==='q')||(step==='h'&&p.k==='h');const pts=hist.points.filter(p=>p.ts>=C.refTs-60e3&&keep(p));if(pts.length>=2)FLOWPTS=pts}
+  const series=FLOWPTS||(F.series||[]).filter(p=>p.ts>=C.refTs-36e5);
   const tile=(t2,big,facts,cls,tip)=>`<div class="tile"><span class="t2">${t2}${tip?`<span class="ib" title="${esc(tip)}">i</span>`:''}</span><span class="t1 ${cls||''}">${big}</span>${typeof facts==='string'?`<span class="t3">${facts}</span>`:`<span class="kv2">${facts.map(([k,v])=>`<span>${k}<b>${v}</b></span>`).join('')}</span>`}</div>`;
-  const acc=C&&!C.tooShort&&C.amt>=0;
-  const spanTxt=C&&!C.tooShort?(C.span<1.5?`${Math.max(1,Math.round(C.span*24))}h`:`${Math.round(C.span)}d`):'';
+  const acc=C.amt>=0,small=Math.abs(C.pct)<0.25;
+  const when=ts=>new Date(ts).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  const nEnt=C.entries?C.entries.length:null,nEx=C.exits?C.exits.length:null;
   // one sentence that answers the question; the reading of it fades back
-  let story='',read='';
-  if(!C||C.tooShort){story=`Not enough history yet for a ${W[1].toLowerCase()} view of $${sym}.`;read=`We have ${C&&C.span?Math.max(1,Math.round(C.span*24))+'h':'under a day'} of snapshots so far — try a shorter window or check back later.`}
-  else{const pctAbs=Math.abs(C.pct).toFixed(1);const small=Math.abs(C.pct)<0.25;
-    story=small?`The 100 biggest $${sym} wallets barely moved over the last ${spanTxt}.`:`Over the last ${spanTxt}, the 100 biggest $${sym} wallets <span class="${acc?'up':'down'}">${acc?'added':'let go of'} ${tokAmt(Math.abs(C.amt))} $${sym}</span> — ${acc?'+':'−'}${pctAbs}% of what they held, ~${usd(Math.abs(C.usd))} at today's price.`;
-    read=`${C.nEntries||C.nExits?`${C.nEntries} wallet${C.nEntries===1?'':'s'} joined the top 100, ${C.nExits} left. `:'The line-up did not change. '}${small?'Steady hands.':acc?'Bigger bags in strong hands — usually read as bullish.':'Big holders are distributing — selling, or moving coins out of these wallets.'}`}
-  const cex=F.cex7||{in:0,out:0,n:0};
-  const moveRow=m=>`<button class="flowrow" onclick="openProfileByAddr('${m.addr}')"><span style="min-width:0"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(flowName(m.addr))}</div><div ${m.via?'':`data-via="${m.addr}|${m.usd>=0?'in':'out'}"`} style="display:flex;gap:3px;flex-wrap:wrap;margin-top:2px">${m.via?viaBadges(m.via):''}</div></span><b class="mono ${m.usd>=0?'up':'down'}">${tokAmt(m.amt,true)} <small class="t3">~${usd(Math.abs(m.usd))}</small></b></button>`;
-  const chipRow=(list,cls,then)=>list.length?list.map(m=>`<button class="flowrow" onclick="openProfileByAddr('${m.addr}')"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(flowName(m.addr))}</span><b class="mono ${cls}">${usd(m.usd)}${then?' <small class="t3">then</small>':''}</b></button>`).join(''):`<div class="t3" style="padding:8px 2px">none in this window</div>`;
+  const story=small?`The 100 biggest $${sym} wallets barely moved over the last ${W[1]}.`:`Over the last ${W[1]}, the 100 biggest $${sym} wallets <span class="${acc?'up':'down'}">${acc?'added':'let go of'} ${tokAmt(Math.abs(C.amt))} $${sym}</span> — ${acc?'+':'−'}${Math.abs(C.pct).toFixed(2)}% of what they held, ~${usd(Math.abs(C.usd))} at today's price.`;
+  const read=`${nEnt!=null?(nEnt||nEx?`${nEnt} wallet${nEnt===1?'':'s'} joined the top 100, ${nEx} left. `:'The line-up did not change. '):''}${small?'Steady hands.':acc?'Bigger bags in strong hands — usually read as bullish.':'Big holders are distributing — selling, or moving coins out of these wallets.'}`;
+  const D=C.dest||(flowWin==='30d'?F.win['7d'].dest:null),destWin=C.dest?W[1]:'7 days';
+  const cex=C.cex||(flowWin==='30d'?F.win['7d'].cex:null),cexWin=C.cex?W[1]:'7d';
+  const viaOf=m=>m.via&&Object.keys(m.via).length?m.via:null;
+  const moveRow=m=>`<button class="flowrow" onclick="openProfileByAddr('${m.addr}')"><span style="min-width:0"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(flowName(m.addr))}</div><div ${viaOf(m)?'':`data-via="${m.addr}|${m.usd>=0?'in':'out'}"`} style="display:flex;gap:3px;flex-wrap:wrap;margin-top:2px">${viaOf(m)?viaBadges(m.via):''}</div></span><b class="mono ${m.usd>=0?'up':'down'}">${tokAmt(m.amt,true)} <small class="t3">~${usd(Math.abs(m.usd))}</small></b></button>`;
+  const entryRow=m=>`<button class="flowrow" onclick="openProfileByAddr('${m.addr}')" title="holds ${tokAmt(m.amt)} $${sym} now (${tokAmt(m.added,true)} over the window)"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(flowName(m.addr))}</span><b class="mono up">${usd(m.usd)}<small class="t3"> now</small></b></button>`;
+  const exitRow=m=>`<button class="flowrow" onclick="openProfileByAddr('${m.addr}')" title="held ${tokAmt(m.then)} $${sym} (~${usd(m.thenUsd)}) then, ${tokAmt(m.now)} now"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(flowName(m.addr))}</span><b class="mono ${m.usd<0?'down':'up'}">${tokAmt(m.amt,true)}<small class="t3"> ~${usd(Math.abs(m.usd))}</small></b></button>`;
   const box=(title,inner,right)=>`<div class="fbox"><div class="fh"><span class="t2">${title}</span><span class="t3">${right||''}</span></div><div class="fb">${inner}</div></div>`;
-  const ok=C&&!C.tooShort;
-  const nowAmt=C&&C.nowAmt!=null?C.nowAmt:F.series[F.series.length-1].amt;
+  const up=C.movers.filter(m=>m.usd>0).slice(0,6),down=C.movers.filter(m=>m.usd<0).slice(0,6);
   el.innerHTML=`
   <div style="padding:16px;display:flex;flex-direction:column;gap:14px">
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><h3 style="margin:0;font-size:16px">Flows</h3>${tokTag(sym)}<span class="t3">are the biggest wallets buying or selling?</span>
       <span style="margin-left:auto;display:inline-flex;border:1px solid var(--line)">${FLOW_WINS.map(w=>`<button onclick="flowWin='${w[0]}';renderFlows()" style="padding:0 11px;height:28px;font-weight:700;font-size:11px;${flowWin===w[0]?'background:var(--text);color:#fff':'color:var(--muted)'}">${w[1]}</button>`).join('')}</span></div>
-    <div style="border-left:3px solid ${!ok?'var(--dim)':acc?'var(--teal)':'var(--coral)'};background:var(--panel);padding:12px 14px"><div style="font-size:15px;font-weight:700;line-height:1.4">${story}</div><div class="t3" style="margin-top:4px;font-size:12px">${read}</div></div>
+    <div style="border-left:3px solid ${acc?'var(--teal)':'var(--coral)'};background:var(--panel);padding:12px 14px"><div style="font-size:15px;font-weight:700;line-height:1.4">${story}</div><div class="t3" style="margin-top:4px;font-size:12px">${read}</div></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
-      ${ok?tile(`Net · ${spanTxt}`,`${tokAmt(C.amt,true)} <small style="font-size:12px;font-weight:600;color:var(--muted)">${esc(sym)}</small>`,[[acc?'accumulated':'distributed','~'+usd(Math.abs(C.usd))],['vs their own balance',(C.pct>=0?'+':'')+C.pct.toFixed(2)+'%']],acc?'up':'down','Change in the combined balance of the top 100 wallets over the window, valued at today’s price'):tile(`Net · ${W[1]}`,'—','not enough history yet')}
-      ${tile('Top 100 hold now',`${tokAmt(nowAmt)} <small style="font-size:12px;font-weight:600;color:var(--muted)">${esc(sym)}</small>`,[['value','~'+usd(nowAmt*(cur.price||0))],['of supply',(data.topShare*100).toFixed(1)+'%']])}
-      ${tile(`Turnover · ${spanTxt||W[1]}`,ok?`<span class="up">${C.nEntries}</span> <span class="t3" style="font-family:var(--font-body)">in</span> · <span class="down">${C.nExits}</span> <span class="t3" style="font-family:var(--font-body)">out</span>`:'—',ok?[['joined',C.nEntries+' wallet'+(C.nEntries===1?'':'s')],['left',C.nExits]]:'wallets entering / leaving the top 100')}
-      ${cex.n?tile('Exchange flow · 7d',`<span class="up">${usd(cex.in)}</span> <span class="t3" style="font-family:var(--font-body)">in</span> · <span class="down">${usd(cex.out)}</span> <span class="t3" style="font-family:var(--font-body)">out</span>`,[['transfers',cex.n],['net',(cex.in-cex.out>=0?'+':'−')+usd(Math.abs(cex.in-cex.out))]],'','Only transfers with a labeled exchange counterparty count, so this understates the real total'):tile('Exchange flow · 7d','—','no labeled exchange transfers observed')}
+      ${tile(`Net · ${W[1]}`,`${tokAmt(C.amt,true)} <small style="font-size:12px;font-weight:600;color:var(--muted)">${esc(sym)}</small>`,[[acc?'accumulated':'distributed','~'+usd(Math.abs(C.usd))],['vs their own balance',(C.pct>=0?'+':'')+C.pct.toFixed(2)+'%']],acc?'up':'down',`On-chain balances of today's top 100 wallets, read at block ${C.refBlock} (${when(C.refTs)}) and block ${C.nowBlock} (${when(C.nowTs)}), subtracted. $ at today's price.`)}
+      ${tile('Top 100 hold now',`${tokAmt(C.nowAmt)} <small style="font-size:12px;font-weight:600;color:var(--muted)">${esc(sym)}</small>`,[['value','~'+usd(C.nowAmt*price)],['of supply',(data.topShare*100).toFixed(1)+'%']])}
+      ${C.membership?tile(`Turnover · ${W[1]}`,`<span class="up">${nEnt}</span> <span class="t3" style="font-family:var(--font-body)">in</span> · <span class="down">${nEx}</span> <span class="t3" style="font-family:var(--font-body)">out</span>`,[['joined',nEnt+' wallet'+(nEnt===1?'':'s')],['left',nEx]],'',`Compared with who was in the top 100 at ${when(C.refTs)}`):tile(`Turnover · ${W[1]}`,'—','no ranking recorded that far back yet')}
+      ${cex&&cex.n?tile(`Exchange flow · ${cexWin}`,`<span class="up">${usd(cex.in)}</span> <span class="t3" style="font-family:var(--font-body)">in</span> · <span class="down">${usd(cex.out)}</span> <span class="t3" style="font-family:var(--font-body)">out</span>`,[['transfers',cex.n],['net',(cex.in-cex.out>=0?'+':'−')+usd(Math.abs(cex.in-cex.out))]],'','Coins the top 100 withdrew from (in) or deposited to (out) labeled exchange wallets, netted per wallet. Only counterparties we can label as an exchange count.'):tile(`Exchange flow · ${cexWin}`,'—','no labeled exchange transfers in this window')}
     </div>
-    ${(()=>{const D=F.dest7;if(!D||!D.n)return'';
+    ${(()=>{if(!D)return'';
       const NAMES={out:{dex:'Sold on a DEX',cex:'Sent to an exchange',bridge:'Bridged out',contract:'Sent to a contract (staking, vault…)',wallet:'Moved to other wallets',burn:'Burned'},in:{dex:'Bought on a DEX',cex:'Withdrawn from an exchange',bridge:'Bridged in',contract:'Received from a contract',wallet:'Received from wallets',burn:'Minted'}};
-      if(!D.traced&&D.wallets<20)return `<div class="fbox"><div class="fh"><span class="t2">Where the coins went</span><span class="t3">tracing ${D.wallets} of 100 wallets so far — shown once coverage is useful</span></div></div>`;
-      const totOut=Object.values(D.out).reduce((a,b)=>a+b,0),totIn=Object.values(D.in).reduce((a,b)=>a+b,0);
-      const netOut=ok&&C.usd<0?Math.abs(C.usd):0,netIn=ok&&C.usd>0?C.usd:0;
-      const tbl=(o,dir,label,tot,ref)=>{const segs=Object.entries(o).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);const mx=segs.length?segs[0][1]:1;
-        return `<div><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><span class="t2">${label}</span><span class="kv2"><span>traced<b>${usd(tot)}</b></span>${ref?`<span>of ~<b>${usd(ref)}</b> net</span>`:''}</span></div>
-          <div class="dest"><div class="dh t2" style="letter-spacing:.06em"><span>Destination</span><span>Share of traced</span><span class="r">Amount</span><span class="r">%</span></div>${segs.length?segs.map(([k,v])=>`<div class="dr"><span style="color:${DEST[k].c}">${DEST[k].ic}${NAMES[dir][k]}</span><span class="dbar"><i style="width:${100*v/mx}%;background:${DEST[k].c}"></i></span><b class="mono r">${usd(v)}</b><span class="t3 mono r">${Math.round(100*v/tot)}%</span></div>`).join(''):`<div class="dr t3" style="grid-template-columns:1fr">none observed in this window</div>`}</div></div>`};
-      return box('Where the coins went',`<div class="t3" style="font-size:12px;margin-bottom:12px">${D.traced?`Every $${esc(sym)} transfer of the wallets that moved in the last 7 days (${D.wallets} wallets, ${D.n} transfers), netted per wallet and sorted by where the coins ended up.${D.bots?` ${D.bots} high-churn wallet${D.bots===1?'':'s'} (routers / trading bots, 100+ transfers a week) left out.`:''}`:`Followed for ${D.wallets} of the top 100 wallets (${D.n} transfers in the last 7 days).`}</div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px">${tbl(D.out,'out','Out of the top 100',totOut,netOut)}${tbl(D.in,'in','Into the top 100',totIn,netIn)}</div>`,`last 7 days · ${D.wallets} wallets · ${D.n} transfers <span class="ib" title="Each transfer's counterparty is classified as a DEX pool/router, an exchange, a bridge, a contract or a plain wallet. Per wallet, buys and sells at the same destination are netted first, so the totals track what balances actually did. Share of traced = this destination's part of everything we could follow in that direction.">i</span>`)})()}
-    ${box(`How much $${esc(sym)} the top 100 hold`,`<canvas id="fchart" style="width:100%;height:220px;display:block;cursor:crosshair"></canvas><div class="t3" style="margin-top:6px;display:flex;gap:14px;flex-wrap:wrap"><span><i style="display:inline-block;width:14px;height:3px;background:var(--accent);vertical-align:middle;margin-right:5px"></i>combined balance</span><span><i style="display:inline-block;width:14px;height:0;border-top:2px dashed var(--dim);vertical-align:middle;margin-right:5px"></i>price</span><span>hover a point · click one to see who moved</span></div><div id="fday" style="margin-top:8px"></div>`,'one point per snapshot')}
+      const rows={out:[],in:[]};
+      for(const side of['out','in'])for(const[k,v]of Object.entries(D[side]))if(v.usd>0)rows[side].push({k,label:NAMES[side][k],usd:v.usd,amt:v.amt,c:DEST[k].c,ic:DEST[k].ic});
+      const extra=(o,label,tip)=>{if(!o||!o.n||!o.usd)return;const side=o.usd>0?'in':'out';rows[side].push({k:'x',label:`${label} · ${o.n} wallet${o.n===1?'':'s'}`,usd:Math.abs(o.usd),amt:Math.abs(o.amt),c:'#9AA0A6',ic:'',tip})};
+      extra(D.bots,'High-churn wallets (routers / bots)','Wallets with 100+ transfers of this token in the window — their exact balance change is counted here, not broken down by destination');
+      extra(D.rest,'Small moves & untraced','Balance changes under $500 plus wallets beyond the tracing cap — exact totals, not broken down');
+      const tot=side=>rows[side].reduce((a,r)=>a+r.usd,0);const totOut=tot('out'),totIn=tot('in');
+      const tbl=(side,label)=>{const rs=rows[side].sort((a,b)=>b.usd-a.usd),mx=rs.length?rs[0].usd:1,t=tot(side);
+        return `<div><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><span class="t2">${label}</span><span class="kv2"><span>total<b>${usd(t)}</b></span></span></div>
+          <div class="dest"><div class="dh t2" style="letter-spacing:.06em"><span>Destination</span><span>Share</span><span class="r">Amount</span><span class="r">%</span></div>${rs.length?rs.map(r=>`<div class="dr"${r.tip?` title="${esc(r.tip)}"`:''}><span style="color:${r.c}">${r.ic}${r.label}</span><span class="dbar"><i style="width:${100*r.usd/mx}%;background:${r.c}"></i></span><b class="mono r" title="${tokAmt(r.amt)} ${esc(sym)}">${usd(r.usd)}</b><span class="t3 mono r">${Math.round(100*r.usd/t)}%</span></div>`).join(''):`<div class="dr t3" style="grid-template-columns:1fr">nothing in this direction</div>`}</div></div>`};
+      const net=totIn-totOut,ref=(C.dest?C:F.win['7d']);
+      return box('Where the coins went',`<div class="t3" style="font-size:12px;margin-bottom:12px">Every $${esc(sym)} transfer of the top-100 wallets that moved in the last ${destWin} (${D.wallets} wallets, ${D.n} transfers), netted per wallet and sorted by where the coins ended up. The two columns add up to the Net exactly.</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px">${tbl('out','Out of the top 100')}${tbl('in','Into the top 100')}</div>
+        <div class="kv2" style="margin-top:12px"><span>in<b>${usd(totIn)}</b></span><span>− out<b>${usd(totOut)}</b></span><span>= net<b class="${net>=0?'up':'down'}">${net>=0?'+':'−'}${usd(Math.abs(net))}</b></span><span class="t3" style="border:0;background:none">${Math.abs(net-ref.usd)<=Math.max(2,Math.abs(ref.usd)*0.002)?'matches the Net tile ✓':`Net tile ${usd(ref.usd)} — difference is rounding`}</span></div>`,`last ${destWin} <span class="ib" title="Each transfer's counterparty is classified as a DEX pool/router, an exchange, a bridge, a contract or a plain wallet. Per wallet, buys and sells at the same destination are netted first, so the totals are what balances actually did.">i</span>`)})()}
+    ${box(`How much $${esc(sym)} the top 100 hold`,`<canvas id="fchart" style="width:100%;height:220px;display:block;cursor:crosshair"></canvas><div class="t3" style="margin-top:6px;display:flex;gap:14px;flex-wrap:wrap"><span><i style="display:inline-block;width:14px;height:3px;background:var(--accent);vertical-align:middle;margin-right:5px"></i>combined balance</span><span><i style="display:inline-block;width:14px;height:0;border-top:2px dashed var(--dim);vertical-align:middle;margin-right:5px"></i>price</span><span>hover a point · click one to see who moved</span></div><div id="fday" style="margin-top:8px"></div>`,days<=1?'one point per hour':days<=7?'one point every 6 hours':'one point per day')}
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px">
-      ${box(`Biggest accumulators`,ok&&C.moversUp.length?C.moversUp.map(moveRow).join(''):'<div class="t3" style="padding:8px 2px">no significant adds</div>',W[1])}
-      ${box(`Biggest distributors`,ok&&C.moversDown.length?C.moversDown.map(moveRow).join(''):'<div class="t3" style="padding:8px 2px">no significant sells</div>',W[1])}
-      ${box(`New in top 100`,chipRow(ok?C.entries:[],'up'),W[1])}
-      ${box(`Dropped out`,chipRow(ok?C.exits:[],'down',true),W[1])}
+      ${box(`Biggest accumulators`,up.length?up.map(moveRow).join(''):'<div class="t3" style="padding:8px 2px">no adds ≥ $500</div>',W[1])}
+      ${box(`Biggest distributors`,down.length?down.map(moveRow).join(''):'<div class="t3" style="padding:8px 2px">no sells ≥ $500</div>',W[1])}
+      ${box(`New in top 100`,C.entries?(C.entries.length?C.entries.slice(0,8).map(entryRow).join(''):'<div class="t3" style="padding:8px 2px">none in this window</div>'):'<div class="t3" style="padding:8px 2px">no ranking from then</div>',W[1])}
+      ${box(`Dropped out`,C.exits?(C.exits.length?C.exits.slice(0,8).map(exitRow).join(''):'<div class="t3" style="padding:8px 2px">none in this window</div>'):'<div class="t3" style="padding:8px 2px">no ranking from then</div>',W[1])}
     </div>
-    <div class="t3">Exact on-chain balances per snapshot · $ at the current price · not financial advice.</div>
+    <div class="t3">Balances read on-chain at two blocks and subtracted · $ at the current price${F.stale?' · <span class="down">last refresh could not reach the chain — showing the previous result</span>':''} · not financial advice.</div>
   </div>`;
-  drawFlowChart(document.getElementById('fchart'),series.length>=2?series:F.series);
+  if(series.length>=2)drawFlowChart(document.getElementById('fchart'),series);
   if(FLOWPTS&&FLOWPTS.length>=2)flowMoves(FLOWPTS,FLOWPTS.length-1); // open on the newest interval by default
-  annotateVia(el,sym,Date.now()-days*864e5,Date.now());
+  annotateVia(el,sym,C.refTs,Date.now());
 }
 function drawFlowChart(cv2,series,hoverI){
   if(!cv2)return;
@@ -1909,26 +1888,24 @@ function drawFlowChart(cv2,series,hoverI){
   cv2.onmouseleave=()=>drawFlowChart(cv2,series);
   cv2.onclick=e=>{const r2=cv2.getBoundingClientRect();const fx=(e.clientX-r2.left)/r2.width*W2;let bi=0,bd=1e18;series.forEach((p,i)=>{const d2=Math.abs(X(i)-fx);if(d2<bd){bd=d2;bi=i}});flowMoves(series,bi)};
 }
-/* who moved between two chart points — the seed of the per-day flow diagram */
+/* who moved between two chart points — exact per-wallet balance changes summed over every on-chain point in between */
 function flowMoves(series,i){
   const el=document.getElementById('fday');if(!el)return;
   const cur2=series[i],prev=i>0?series[i-1]:null;
-  if(!prev||!cur2.snap||!prev.snap){el.innerHTML=`<div style="padding:8px 0;color:var(--dim);font-size:11.5px">${!prev?'First point in the window — pick a later one.':'Per-wallet detail needs snapshot data (available for recent points).'}</div>`;return}
-  const F=cur.flows,price=cur.price||0,rows=[];let ent=0,ex=0;
-  for(const k in cur2.snap.h){const o=cur2.snap.h[k];if(o.r>100)continue;const a1=snapAmt(o,cur2.snap,F);const r0=prev.snap.h[k];
-    if(!r0){ent++;rows.push({addr:k,amt:a1||0,usd:(a1||0)*price,kind:'entry'});continue}
-    const a0=snapAmt(r0,prev.snap,F);if(a1==null||a0==null)continue;const d=a1-a0;if(Math.abs(d*price)>=250)rows.push({addr:k,amt:d,usd:d*price,kind:d>0?'buy':'sell'})}
-  for(const k in prev.snap.h){const o=prev.snap.h[k];if(o.r<=100&&!cur2.snap.h[k]){ex++;const a0=snapAmt(o,prev.snap,F)||0;rows.push({addr:k,amt:-a0,usd:-a0*price,kind:'exit'})}}
-  rows.sort((a,b)=>Math.abs(b.usd)-Math.abs(a.usd));
+  const all=FLOWHIST[cur.sym]&&FLOWHIST[cur.sym].hist?FLOWHIST[cur.sym].hist.points:null;
+  if(!prev||!all){el.innerHTML=`<div style="padding:8px 0;color:var(--dim);font-size:11.5px">${!prev?'First point in the window — pick a later one.':'Per-wallet detail loads with the history file.'}</div>`;return}
+  const price=cur.price||0,sum={};
+  for(const p of all){if(p.ts<=prev.ts||p.ts>cur2.ts||!p.d)continue;for(const a in p.d)sum[a]=(sum[a]||0)+p.d[a]}
+  const rows=Object.entries(sum).map(([addr,amt])=>({addr,amt,usd:amt*price,kind:amt>0?'buy':'sell'})).filter(r=>Math.abs(r.usd)>=250).sort((a,b)=>Math.abs(b.usd)-Math.abs(a.usd));
   const fmtT=ts=>new Date(ts).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
   const buys=rows.filter(r=>r.usd>0),sells=rows.filter(r=>r.usd<0);
-  const sum=l=>l.reduce((t,r)=>t+r.usd,0);
-  const row=r=>`<button class="flowrow" onclick="openProfileByAddr('${r.addr}')"><span style="min-width:0"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.kind==='entry'?'<span class="pill tagp" style="height:16px;font-size:9px;padding:0 4px;margin-right:4px;color:var(--teal);border-color:var(--teal)">new</span>':r.kind==='exit'?'<span class="pill tagp" style="height:16px;font-size:9px;padding:0 4px;margin-right:4px;color:var(--coral);border-color:var(--coral)">left</span>':''}${esc(flowName(r.addr))}</div><div data-via="${r.addr}|${r.usd>=0?'in':'out'}" style="display:flex;gap:3px;flex-wrap:wrap;margin-top:2px"></div></span><b class="mono ${r.usd>=0?'up':'down'}">${tokAmt(r.amt,true)} <small style="color:var(--dim);font-weight:400">~${usd(Math.abs(r.usd))}</small></b></button>`;
+  const tot=l=>l.reduce((t,r)=>t+r.usd,0);
+  const row=r=>`<button class="flowrow" onclick="openProfileByAddr('${r.addr}')"><span style="min-width:0"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(flowName(r.addr))}</div><div data-via="${r.addr}|${r.usd>=0?'in':'out'}" style="display:flex;gap:3px;flex-wrap:wrap;margin-top:2px"></div></span><b class="mono ${r.usd>=0?'up':'down'}">${tokAmt(r.amt,true)} <small style="color:var(--dim);font-weight:400">~${usd(Math.abs(r.usd))}</small></b></button>`;
   el.innerHTML=`<div style="border:1px solid var(--teal);background:var(--panel2);padding:12px 14px">
-    <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px"><span style="display:inline-flex;gap:4px;align-items:center"><button onclick="flowMoves(FLOWPTS,${i-1})" ${i<=1?'disabled style="opacity:.3"':''} title="earlier interval" style="border:1px solid var(--line);width:22px;height:22px;font-weight:700">‹</button><button onclick="flowMoves(FLOWPTS,${i+1})" ${i>=series.length-1?'disabled style="opacity:.3"':''} title="later interval" style="border:1px solid var(--line);width:22px;height:22px;font-weight:700">›</button></span><b style="font-size:12px">Movements · ${fmtT(prev.ts)} → ${fmtT(cur2.ts)}${i>=series.length-1?' <span style="color:var(--teal)">· newest</span>':''}</b><span style="color:var(--dim);font-size:11px">${i} / ${series.length-1}</span><span style="color:var(--muted);font-size:11.5px">${rows.length?`<span class="up">${buys.length} added ${usd(sum(buys))}</span> · <span class="down">${sells.length} reduced ${usd(Math.abs(sum(sells)))}</span>${ent?` · ${ent} entered`:''}${ex?` · ${ex} left`:''}`:'no balance changes ≥$250 between these two points'}</span><button onclick="document.getElementById('fday').innerHTML=''" style="margin-left:auto;color:var(--dim);font-size:11px">close ✕</button></div>
+    <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px"><span style="display:inline-flex;gap:4px;align-items:center"><button onclick="flowMoves(FLOWPTS,${i-1})" ${i<=1?'disabled style="opacity:.3"':''} title="earlier interval" style="border:1px solid var(--line);width:22px;height:22px;font-weight:700">‹</button><button onclick="flowMoves(FLOWPTS,${i+1})" ${i>=series.length-1?'disabled style="opacity:.3"':''} title="later interval" style="border:1px solid var(--line);width:22px;height:22px;font-weight:700">›</button></span><b style="font-size:12px">Movements · ${fmtT(prev.ts)} → ${fmtT(cur2.ts)}${i>=series.length-1?' <span style="color:var(--teal)">· newest</span>':''}</b><span style="color:var(--dim);font-size:11px">${i} / ${series.length-1}</span><span style="color:var(--muted);font-size:11.5px">${rows.length?`<span class="up">${buys.length} added ${usd(tot(buys))}</span> · <span class="down">${sells.length} reduced ${usd(Math.abs(tot(sells)))}</span> · net <b class="mono ${cur2.amt-prev.amt>=0?'up':'down'}">${tokAmt(cur2.amt-prev.amt,true)}</b>`:`no balance changes ≥$250 between these two points (net ${tokAmt(cur2.amt-prev.amt,true)})`}</span><button onclick="document.getElementById('fday').innerHTML=''" style="margin-left:auto;color:var(--dim);font-size:11px">close ✕</button></div>
     ${rows.length?`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0 18px">${rows.slice(0,30).map(row).join('')}</div>${rows.length>30?`<div style="color:var(--dim);font-size:11px;padding-top:6px">+${rows.length-30} smaller moves</div>`:''}`:''}
-    <div style="color:var(--dim);font-size:11px;padding-top:8px">Balance changes of the top 100 between two snapshots · badges show where the coins went (DEX trade · exchange · bridge · other wallet) for wallets with enriched transfer history · ‹ › steps through snapshots (~every 2h for hot tokens, daily otherwise).</div></div>`;
-  annotateVia(el,cur.sym,prev.ts-36e5,cur2.ts+36e5);
+    <div style="color:var(--dim);font-size:11px;padding-top:8px">Exact on-chain balance changes of today's top 100 between two blocks · badges show where the coins went for wallets with transfer history · ‹ › steps through points.</div></div>`;
+  annotateVia(el,cur.sym,prev.ts,cur2.ts);
   el.scrollIntoView({block:'nearest',behavior:'smooth'});
 }
 async function loadSchools(){try{const r=await fetch('data/schools.json?t='+Date.now(),{cache:'no-store'});if(r.ok){SCHOOLS=(await r.json()).schools||[];SCHOOLS.forEach((s,i)=>s.color=`hsl(${(i*137.508)%360} 90% 64%)`)}}catch(e){}}

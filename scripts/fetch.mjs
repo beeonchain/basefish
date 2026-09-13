@@ -5,7 +5,8 @@ import path from 'node:path';
 import { namehash } from './keccak.mjs';
 import { buildAlerts, attachTxHashes, checkWatches, writeFeed, sendTelegram } from './alerts.mjs';
 import { computeTags, applyTags } from './tags.mjs';
-import { makeRpc, classifier, traceToken, destFromTrace, BOT_N } from './trace.mjs';
+import { makeRpc, classifier } from './trace.mjs';
+import { computeFlows } from './flows.mjs';
 let CODES = {}; try { CODES = JSON.parse(fs.readFileSync('data/codes.json', 'utf8')); } catch {}
 
 const KEY = process.env.MORALIS_API_KEY || '';
@@ -17,7 +18,8 @@ const cfg = JSON.parse(fs.readFileSync('tokens.config.json', 'utf8'));
 // Tokens skipped this run keep their previous data files and stay in index.json.
 const TIER = (process.env.TIER || 'all').toLowerCase();
 const RUNLOG = { started: new Date().toISOString(), tier: TIER, tokens: {}, errors: [] }; // data/run_log.json — readable from the site/raw
-const RUN_TOKENS = TIER === 'hot' ? cfg.tokens.filter(t => (t.tier || 'hot') === 'hot') : cfg.tokens;
+const ONLY = (process.env.ONLY || '').toUpperCase().split(',').map(s => s.trim()).filter(Boolean); // ONLY=BRETT,AERO → just those (testing)
+const RUN_TOKENS = ONLY.length ? cfg.tokens.filter(t => ONLY.includes(t.sym.toUpperCase())) : TIER === 'hot' ? cfg.tokens.filter(t => (t.tier || 'hot') === 'hot') : cfg.tokens;
 const SKIPPED = cfg.tokens.filter(t => !RUN_TOKENS.includes(t));
 console.log(`run tier=${TIER}: ${RUN_TOKENS.length} of ${cfg.tokens.length} tokens${SKIPPED.length ? ` (${SKIPPED.length} kept from last run)` : ''}`);
 const FULL = TIER !== 'hot';
@@ -1204,114 +1206,29 @@ for (const t of RUN_TOKENS) {
       ALERTCTX[t.sym] = { prev: snaps.length > 1 ? snaps[snaps.length - 2] : null, cur: snaps[snaps.length - 1], top, price: usd, contract: t.contract };
       fs.writeFileSync(spath, JSON.stringify(snaps));
     }
-    // ---- Flows: daily top-100 balance history, movers, entries/exits, observed CEX flow ----
+    // ---- Flows: exact two-block arithmetic on-chain (scripts/flows.mjs). Keeps the previous result if the RPC is unavailable. ----
     let flows = null;
     try {
-      const spathF = path.join('data/snapshots', t.sym.toLowerCase() + '.json');
-      let snapsF = []; try { snapsF = JSON.parse(fs.readFileSync(spathF, 'utf8')); } catch {}
-      if (snapsF.length >= 2) {
-        const dprices = await cgDailyPrices(t, 33);
-        const todayD = new Date().toISOString().slice(0, 10);
-        // price for a past day: the snapshot's own stored price, else CoinGecko's daily close; NEVER today's price for an old day
-        const priceAt = (ts2, s2) => { if (s2 && s2.p) return s2.p; const d2 = new Date(ts2).toISOString().slice(0, 10); return d2 === todayD ? usd : (priceNear(dprices, d2) || null); };
-        // backfill: older snapshots stored no price — attach the day's CoinGecko price so the site can value them safely
-        { let fixed = 0; for (const s2 of snapsF) if (!s2.p) { const p2 = priceAt(s2.ts, null); if (p2) { s2.p = +Number(p2).toPrecision(6); fixed++; } }
-          if (fixed) { fs.writeFileSync(spathF, JSON.stringify(snapsF)); console.log(`  ${t.sym}: backfilled price on ${fixed} snapshots`); } }
-        // snapshots that stored only usd per holder are valued back into token amounts with their price — but the CoinGecko
-        // daily price backfilled above is not the price those usd figures were computed with (BRETT: 2.9% off), which made
-        // EVERY wallet look like a mover and put a phantom +2.9% on the 7d net. Calibrate: the median of usd_then / amount_now
-        // across wallets present in both the old snapshot and the newest one (most wallets do not move) is the price actually used.
-        { const newest = snapsF[snapsF.length - 1]; let cal = 0;
-          if (newest && Object.values(newest.h).some(o => o.a != null)) for (const s2 of snapsF) {
-            if (Object.values(s2.h).some(o => o.a != null) || s2.pi) continue;
-            const ratios = []; for (const k in s2.h) { const o = s2.h[k], n2 = newest.h[k]; if (o.r <= 100 && n2 && n2.a > 0 && o.u > 0) ratios.push(o.u / n2.a); }
-            if (ratios.length < 20) continue; ratios.sort((a, b) => a - b); const med = ratios[Math.floor(ratios.length / 2)];
-            if (med > 0 && (!s2.p || Math.abs(med / s2.p - 1) < 0.5)) { s2.pi = +med.toPrecision(6); s2.p = s2.pi; cal++; } }
-          if (cal) { fs.writeFileSync(spathF, JSON.stringify(snapsF)); console.log(`  ${t.sym}: calibrated implied price on ${cal} snapshots`); } }
-        const byDayF = new Map(); // last snapshot of each UTC day
-        for (const s of snapsF) byDayF.set(new Date(s.ts).toISOString().slice(0, 10), s);
-        const daily = [...byDayF.values()].sort((a, b) => a.ts - b.ts);
-        // null when a snapshot can't be valued (no stored amounts and no price for that day) — callers skip it
-        const totAmt = (s) => { const p2 = priceAt(s.ts, s); let a2 = 0; for (const k in s.h) { const o = s.h[k]; if (o.r > 100) continue; if (o.a != null) a2 += o.a; else if (p2) a2 += o.u / p2; else return null; } return a2; };
-        // series carries the day's price too, so the site can overlay price and value balances without re-fetching
-        const series = daily.map(s => { const p2 = priceAt(s.ts, s); const a = totAmt(s); if (a == null) return null; const amt = Math.round(a); return { ts: s.ts, amt, p: p2 ? +Number(p2).toPrecision(6) : null, usd: p2 ? Math.round(amt * p2) : null }; }).filter(Boolean);
-        const nowS = snapsF[snapsF.length - 1], nowAmt = totAmt(nowS);
-        if (nowAmt == null || series.length < 2) throw new Error('flows: current snapshot not valuable');
-        const nearestS = (target) => daily.reduce((b, s) => Math.abs(s.ts - target) < Math.abs(b.ts - target) ? s : b);
-        const net = (daysN) => {
-          const ref2 = nearestS(Date.now() - daysN * 864e5);
-          const span2 = (nowS.ts - ref2.ts) / 864e5;
-          if (span2 < daysN * 0.6) return null;
-          const refAmt = totAmt(ref2); if (refAmt == null) return null;
-          return { days: Math.round(span2), amt: Math.round(nowAmt - refAmt), pct: refAmt ? +((100 * (nowAmt - refAmt)) / refAmt).toFixed(2) : 0, usd: Math.round((nowAmt - refAmt) * usd) };
-        };
-        // per-wallet movers / entries / exits vs the ~7d reference
-        const ref7s = nearestS(Date.now() - 7 * 864e5);
-        let movers = [], entries = [], exits = [];
-        if ((nowS.ts - ref7s.ts) / 864e5 >= 0.8) { // young tokens: compare against the oldest snapshot we have (≥ ~1 day) rather than showing nothing
-          const refPrice = priceAt(ref7s.ts, ref7s); // null → wallets without stored amounts are skipped (no guessing)
-          const curSet = new Set(top.map(h => h.addr.toLowerCase()));
-          for (const h of top) {
-            const o = ref7s.h[h.addr.toLowerCase()];
-            if (!o) { entries.push({ addr: h.addr, usd: Math.round(h.usd || 0) }); continue; }
-            if (o.a == null && !refPrice) continue;
-            const dAmt = (h.amount || 0) - (o.a != null ? o.a : o.u / refPrice);
-            if (Math.abs(dAmt * usd) >= 500) movers.push({ addr: h.addr, amt: Math.round(dAmt), usd: Math.round(dAmt * usd) });
-          }
-          for (const k in ref7s.h) { const o = ref7s.h[k]; if (o.r <= 100 && !curSet.has(k)) exits.push({ addr: k, usd: Math.round(o.u), amt: Math.round(o.a != null ? o.a : (refPrice ? o.u / refPrice : 0)) }); }
-          movers.sort((a, b) => b.usd - a.usd);
-          entries.sort((a, b) => b.usd - a.usd); exits.sort((a, b) => b.usd - a.usd);
-        }
-        // observed flows (7d): where the top wallets' coins went / came from, from cached transfers (partial coverage by design —
-        // only wallets with an enriched profile have transfer history). dest7 = totals by destination; via = per-mover breakdown.
-        let cexIn = 0, cexOut = 0, cexN = 0;
-        const poolSet = new Set(infra.filter(x => x.kind === 'pool').map(x => x.addr.toLowerCase()));
-        const dest7 = { out: { dex: 0, cex: 0, bridge: 0, wallet: 0 }, in: { dex: 0, cex: 0, bridge: 0, wallet: 0 }, n: 0, wallets: 0 };
-        const viaOf = {};
-        for (const h of top) {
-          try {
-            const pw = JSON.parse(fs.readFileSync(path.join(WALLET_DIR, h.addr.toLowerCase() + '.json'), 'utf8'));
-            let any = false;
-            for (const tr2 of (pw.transfers || [])) {
-              if (tr2.token !== t.sym) continue;
-              if (Date.now() - new Date(tr2.ts).getTime() > 7 * 864e5) continue;
-              const d2 = flowDest(tr2, poolSet), side = tr2.dir === 'in' ? 'in' : 'out', u2 = Number(tr2.amount) > 0 ? Number(tr2.amount) * usd : (tr2.usd || 0); // value at today's price like the Net tile — Arkham's historical usd is unreliable for thin tokens (LAPTOP: 5M tokens priced $28M)
-              dest7[side][d2] += u2; dest7.n++; any = true;
-              const v = viaOf[h.addr.toLowerCase()] = viaOf[h.addr.toLowerCase()] || { in: {}, out: {} }; v[side][d2] = (v[side][d2] || 0) + u2;
-              if (d2 === 'cex') { cexN++; if (side === 'in') cexIn += u2; else cexOut += u2; }
-            }
-            if (any) dest7.wallets++;
-          } catch (e) {}
-        }
-        for (const k of ['in', 'out']) for (const d2 of Object.keys(dest7[k])) dest7[k][d2] = Math.round(dest7[k][d2]);
-        // full-coverage tracing: every mover / entry / exit gets its token transfers pulled from Alchemy and classified
-        let dest7t = null, viaT = null;
-        if (ALCH_KEY) {
-          try {
-            const labels = {}; for (const h of top) { const l = h.entity || h.label; if (l) labels[h.addr.toLowerCase()] = l; }
-            for (const x of infra) if (x.label) labels[x.addr.toLowerCase()] = x.label;
-            const classify = classifier({ excluded: exclCache, labels, poolSet, codes: CODES });
-            // biggest absolute movers first — sorting by signed usd put every seller at the end, where the cap dropped them
-            const ranked = [...movers, ...entries, ...exits.map(e => ({ addr: e.addr, usd: -(e.usd || 0) }))].sort((a, b) => Math.abs(b.usd || 0) - Math.abs(a.usd || 0));
-            const who = [...new Set(ranked.map(m => m.addr.toLowerCase()))];
-            const st = await traceToken({ rpc: makeRpc(ALCH_KEY), sym: t.sym, contract: t.contract.toLowerCase(), addrs: who, price: usd, classify, codes: CODES, maxAddrs: FULL ? 120 : 80, log: (m) => console.log('  ' + m) });
-            const r = destFromTrace(st, 7); dest7t = r.dest; viaT = r.via;
-            // exchange flow from the same netted, bot-free breakdown (gross per-transfer sums were dominated by router churn)
-            cexIn = dest7t.in.cex || 0; cexOut = dest7t.out.cex || 0; cexN = 0;
-            { const cnt = {}; for (const tr of st.transfers) { if (Date.now() - tr.ts > 7 * 864e5) continue; cnt[tr.addr] = (cnt[tr.addr] || 0) + 1; }
-              for (const tr of st.transfers) { if (tr.kind === 'cex' && Date.now() - tr.ts <= 7 * 864e5 && cnt[tr.addr] < BOT_N) cexN++; } }
-          } catch (e) { console.log('  trace err', e.message.slice(0, 80)); }
-        }
-        const dest7f = dest7t || dest7, viaF = viaT || viaOf;
-        const withVia = (m) => { const v = viaF[m.addr.toLowerCase()]; if (!v) return m; const side = m.usd >= 0 ? 'in' : 'out'; const o = {}; for (const [k, u2] of Object.entries(v[side])) o[k] = Math.round(u2); return { ...m, via: o }; };
-        movers = movers.map(withVia);
-        flows = { updated: Date.now(), series, net7: net(7), net30: net(30), refTs7: ref7s.ts,
-          moversUp: movers.filter(m => m.usd > 0).slice(0, 6),
-          moversDown: movers.filter(m => m.usd < 0).slice(-6).reverse(),
-          entries: entries.slice(0, 8), exits: exits.slice(0, 8),
-          cex7: { in: Math.round(cexIn), out: Math.round(cexOut), n: cexN }, dest7: dest7f, dest7movers: movers.length };
-      }
-    } catch (e) { console.log('  flows err', e.message.slice(0, 80)); }
+      const prevFlows = (() => { try { return JSON.parse(fs.readFileSync(path.join('data', t.sym.toLowerCase() + '.json'), 'utf8')).flows || null; } catch { return null; } })();
+      if (!ALCH_KEY) throw new Error('no alchemy key');
+      const dprices = await cgDailyPrices(t, 33);
+      const todayD = new Date().toISOString().slice(0, 10);
+      const priceAtTs = (ts2) => { const d2 = new Date(ts2).toISOString().slice(0, 10); return d2 === todayD ? usd : (priceNear(dprices, d2) || null); };
+      const labels = {}; for (const h of top) { const l = h.entity || h.label; if (l) labels[h.addr.toLowerCase()] = l; }
+      for (const x of infra) if (x.label) labels[x.addr.toLowerCase()] = x.label;
+      const poolSet = new Set(infra.filter(x => x.kind === 'pool').map(x => x.addr.toLowerCase()));
+      const classify = classifier({ excluded: exclCache, labels, poolSet, codes: CODES });
+      let snapsF = []; try { snapsF = JSON.parse(fs.readFileSync(path.join('data/snapshots', t.sym.toLowerCase() + '.json'), 'utf8')); } catch {}
+      try {
+        flows = await computeFlows({ rpc: makeRpc(ALCH_KEY), sym: t.sym, contract: t.contract, top, price: usd, snaps: snapsF, classify, codes: CODES, priceAt: priceAtTs, full: FULL, log: (m) => console.log('  ' + m) });
+        // the holders table's Δ 24h / Δ 7d come from the same exact balances
+        const d1 = new Map(flows.win['1d'].movers.map(m => [m.addr, m])), d7 = new Map(flows.win['7d'].movers.map(m => [m.addr, m]));
+        const hist = JSON.parse(fs.readFileSync(path.join('data/hist', t.sym.toLowerCase() + '.json'), 'utf8'));
+        const nowMap = hist.now || {};
+        for (const h of top) { const a = h.addr.toLowerCase(); if (nowMap[a] != null) { h.usdChange = d1.has(a) ? d1.get(a).usd : 0; h.usdChange7 = d7.has(a) ? d7.get(a).usd : 0; } }
+        changeRefH = 24; changeRef7D = 7;
+      } catch (e) { console.log('  flows err', e.message.slice(0, 100)); if (prevFlows) { flows = prevFlows; flows.stale = true; console.log('  flows: kept previous result'); } }
+    } catch (e) { console.log('  flows skipped', e.message.slice(0, 80)); }
     if (ARKHAM_KEY) {
       for (const h of top.slice(0, WALLET_DETAIL_PER_TOKEN)) { try { await fixSocials(h.addr, null); } catch (e) {} }
       for (const h of top.slice(0, WALLET_DETAIL_PER_TOKEN)) {
