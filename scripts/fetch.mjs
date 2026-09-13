@@ -1441,7 +1441,7 @@ console.log(`\nWrote data/index.json with ${index.tokens.length} tokens. Label c
 // produce an alert we show: the top WH_TOP real wallets per token (no contracts, no infra-looking entities),
 // plus every custom watch, minus addresses the receiver flagged as noisy (data/alerts_state.json → noisy).
 // Needs ALCH_NOTIFY_TOKEN (Notify auth token) in the Actions secrets. Best-effort; skipped silently otherwise.
-const WH_TOP = Number(process.env.WH_TOP || 20);
+const WH_TOP = Number(process.env.WH_TOP || 12); // global instant alerts: the 12 biggest real wallets per token
 const WH_SKIP_RX = /market maker|\bmm\b|exchange|deposit|router|pool|bridge|vault|treasury|sablier|gauge|locker|staking|deployer|airdrop|distributor|launchpad|escrow|wintermute|gsr|flow traders|jump|cumberland|amber/i;
 if (process.env.ALCH_NOTIFY_TOKEN) {
   try {
@@ -1462,7 +1462,7 @@ if (process.env.ALCH_NOTIFY_TOKEN) {
     try { const us = JSON.parse(fs.readFileSync('data/users.json', 'utf8')); for (const u of Object.values(us.users || {})) for (const w of u.watches || []) want.add(w.w.toLowerCase()); } catch {}
     // noise audit (every run): how many transfers did each candidate make in the last 24h? A real holder makes a handful;
     // a bot / router / MM makes hundreds and would flood the webhook (Alchemy pauses it: CAPPED_CAPACITY). Evict those.
-    const NOISE_MAX = Number(process.env.WH_NOISE_MAX || 40); let audited = 0, evicted = 0;
+    const NOISE_MAX = Number(process.env.WH_NOISE_MAX || 100); // Bee: anything over 100 tx/day is a bot, not a whale let audited = 0, evicted = 0;
     if (ALCH_KEY) {
       const rpc = async (m, ps) => { const r = await fetch(`https://base-mainnet.g.alchemy.com/v2/${ALCH_KEY}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: m, params: ps }) }); const j = await r.json(); if (j.error) throw new Error(j.error.message); return j.result; };
       try {
