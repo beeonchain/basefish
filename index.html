@@ -58,6 +58,12 @@
   /* tier — a swatch and a word, never a block: the fish size is a fact, not an identity */
   .tierc{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap;letter-spacing:.02em}
   .tierc i{width:7px;height:7px;flex:none;display:inline-block}
+  .ftog{height:26px;padding:0 10px;border:1px solid var(--line2);font-size:11.5px;font-weight:600;color:var(--muted);display:inline-flex;align-items:center;gap:6px;background:var(--panel)}
+  .ftog b{font-family:var(--font-mono);font-weight:700;color:var(--dim)}.ftog.on{background:var(--text);color:#fff;border-color:var(--text)}.ftog.on b{color:#fff;opacity:.7}
+  /* row click → two routes */
+  .rowpop{position:fixed;z-index:40;background:var(--panel);border:1px solid var(--line2);box-shadow:0 10px 30px rgba(10,11,13,.14);display:flex;flex-direction:column;min-width:200px}
+  .rowpop button{display:flex;align-items:center;gap:10px;padding:10px 14px;text-align:left;font-weight:700;font-size:12.5px;border-bottom:1px solid var(--line)}.rowpop button:last-child{border-bottom:0}.rowpop button:hover{background:var(--panel2);color:var(--accent)}
+  .rowpop svg{width:14px;height:14px;fill:currentColor;shape-rendering:crispEdges;flex:none}
   /* text hierarchy — three levels, nothing else:
        .t1 the figure you came for   .t2 what the figure is   .t3 context / caveat (fades back) */
   .t1{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-weight:800;font-size:19px;line-height:1.1;color:var(--text)}
@@ -81,6 +87,7 @@
   .app{display:grid;grid-template-columns:220px 1fr 300px;grid-template-rows:64px 1fr 40px;height:100vh;gap:0}
   /* ---------- sidebar ---------- */
   .side{grid-row:1/3;border-right:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;padding:16px 12px;gap:6px}
+  .cexl{display:inline-block;vertical-align:middle;border-radius:50%;flex:none;background:#fff}
   .cexi{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:14px;padding:0 3px;margin-right:4px;font:800 8.5px/1 var(--font-mono);color:#fff;vertical-align:middle;letter-spacing:.3px;border-radius:0;font-style:normal}
   .cpa{cursor:copy;border-bottom:1px dotted var(--dim)}.cpa:hover{color:var(--teal);border-bottom-color:var(--teal)}
   .brand{display:flex;align-items:center;gap:10px;padding:6px 8px 18px}
@@ -130,10 +137,12 @@
   #hqDrop small{color:var(--dim)}
   @media (max-width:1350px){.hsearch input{width:170px}}
   @media (prefers-reduced-motion:reduce){.tank .glass{display:none}}
-  .tokpick{display:flex;gap:2px;margin-left:0;padding:3px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel);max-width:22vw;overflow-x:auto;scrollbar-width:thin;position:relative}
+  .tokpick{display:flex;gap:6px;margin-left:0;padding:0;border:0;background:transparent;max-width:30vw;overflow-x:auto;scrollbar-width:none;position:relative}
+  .tokpick::-webkit-scrollbar{display:none}
   .tokpick::-webkit-scrollbar{height:4px}.tokpick::-webkit-scrollbar-thumb{background:var(--line)}
   .tokall{position:relative;margin-left:6px}
-  .tokall>button{height:34px;padding:0 12px;border:1px solid var(--line2);background:var(--panel);font-weight:700;font-size:12px;font-family:var(--font-mono);color:var(--muted);white-space:nowrap;border-radius:var(--r)}
+  .tokall{margin-left:0}
+  .tokall>button{height:34px;padding:0 12px;border:1px solid var(--line2);background:var(--panel);font-weight:700;font-size:12px;font-family:var(--font-body);color:var(--text);white-space:nowrap;border-radius:var(--r)}
   .tokall>button:hover{color:var(--text);border-color:var(--accent-line)}
   .tokmenu{position:absolute;top:100%;right:0;z-index:30;width:400px;max-height:70vh;overflow:auto;background:var(--panel);border:1px solid var(--line2);box-shadow:0 10px 30px rgba(10,11,13,.12);display:none}
   .tokmenu.open{display:block}
@@ -141,14 +150,15 @@
   .tokmenu .trow{display:flex;align-items:center;gap:9px;width:100%;padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}
   .tokmenu .trow:hover{background:var(--panel2)}.tokmenu .trow img,.tokmenu .trow i{width:16px;height:16px;flex:none;display:inline-block}
   .tokmenu .trow b{font-family:var(--font-mono)}.tokmenu .trow small{color:var(--dim);margin-left:auto;font-family:var(--font-mono);white-space:nowrap}
-  .tokpick button{padding:7px 11px;border-radius:var(--r-sm);font-weight:700;color:var(--muted);font-size:12px;font-family:var(--font-mono);display:flex;align-items:center;gap:6px}
-  .tokpick button:hover{color:var(--text)}
-  .tokpick button i{width:8px;height:8px;border-radius:2px;display:inline-block}
-  .tokpick button.on{background:var(--text);color:#fff}
+  .tokpick button{height:34px;padding:0 11px;border:1px solid var(--line2);background:var(--panel);font-weight:700;color:var(--muted);font-size:12px;font-family:var(--font-mono);display:flex;align-items:center;gap:7px;flex:none}
+  .tokpick button:hover{color:var(--text);border-color:var(--accent-line)}
+  .tokpick button img{width:16px;height:16px;border:1px solid var(--line)}.tokpick button i{width:10px;height:10px;display:inline-block}
+  .tokpick button.on{background:var(--text);color:#fff;border-color:var(--text)}.tokpick button.on img{border-color:transparent}
   /* Wallets view aggregates all 5 tokens — no single token is "selected" there */
   .app.wview .tokpick button.on{background:transparent;color:var(--muted)}
   .app.wview .tracked{display:none}
   .app.wview .stats{display:none}
+  .app.tankview .htitle{display:none}
   .lblmore{height:22px;font-size:10.5px;padding:0 7px;border-radius:0;background:transparent;color:var(--accent);border:1px solid var(--accent-line);cursor:pointer;font-weight:700;font-family:var(--font-mono);letter-spacing:.04em}
   .lblmore:hover{background:var(--accent-soft)}
   .lbls{display:flex;gap:4px 5px;flex-wrap:wrap;align-items:center}
@@ -161,7 +171,8 @@
   .live{display:inline-flex;align-items:center;gap:6px}
   .live i{width:7px;height:7px;border-radius:0;background:var(--teal);animation:pulse 2s infinite}
   @keyframes pulse{0%{}100%{}}
-  .share{height:34px;padding:0 14px;background:var(--teal);color:#fff;font-weight:800;font-size:12px;display:flex;gap:6px;align-items:center;white-space:nowrap;flex:none}
+  .share{height:34px;padding:0 14px;background:var(--teal);color:#fff;font-weight:800;font-size:12px;display:flex;gap:6px;align-items:center;white-space:nowrap;flex:none;max-width:180px;overflow:hidden;text-overflow:ellipsis}
+  .share.signed{background:var(--panel);color:var(--text);border:1px solid var(--line2);font-family:var(--font-mono);font-weight:700}
   .share:hover{filter:brightness(1.08)}
   /* ---------- main ---------- */
   .main{position:relative;padding:14px 14px 14px 20px;display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0}
@@ -180,6 +191,10 @@
   .webtog input{accent-color:var(--teal);margin:0;cursor:pointer}
   #refBtn{background:none;border:0;border-left:1px solid rgba(255,255,255,.25);color:#9db4ff;font:700 10.5px var(--font-mono);letter-spacing:.5px;padding:0 2px 0 9px;cursor:pointer}
   #refBtn:hover{color:#fff}
+  #shareBtn{background:var(--glass);border:1px solid var(--glass-line);color:#fff;font:700 10.5px var(--font-mono);letter-spacing:.5px;padding:0 10px;cursor:pointer;backdrop-filter:blur(6px)}
+  #shareBtn:hover{background:var(--teal);border-color:var(--teal)}
+  .dist li{cursor:pointer;padding:2px 4px;margin:0 -4px}.dist li:hover,.dist li.hot{background:var(--panel2)}.dist li.on{box-shadow:inset 3px 0 0 var(--teal)}
+  .dist canvas{cursor:pointer}
   #refBtn:disabled{color:#667;cursor:default}
   .zoom button{width:32px;height:32px;border-radius:var(--r-sm);background:var(--glass);color:#fff;border:1px solid var(--glass-line);font-weight:700;font-size:15px;backdrop-filter:blur(10px)}
   .zoom button:hover{background:var(--accent)}
@@ -281,9 +296,16 @@
   .wp .whead .val{margin-left:auto;text-align:right}
   .wp .whead .val b{font:800 30px/1 var(--font-display)}
   .wp .whead .val small{display:block;color:var(--dim);font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin-bottom:4px}
-  .wp .wbtns{display:flex;gap:8px;width:100%}
-  .wp .wbtns button,.wp .wbtns a{padding:8px 13px;border:1px solid var(--line2);border-radius:var(--r-sm);font-weight:700;font-size:13px;color:var(--muted);text-decoration:none}
-  .wp .wbtns button:hover,.wp .wbtns a:hover{color:var(--text);background:var(--panel2)}
+  .wp .wbtns{display:flex;gap:8px;width:100%;align-items:center}
+  .wp .wrel{display:inline-flex;gap:0;border:1px solid var(--line2)}.wp .wrel .wb{border:0;border-right:1px solid var(--line2)}.wp .wrel .wb:last-child,.wp .wrel .pill{border-right:0}.wp .wrel .pill{margin:0 10px}
+  .wp .wb,.wp .wbtns a{height:34px;padding:0 13px;border:1px solid var(--line2);font-weight:700;font-size:12.5px;color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;gap:7px;background:var(--panel)}
+  .wp .wb svg,.wp .wbtns a svg{width:13px;height:13px;fill:currentColor;shape-rendering:crispEdges}
+  .wp .wb:hover,.wp .wbtns a:hover{color:var(--text);background:var(--panel2)}
+  .wp .wb.on{background:var(--accent-soft);color:var(--accent);box-shadow:inset 0 -2px 0 var(--accent)}
+  .wp .wb.share{background:var(--teal);color:#fff;border-color:var(--teal)}.wp .wb.share:hover{filter:brightness(1.1);color:#fff}
+  #wpranges button.on{background:var(--text);color:#fff}
+  .wp .addr .ico{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border:1px solid var(--line);vertical-align:middle;margin-left:4px;color:var(--muted);background:var(--panel)}
+  .wp .addr .ico:hover{border-color:var(--accent);color:var(--accent)}.wp .addr .ico svg{width:12px;height:12px}.wp .addr .ico img{width:14px;height:14px;border-radius:50%}
   .wp .wgrid{display:grid;grid-template-columns:1fr 1.2fr;gap:14px;padding:16px 20px}
   @media (max-width:1250px){.wp .wgrid{grid-template-columns:1fr}}
   .wp .wbox{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);overflow:hidden}
@@ -371,10 +393,12 @@
     .wp .whead{flex-wrap:wrap}
     .wp .wbtns{flex-wrap:wrap}
     .card{left:8px;right:8px;width:auto;max-width:none}
+    .nav button.subitem{padding-left:10px}.nav button.subitem::before{display:none}.nav button.subitem svg{display:block}
+    .chip{flex-wrap:wrap;max-width:calc(100% - 60px)}#shareBtn{display:none}
   }
 </style>
 
-<div class="app">
+<div class="app tankview">
   <aside class="side">
     <div class="brand"><span class="bmark" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="1" y="9" width="3" height="2"/><rect x="4" y="7" width="3" height="2"/><rect x="7" y="9" width="3" height="2"/><rect x="10" y="7" width="3" height="2"/><rect x="13" y="9" width="2" height="2"/><rect x="5" y="3" width="6" height="3"/><rect x="4" y="5" width="8" height="2"/></svg></span><div><h1>Whalarium</h1><small>Base · on-chain</small></div></div>
     <nav class="nav" id="nav">
@@ -411,14 +435,14 @@
       <div><small>Updated</small><b class="live"><i></i><span id="stUpd">just now</span></b></div>
     </div>
     <div class="hsearch"><svg class="hsi" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2" width="8" height="2"/><rect x="2" y="8" width="8" height="2"/><rect x="2" y="2" width="2" height="8"/><rect x="8" y="2" width="2" height="8"/><rect x="10" y="10" width="2" height="2"/><rect x="12" y="12" width="2" height="2"/></svg><input id="hq" placeholder="Paste a contract address, or search a token / wallet" autocomplete="off" spellcheck="false"><kbd class="hsk">/</kbd><div id="hqDrop"></div></div>
-    <button class="share" id="shareBtn">Share ↗</button>
+    <button class="share" id="acctBtn" onclick="ACCT.user?setView('profile'):openSignIn('login')">Sign in</button>
   </header>
 
   <main class="main">
     <div class="tank" id="tank">
       <canvas id="cv"></canvas>
       <div class="glass"></div>
-      <div class="chip"><span id="chipFresh"><span style="color:#4D6BFF">■</span> Snapshot</span><span id="chipTok">$BRETT</span><span>Top 100</span><button id="refBtn" onclick="refreshNow(this)" title="Run a data refresh now (takes ~3 min end to end)">⟳ REFRESH</button></div>
+      <div class="chip"><span id="chipFresh"><span style="color:#4D6BFF">■</span> Snapshot</span><span id="chipTok">$BRETT</span><span>Top 100</span><button id="refBtn" onclick="refreshNow(this)" title="Run a data refresh now (takes ~3 min end to end)">⟳ REFRESH</button><button id="shareBtn" title="Copy a link to this aquarium">SHARE ↗</button></div>
       <div class="tierkey"><span><i style="background:#3B6BFF"></i>whale · deep</span><span><i style="background:#F2C14E"></i>large</span><span><i style="background:#53C7F0"></i>medium</span><span><i style="background:#AFCBE8"></i>small · shallow</span></div>
       <div class="ambnote">background schools = holders 101+ · ambient, not clickable</div>
       <div class="zoom"><button id="zin" title="Zoom in">+</button><button id="zout" title="Zoom out">−</button><button id="zfit" title="Reset" style="font-size:11px">⟲</button></div>
@@ -503,10 +527,10 @@ let LBL_UID=0;
 function lblChips(h,max=3){
   const ty=h.entityType||h.type||null,tc=typeColor(ty);
   const type=ty?`<span style="color:${tc};border-color:${tc}55">${esc(ty)}</span>`:'';
-  const ls=wlabels(h).sort((x,y)=>labelRank(x)-labelRank(y)),vis=ls.slice(0,max),hid=ls.slice(max),id='lb'+(++LBL_UID);
+  const all=wlabels(h).sort((x,y)=>labelRank(x)-labelRank(y)),prov=all.filter(l=>labelRank(l)===3),ls=all.filter(l=>labelRank(l)!==3),vis=ls.slice(0,max),hid=ls.slice(max),id='lb'+(++LBL_UID);
   const claim=h.claim?`<span class="id" title="claimed by its owner on Whalarium">${avatarHtml(h.claim.avatar,14)}${esc(h.claim.name||'claimed')}${h.claim.x?' · @'+esc(h.claim.x):''}</span>`:'';
   const more=hid.length?`<span id="${id}" style="display:none;padding:0;border:0;background:none;height:auto;gap:inherit">${hid.map(labelChip).join('')}</span><button class="lblmore" title="Show all ${ls.length} labels" onclick="event.stopPropagation();document.getElementById('${id}').style.display='contents';this.remove()">+${hid.length}</button>`:'';
-  return claim+type+vis.map(labelChip).join('')+more+(h.isContract?'<span>contract</span>':'')}
+  return claim+type+vis.map(labelChip).join('')+more+(h.isContract?'<span>contract</span>':'')+(prov.length?`<span style="flex:1;border:0;padding:0;height:0;min-width:8px"></span>${prov.map(labelChip).join('')}`:'')}
 /* label priority — identity first and loud, provenance last and quiet:
    1 identity: @handle, basename/ENS, a known entity name (incl. exchanges → their brand colour)
    2 typed/descriptive labels (fund, "Top Trader", "X Top 100 Holder", …) → neutral
@@ -515,8 +539,10 @@ const LBL_PROV=/\bfunded\b|fresh wallet|bridge funded|cex funded/i;
 function labelRank(l){const x=String(l);if(/^@/.test(x)||/\.(eth|base\.eth)$/i.test(x))return 0;if(LBL_PROV.test(x))return 3;if(cexOf(x))return 1;return 2}
 function labelChip(l){const x=String(l),r=labelRank(x);
   if(r===0)return `<span class="id">${/^@/.test(x)?ICON_X+' ':''}${esc(x)}</span>`;
-  if(r===3)return `<span class="ctx">${esc(x)}</span>`;
+  if(r===3)return `<span class="ctx">${cexIcon(x,12)}${esc(x)}</span>`;
   const c=cexOf(x);if(c)return `<span class="id" style="color:${c[1]};border-color:${c[1]}66;background:${c[1]}18">${cexIcon(x)}${esc(x)}</span>`;
+  const m=x.match(/^(\S+?) top (\d+) holder$/i);if(m){const sym=m[1].toUpperCase(),t=TOKENS.find(k=>k.sym===sym),col='#'+[...sym].reduce((a,ch)=>a+ch.charCodeAt(0),0).toString(16).padStart(6,'0').slice(-6);
+    return `<span title="${esc(x)}">${t&&t.logo?`<img src="${t.logo}" style="width:13px;height:13px;border:1px solid var(--line)" onerror="this.style.display='none'">`:`<i style="display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;background:${col};color:#fff;font:800 8px var(--font-mono)">${esc(sym.slice(0,2))}</i>`}Top ${m[2]}</span>`}
   return `<span>${esc(x)}</span>`}
 const ICON_X='<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M18.9 2H22l-6.8 7.8L23.3 22h-6.3l-4.9-6.4L6.4 22H3.3l7.3-8.3L1 2h6.5l4.4 5.9L18.9 2zm-1.1 18h1.7L7.1 3.9H5.3L17.8 20z"/></svg>';
 const ICON_WEB='<svg viewBox="0 0 16 16" width="13" height="13" fill="currentColor" shape-rendering="crispEdges"><rect x="1" y="1" width="14" height="2"/><rect x="1" y="13" width="14" height="2"/><rect x="1" y="1" width="2" height="14"/><rect x="13" y="1" width="2" height="14"/><rect x="4" y="7" width="8" height="2"/><rect x="7" y="4" width="2" height="8"/></svg>';
@@ -576,7 +602,7 @@ function fromReal(d){
 }
 async function fetchToken(sym){const r=await fetch('data/'+sym.toLowerCase()+'.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;return r.json()}
 async function loadToken(t){
-  cur=t;selected=null;hovered=null;
+  cur=t;selected=null;hovered=null;tierFocus=null;tierHot=null;
   if(REAL){try{data=fromReal(await fetchToken(t.sym))}catch(e){data=buildHolders(t)}}
   else data=buildHolders(t);
   if(t.seed==null)t.seed=[...t.sym].reduce((a,c)=>a+c.charCodeAt(0),13);
@@ -795,7 +821,8 @@ function step(dt,t){
   if(AMP&&envVault&&Math.random()<dt*.7)bubbles.push({x:envVault.x+(Math.random()-.5)*14,y:envVault.y,v:26+Math.random()*22,r:1.2+Math.random()*2,p:Math.random()*6});
 }
 function drawOneFish(f,t){
-  if(f.h.infra){ctx.save();ctx.globalAlpha=.62;drawOneFishInner(f,t);ctx.restore();return}
+  const dimT=tierFocus&&!f.h.infra&&f.h.tier!==tierFocus&&f!==selected;
+  if(f.h.infra||dimT){ctx.save();ctx.globalAlpha=f.h.infra?.62:.16;drawOneFishInner(f,t);ctx.restore();return}
   drawOneFishInner(f,t);
 }
 function drawOneFishInner(f,t){
@@ -844,7 +871,7 @@ function drawFishes(t){
   order.forEach(f=>{if(f!==selected)drawOneFish(f,t)});
   if(sprReady)drawEnv(t,false);
   // labels render above every sprite: persistent for the top 6, on hover for the rest
-  order.forEach(f=>{if(f!==selected&&(f.h.rank<=6||f.h.infra||f.glow>.2))fishLabel(f,t,f.h.infra&&f.glow<.2?'soft':false)});
+  order.forEach(f=>{if(tierFocus&&f.h.tier!==tierFocus&&f!==selected)return;if(f!==selected&&(f.h.rank<=6||f.h.infra||f.glow>.2||(tierFocus&&f.h.tier===tierFocus)))fishLabel(f,t,f.h.infra&&f.glow<.2?'soft':false)});
   if(showWebs&&!selected){ // resting overlay: dim the tank, whisper-thin webs per cluster
     ctx.save();ctx.fillStyle='rgba(3,9,22,.62)';ctx.fillRect(0,0,W,H);ctx.restore();
     const groups=new Map();
@@ -996,18 +1023,31 @@ function drawMinis(){document.querySelectorAll('canvas[data-mini],canvas[data-ti
   const sp=sprReady&&SPR[tier];
   if(sp){const w2=r.width*.92,h2=Math.min(r.height*.95,w2*sp.h/sp.w);x.drawImage(sp.img,(r.width-w2)/2,(r.height-h2)/2,w2,h2);return}
   const saved=ctx;const s={small:5,medium:7,large:9,whale:12}[tier];ctx=x;(tier==='whale'?drawWhale:drawFish)(r.width/2,r.height/2,c.dataset.mini?s*.9:s*1.6,1,0,TIER[tier].c,0,0);ctx=saved})}
+let tierFocus=null,tierHot=null,DONUT_SEGS=[];
 function drawDonut(){
   const c=document.getElementById('donut');c.width=220;c.height=220;const x=c.getContext('2d');
   const tot=data.list.reduce((s,h)=>s+h.value,0)||1;
   const shr=t=>data.list.filter(h=>h.tier===t).reduce((s,h)=>s+h.value,0)/tot;
-  const segs=[['Whales','top 6',shr('whale'),TIER.whale.c],['Large','7–24',shr('large'),TIER.large.c],['Medium','25–60',shr('medium'),TIER.medium.c],['Small','61–100',shr('small'),TIER.small.c]];
-  let a=-Math.PI/2;segs.forEach(s=>{x.beginPath();x.arc(110,110,92,a,a+s[2]*6.283);x.arc(110,110,62,a+s[2]*6.283,a,true);x.closePath();x.fillStyle=s[3];x.fill();a+=s[2]*6.283});
-  x.fillStyle=CH.text;x.textAlign='center';x.font='900 24px Inter Tight, sans-serif';x.fillText((data.topShare*100).toFixed(1)+'%',110,108);x.font='500 12px Inter Tight, sans-serif';x.fillStyle='#5B616E';x.fillText('of supply in top 100',110,128);
+  const cnt=t=>data.list.filter(h=>h.tier===t).length;
+  const segs=[['Whales','top 6',shr('whale'),TIER.whale.c,'whale'],['Large','7–24',shr('large'),TIER.large.c,'large'],['Medium','25–60',shr('medium'),TIER.medium.c,'medium'],['Small','61–100',shr('small'),TIER.small.c,'small']];
+  DONUT_SEGS=segs;
+  let a=-Math.PI/2;segs.forEach(s=>{const act=tierHot===s[4]||tierFocus===s[4];const dim=(tierFocus&&tierFocus!==s[4])||(tierHot&&tierHot!==s[4]);const R=act?98:92,r=62;s.a0=a;s.a1=a+s[2]*6.283;
+    x.beginPath();x.arc(110,110,R,a,a+s[2]*6.283);x.arc(110,110,r,a+s[2]*6.283,a,true);x.closePath();x.fillStyle=s[3];x.globalAlpha=dim?.35:1;x.fill();x.globalAlpha=1;a+=s[2]*6.283});
+  const foc=segs.find(s=>s[4]===(tierHot||tierFocus));
+  x.fillStyle=CH.text;x.textAlign='center';x.font='900 24px Inter Tight, sans-serif';x.fillText(foc?(foc[2]*100).toFixed(1)+'%':(data.topShare*100).toFixed(1)+'%',110,108);x.font='500 12px Inter Tight, sans-serif';x.fillStyle='#5B616E';x.fillText(foc?`${cnt(foc[4])} ${foc[0].toLowerCase()} · ${usd(data.list.filter(h=>h.tier===foc[4]).reduce((q,h)=>q+h.value,0))}`:'of supply in top 100',110,128);
   const wsh=segs[0][2]*100;
   const verdict=wsh>=50?['Highly concentrated','var(--coral)']:wsh>=30?['Moderately concentrated','var(--gold,#B8860B)']:['Well distributed','var(--teal)'];
-  document.getElementById('distList').innerHTML=segs.map(s=>`<li><i style="background:${s[3]}"></i><span><b>${s[0]}</b> <small>${s[1]}</small></span><b class="mono">${(s[2]*100).toFixed(1)}%</b></li>`).join('')
-    +`<li style="border-top:1px solid var(--line);padding-top:8px;margin-top:4px;display:block"><span style="font-size:11px;color:var(--muted);display:block;line-height:1.5">Top 6 hold ${wsh.toFixed(1)}% of top-100 supply — <b style="color:${verdict[1]}">${verdict[0].toLowerCase()}</b></span></li>`;
+  document.getElementById('distList').innerHTML=segs.map(s=>`<li data-tier="${s[4]}" class="${tierFocus===s[4]?'on':''}${tierHot===s[4]?' hot':''}" title="click to spotlight these fish in the tank"><i style="background:${s[3]}"></i><span><b>${s[0]}</b> <small style="white-space:nowrap">${s[1]} · ${cnt(s[4])}</small></span><b class="mono">${(s[2]*100).toFixed(1)}%</b></li>`).join('')
+    +`<li style="border-top:1px solid var(--line);padding-top:8px;margin-top:4px;display:block;cursor:default"><span class="t3" style="display:block;line-height:1.5;font-size:11px">Top 6 hold ${wsh.toFixed(1)}% of top-100 supply — <b style="color:${verdict[1]}">${verdict[0].toLowerCase()}</b>${tierFocus?` · <button onclick="setTierFocus(null)" style="color:var(--teal);font-weight:700">clear spotlight</button>`:''}</span></li>`;
+  document.querySelectorAll('#distList li[data-tier]').forEach(li=>{li.onmouseenter=()=>{tierHot=li.dataset.tier;drawDonut()};li.onmouseleave=()=>{tierHot=null;drawDonut()};li.onclick=()=>setTierFocus(li.dataset.tier)});
+  const seg=(e)=>{const r=c.getBoundingClientRect();const px=(e.clientX-r.left)*220/r.width-110,py=(e.clientY-r.top)*220/r.height-110;const d=Math.hypot(px,py);if(d<58||d>100)return null;let an=Math.atan2(py,px);if(an<-Math.PI/2)an+=6.283;return (segs.find(s=>an>=s.a0&&an<s.a1)||{})[4]||null};
+  c.onmousemove=e=>{const t=seg(e);if(t!==tierHot){tierHot=t;drawDonut()}};c.onmouseleave=()=>{tierHot=null;drawDonut()};c.onclick=e=>{const t=seg(e);if(t)setTierFocus(t)};
 }
+function setTierFocus(t){tierFocus=tierFocus===t?null:t;tierHot=null;drawDonut();if(tierFocus)toastMsg(`Spotlight: <b>${tierFocus}</b> fish · click again to clear`,'var(--muted)')}
+function rowPop(e,i){document.querySelectorAll('.rowpop').forEach(x=>x.remove());const f=fish[i];if(!f)return;const d=document.createElement('div');d.className='rowpop';
+  d.innerHTML=`<button onclick="setView('aquarium');select(fish[${i}])"><svg viewBox="0 0 16 16"><rect x="1" y="5" width="2" height="2"/><rect x="1" y="9" width="2" height="2"/><rect x="3" y="7" width="2" height="2"/><rect x="5" y="5" width="8" height="6"/><rect x="13" y="7" width="2" height="2"/><rect x="7" y="3" width="4" height="2"/></svg>See in Whalarium</button><button onclick="openProfile(fish[${i}].h)"><svg viewBox="0 0 16 16"><rect x="5" y="2" width="6" height="6"/><rect x="3" y="9" width="10" height="5"/></svg>Open wallet profile</button>`;
+  document.body.appendChild(d);const w=210,h=84;let x=e.clientX+8,y=e.clientY+8;if(x+w>innerWidth-8)x=e.clientX-w-8;if(y+h>innerHeight-8)y=e.clientY-h-8;d.style.left=x+'px';d.style.top=y+'px';
+  setTimeout(()=>document.addEventListener('click',()=>d.remove(),{once:true}),0)}
 /* infrastructure heuristic: CEX deposit wallets, LP pools, proxies, routers — not people */
 const INFRA_RX=/\bdeposit\b|\bpool\b|proxy|bridge|exchange|router|locker|timelock/i;
 function isInfra(h){
@@ -1023,9 +1063,12 @@ let hideInfra=true,showExcluded=false,sortKey='rank',sortDir=1,tagFilter='';
 /* infrastructure kinds: fixed colours everywhere (holders table, wallet pages, alerts, funding) */
 const KIND={cex:{n:'CEX',c:'#E5484D'},pool:{n:'POOL',c:'#8E4EC6'},bridge:{n:'BRIDGE',c:'#F76B15'},locker:{n:'LOCKER',c:'#6B7280'},mm:{n:'MM',c:'#0E9F8A'},burn:{n:'BURN',c:'#1F2937'},contract:{n:'CONTRACT',c:'#5B616E'}};
 /* exchanges: fixed colour + letter-mark per venue, shown wherever a counterparty is an exchange */
-const CEXES=[['coinbase','#0052FF','CB'],['binance','#F0B90B','BN'],['okx','#000000','OKX'],['bybit','#F7A600','BY'],['kraken','#7132F5','KR'],['kucoin','#23AF91','KC'],['gate','#2354E6','GT'],['mexc','#1972F5','MX'],['bitget','#00F0FF','BG'],['htx','#008CD6','HTX'],['crypto.com','#002D74','CDC'],['gemini','#00DCFA','GM'],['bitstamp','#12A45D','BS'],['upbit','#093687','UP'],['bithumb','#F37321','BT'],['robinhood','#00C805','RH'],['bitpanda','#1FA847','BP'],['bitvavo','#2F57F0','BV']];
+/* exchanges: [match, brand colour, letter fallback, domain]. The icon is the exchange's real mark: assets/cex/<name>.png if
+   Bee dropped one in, else the site's own favicon via Google's icon service, else the coloured letter square. */
+const CEXES=[['coinbase','#0052FF','CB','coinbase.com'],['binance','#F0B90B','BN','binance.com'],['okx','#000000','OKX','okx.com'],['bybit','#F7A600','BY','bybit.com'],['kraken','#7132F5','KR','kraken.com'],['kucoin','#23AF91','KC','kucoin.com'],['gate','#2354E6','GT','gate.io'],['mexc','#1972F5','MX','mexc.com'],['bitget','#00F0FF','BG','bitget.com'],['htx','#008CD6','HTX','htx.com'],['crypto.com','#002D74','CDC','crypto.com'],['gemini','#00DCFA','GM','gemini.com'],['bitstamp','#12A45D','BS','bitstamp.net'],['upbit','#093687','UP','upbit.com'],['bithumb','#F37321','BT','bithumb.com'],['robinhood','#00C805','RH','robinhood.com'],['bitpanda','#1FA847','BP','bitpanda.com'],['bitvavo','#2F57F0','BV','bitvavo.com']];
 function cexOf(label){const l=String(label||'').toLowerCase();return CEXES.find(c=>l.includes(c[0]))||null}
-function cexIcon(label){const c=cexOf(label);return c?`<i class="cexi" style="background:${c[1]}" title="${c[0]}">${c[2]}</i>`:''}
+function cexImgErr(img){const st=+img.dataset.st||0;const c=CEXES.find(x=>x[0]===img.dataset.cex);if(!c)return img.remove();if(st===0){img.dataset.st=1;img.src=`https://www.google.com/s2/favicons?domain=${c[3]}&sz=32`}else{const i=document.createElement('i');i.className='cexi';i.style.background=c[1];i.title=c[0];i.textContent=c[2];img.replaceWith(i)}}
+function cexIcon(label,size){const c=cexOf(label);if(!c)return'';const n=c[0].replace(/[^a-z]/g,'');return `<img class="cexl" data-cex="${c[0]}" src="assets/cex/${n}.png" alt="${c[0]}" title="${c[0]}" style="width:${size||14}px;height:${size||14}px" onerror="cexImgErr(this)">`}
 /* wallet tags (computed by the pipeline; evidence in h.tagInfo) */
 /* 10×10 pixel glyphs (same family as the Doto wordmark) — currentColor, crisp edges, no emoji */
 const G10=(r)=>`<svg class="tg" viewBox="0 0 10 10" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true">${r}</svg>`;
@@ -1071,21 +1114,20 @@ function renderTable(){
   const KEYS={rank:h=>h.rank,amount:h=>-h.amount,pct:h=>-h.pct,value:h=>-h.value,chg:h=>-(h.usdChange??-Infinity),chg7:h=>-(h.usdChange7??-Infinity)};
   if(merged)KEYS.rank=h=>h._m;
   rows=[...rows].sort((a,b)=>(KEYS[sortKey](a)-KEYS[sortKey](b))*sortDir);
-  const refH=cur.changeRefH?`Δ ${cur.changeRefH}h`:'Δ';
+  const refH=cur.changeRefH?(cur.changeRefH>=22&&cur.changeRefH<=27?'Δ 24h':`Δ ${cur.changeRefH}h`):'Δ';
   const has7=!!cur.changeRef7D;const ref7=has7?`Δ ${cur.changeRef7D}d`:'';
   const sTh=(k,lbl,right)=>`<th ${right?'class="r"':''} data-sort="${k}" style="cursor:pointer" title="Sort">${lbl}${sortKey===k?(sortDir>0?' ▾':' ▴'):''}</th>`;
   document.getElementById('holdersView').innerHTML=`
-  ${REAL?`<div style="padding:10px 14px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center;font-size:11.5px;color:var(--muted);flex-wrap:wrap">
-    <label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="infraTog" ${hideInfra?'checked':''}> Hide contracts &amp; exchange deposits</label>
-    ${exl.length?`<label style="display:flex;gap:6px;align-items:center;cursor:pointer" title="Exchanges, liquidity pools, bridges and lockers are excluded from the ranking. Show them where they would sit."><input type="checkbox" id="exclTog" ${showExcluded?'checked':''}> Show excluded infrastructure <span style="color:var(--dim)">(${exl.length}: ${[...new Set(exl.map(x=>x.kind))].map(k=>(KIND[k]||KIND.contract).n).join(', ').toLowerCase()})</span></label>`:''}
-    ${hidden?`<span style="color:var(--dim)">${hidden} infrastructure wallet${hidden>1?'s':''} hidden · ranks unchanged</span>`:''}${merged?`<span style="color:var(--dim)">merged ranking · (#n) = rank among real holders</span>`:''}
-    ${Object.keys(tagCounts).length?`<span style="display:flex;gap:5px;flex-wrap:wrap;align-items:center"><span style="color:var(--dim)">tags:</span>${Object.keys(TAGS).filter(t=>tagCounts[t]).map(t=>`<button onclick="tagFilter=tagFilter==='${t}'?'':'${t}';renderTable()" class="pill tagp" style="background:${tagFilter===t?TAGS[t].c:'transparent'};color:${tagFilter===t?'#fff':TAGS[t].c};border-color:${TAGS[t].c}${tagFilter===t?'':'99'};cursor:pointer" title="${esc(TAGS[t].t)}">${tagGlyph(t)}${t}<span style="opacity:.6;font-weight:500">${tagCounts[t]}</span></button>`).join('')}</span>`:''}
+  ${REAL?`<div style="padding:8px 14px;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <button class="ftog ${hideInfra?'on':''}" id="infraTog" title="${hidden?`${hidden} contract / exchange-deposit wallet${hidden>1?'s':''} hidden from this list — ranks are unchanged.`:'Hide contracts and exchange deposit wallets from the list.'}">Hide contracts &amp; deposits${hidden?` <b>${hidden}</b>`:''}</button>
+    ${exl.length?`<button class="ftog ${showExcluded?'on':''}" id="exclTog" title="Exchanges, liquidity pools, bridges and lockers are excluded from the ranking (${[...new Set(exl.map(x=>x.kind))].map(k=>(KIND[k]||KIND.contract).n).join(', ').toLowerCase()}). Show them where they would sit${merged?' — (#n) is the rank among real holders':''}.">Show infrastructure <b>${exl.length}</b></button>`:''}
+    ${Object.keys(tagCounts).length?`<span style="width:1px;height:18px;background:var(--line);margin:0 4px"></span><span style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">${Object.keys(TAGS).filter(t=>tagCounts[t]).map(t=>`<button onclick="tagFilter=tagFilter==='${t}'?'':'${t}';renderTable()" class="pill tagp" style="background:${tagFilter===t?TAGS[t].c:'transparent'};color:${tagFilter===t?'#fff':TAGS[t].c};border-color:${TAGS[t].c}${tagFilter===t?'':'99'};cursor:pointer" title="${esc(TAGS[t].t)}">${tagGlyph(t)}${t}<span style="opacity:.6;font-weight:500">${tagCounts[t]}</span></button>`).join('')}</span>`:''}
     <button id="csvBtn" style="margin-left:auto;border:1px solid var(--line);padding:3px 10px;color:var(--muted);cursor:pointer;font-size:10.5px;font-family:var(--font-mono)">EXPORT CSV</button></div>`:''}
   <table><thead><tr>${sTh('rank','#')}<th>Wallet</th><th>Tier</th><th>Labels</th>${sTh('chg',refH,1)}${has7?sTh('chg7',ref7,1):''}${sTh('amount','Amount',1)}${sTh('pct','% supply',1)}${sTh('value','Value',1)}<th class="r">Kind</th></tr></thead><tbody>${rows.map(h=>h.infra?`<tr data-a="${h.addr}" style="background:var(--panel2);opacity:.85"><td class="mono" style="color:var(--dim);white-space:nowrap">${h._m||h.rank}</td><td class="mono">${cpa(h.addr)} <span style="color:var(--muted)">${esc(h.label||'')}</span></td><td>${kindTag(h.kind)}</td><td><span style="color:var(--dim);font-size:11px">excluded from ranking</span></td><td class="r"></td>${has7?'<td></td>':''}<td class="r mono">${num(h.amount)}</td><td class="r mono">${(h.pct||0).toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:${(KIND[h.kind]||KIND.contract).c}">${(KIND[h.kind]||KIND.contract).n.toLowerCase()}</td></tr>`:`<tr data-i="${h.rank-1}"><td class="mono" style="color:var(--dim);white-space:nowrap">${merged?`${h._m} <small title="rank among real holders">(#${h.rank})</small>`:h.rank} ${rankChip(h)}</td><td class="mono">${cpa(h.addr)}${(h.entity||h.basename)?` <span style="color:${cexOf(h.entity)?cexOf(h.entity)[1]:'var(--teal)'};font-weight:700">${cexOf(h.entity)?cexIcon(h.entity):''}${esc(h.entity||h.basename)}</span>`:''}</td><td><span class="tierc"><i style="background:${TIER[h.tier].c}"></i>${TIER[h.tier].n}</span></td><td><div class="lbls">${tagPills(h,true)}${lblChips(h,2)||(h.tags&&h.tags.length?'':'<span style="border:0;background:none;padding:0;color:var(--dim)">—</span>')}</div></td><td class="r">${usdChip(h)}</td>${has7?`<td class="r" style="white-space:nowrap">${rankChip(h,'rankChange7')} ${usdChip(h,'usdChange7')}</td>`:''}<td class="r mono">${num(h.amount)}</td><td class="r mono">${h.pct.toFixed(2)}%</td><td class="r mono">${usd(h.value)}</td><td class="r" style="color:${typeOf(h)==='wallet'?'var(--dim)':typeColor(h.entityType)};font-size:11px">${typeOf(h)==='wallet'?'':esc(typeOf(h))}</td></tr>`).join('')}</tbody></table>`;
-  document.querySelectorAll('#holdersView tr[data-i]').forEach(r=>r.onclick=()=>{setView('aquarium');select(fish[+r.dataset.i])});
+  document.querySelectorAll('#holdersView tr[data-i]').forEach(r=>r.onclick=e=>{if(e.target.closest('a,button,.cpa'))return;rowPop(e,+r.dataset.i)});
   document.querySelectorAll('#holdersView th[data-sort]').forEach(th=>th.onclick=()=>{const k=th.dataset.sort;if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=1}renderTable()});
-  const tog=document.getElementById('infraTog');if(tog)tog.onchange=()=>{hideInfra=tog.checked;renderTable()};
-  const xt=document.getElementById('exclTog');if(xt)xt.onchange=()=>{showExcluded=xt.checked;renderTable()};
+  const tog=document.getElementById('infraTog');if(tog)tog.onclick=()=>{hideInfra=!hideInfra;renderTable()};
+  const xt=document.getElementById('exclTog');if(xt)xt.onclick=()=>{showExcluded=!showExcluded;renderTable()};
   document.querySelectorAll('#holdersView tr[data-a]').forEach(r=>r.onclick=()=>openProfileByAddr(r.dataset.a));
   const cb=document.getElementById('csvBtn');if(cb)cb.onclick=exportCSV;
 }
@@ -1098,11 +1140,11 @@ function renderTokMenu(q){
   m.querySelectorAll('.trow').forEach(b=>b.onclick=()=>{m.classList.remove('open');closeCard();loadToken(TOKENS.find(t=>t.sym===b.dataset.sym));toastMsg(`Aquarium switched to <b>$${b.dataset.sym}</b>`,'var(--muted)')});
 }
 function buildPicker(){
-  const many=TOKENS.length>8;const inline=many?[...TOKENS.slice(0,7),...TOKENS.slice(7).filter(t=>cur&&t.sym===cur.sym)]:TOKENS;
+  const many=TOKENS.length>6;const inline=many?[...TOKENS.slice(0,4),...TOKENS.slice(4).filter(t=>cur&&t.sym===cur.sym)]:TOKENS;
   document.getElementById('tokall').style.display=many?'':'none';
-  if(many){const ta=document.getElementById('tokallBtn');ta.textContent=`ALL ${TOKENS.length} TOKENS ▾`;ta.onclick=e=>{e.stopPropagation();const m=document.getElementById('tokmenu');m.classList.toggle('open');if(m.classList.contains('open')){renderTokMenu('');const i=m.querySelector('input');if(i){i.value='';i.focus()}}};
+  if(many){const ta=document.getElementById('tokallBtn');ta.textContent=`All ${TOKENS.length} tokens ▾`;ta.onclick=e=>{e.stopPropagation();const m=document.getElementById('tokmenu');m.classList.toggle('open');if(m.classList.contains('open')){renderTokMenu('');const i=m.querySelector('input');if(i){i.value='';i.focus()}}};
     document.addEventListener('click',e=>{if(!e.target.closest('.tokall'))document.getElementById('tokmenu').classList.remove('open')})}
-  document.getElementById('tokpick').innerHTML=inline.map(t=>`<button data-sym="${t.sym}">${t.logo?`<img src="${t.logo}" style="width:13px;height:13px" onerror="this.style.display='none'">`:`<i style="background:${t.color}"></i>`}${t.sym}</button>`).join('');
+  document.getElementById('tokpick').innerHTML=inline.map(t=>`<button data-sym="${t.sym}" title="${esc(t.name||t.sym)}">${t.logo?`<img src="${t.logo}" onerror="this.style.display='none'">`:`<i style="background:${t.color}"></i>`}${t.sym}</button>`).join('');
   document.querySelectorAll('#tokpick button').forEach(b=>b.onclick=()=>{closeCard();loadToken(TOKENS.find(t=>t.sym===b.dataset.sym));toastMsg(`Aquarium switched to <b>$${cur.sym}</b>`,'var(--muted)')});
 }
 /* views */
@@ -1111,6 +1153,7 @@ function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>{
   {const t=VIEW_T[v]||VIEW_T.aquarium;const a=document.getElementById('viewTitle'),b=document.getElementById('viewSub');if(a)a.textContent=t[0];if(b)b.textContent=t[1];}
   document.querySelector('.app').classList.toggle('noRail',v!=='aquarium');
   document.querySelector('.app').classList.toggle('wview',v==='wallets'||v==='watch');
+  document.querySelector('.app').classList.toggle('tankview',v==='aquarium');
   document.getElementById('tank').style.display=v==='aquarium'?'':'none';
   document.getElementById('holdersView').classList.toggle('show',v==='holders');
   document.getElementById('walletsView').classList.toggle('show',v==='wallets');
@@ -1244,6 +1287,7 @@ async function searchAll(q){
      else if(info.isToken)rs.unshift({type:'mini',ca:pr.addr.toLowerCase(),info,label:`$${esc(info.sym)} — ${esc(info.name)} · <b>preview top holders</b>`,sub:'not tracked yet'});
      paint(rs)})}
  },220)};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&tierFocus){setTierFocus(null);return}});
 document.addEventListener('keydown',e=>{if(e.key==='/'&&!/input|textarea|select/i.test(document.activeElement&&document.activeElement.tagName||'')){e.preventDefault();hq.focus();hq.select()}});
  hq.onkeydown=e=>{if(e.key==='Enter'){const first=drop.querySelector('button[data-i]');if(first){first.click();return}searchAll(hq.value).then(rs=>{if(rs.length)go(rs[0])})}if(e.key==='Escape'){drop.style.display='none';hq.blur()}};
  document.addEventListener('click',e=>{if(!e.target.closest('.hsearch'))drop.style.display='none'});}
@@ -1329,7 +1373,7 @@ GLYPH.school=G10('<rect x="0" y="0" width="3" height="3"/><rect x="7" y="0" widt
 GLYPH.watch=G10('<rect x="2" y="2" width="6" height="1"/><rect x="0" y="4" width="10" height="2"/><rect x="2" y="7" width="6" height="1"/><rect x="1" y="3" width="1" height="1"/><rect x="8" y="3" width="1" height="1"/><rect x="1" y="6" width="1" height="1"/><rect x="8" y="6" width="1" height="1"/><rect x="4" y="4" width="2" height="2" fill="#fff"/>');
 const AICON=new Proxy({},{get:(_,k)=>{const K=AKIND[k];return `<span class="tg" style="color:${K?K.c:'var(--dim)'};display:inline-flex;vertical-align:-1px">${GLYPH[k]||GLYPH.TAG}</span>`}});
 const akindChip=k=>{const K=AKIND[k]||{n:k,c:'#5B616E',t:''};return `<span class="pill tagp" style="color:${K.c};border-color:${K.c}99;height:18px;font-size:9.5px;padding:0 5px;gap:4px" title="${esc(K.t)}">${GLYPH[k]||GLYPH.TAG}${esc(K.n)}</span>`};
-let ALERTS=[],alertTokFilter='ALL',alertMode='feed';
+let ALERTS=[],alertTokFilter='ALL',alertMode='feed',alertTab='global'; // global = everyone's feed · mine = my wallets / my tokens / private hits
 const aTx=a=>{if(a.hash)return `<a href="https://basescan.org/tx/${a.hash}" target="_blank" rel="noopener" style="color:var(--dim);font-weight:700;font-size:11px">tx ↗</a>`;const t=TOKENS.find(x=>x.sym===a.sym);return a.addr&&t&&t.contract?`<a href="https://basescan.org/token/${t.contract}?a=${a.addr}" target="_blank" rel="noopener" title="No single tx attached — this alert came from a balance change between two snapshots. Opens this wallet's transfers of the token." style="color:var(--dim);font-weight:700;font-size:11px">transfers ↗</a>`:''};
 const aUsd=a=>(a.usd!=null&&a.usd>0&&/\bsent\b/.test(a.title||''))?-a.usd:a.usd; // older feed entries stored sends as positive // feed = newest first · wallet = grouped by actor
 const FEED_RAW='https://raw.githubusercontent.com/beeonchain/basefish/main/data/alerts.json';
@@ -1361,7 +1405,9 @@ async function renderAlerts(){
   markAlertsSeen();
   const names=alertNames();
   const toks=['ALL',...TOKENS.map(t=>t.sym)];
-  const rows=ALERTS.filter(a=>alertTokFilter==='ALL'||a.sym===alertTokFilter);
+  const mineW=new Set(((ACCT.user&&ACCT.user.watches)||[]).map(w=>w.w.toLowerCase())),mineT=new Set((ACCT.user&&ACCT.user.tokens)||[]);
+  const isMine=a=>(a.addr&&mineW.has(a.addr.toLowerCase()))||(a.sym&&mineT.has(a.sym));
+  const rows=ALERTS.filter(a=>(alertTokFilter==='ALL'||a.sym===alertTokFilter)&&(alertTab!=='mine'||isMine(a)));
   // group by actor: wallet address, or school id
   const groups=new Map();
   for(const a of rows){
@@ -1402,8 +1448,8 @@ async function renderAlerts(){
       <div style="padding:9px 14px;font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)">${title} <span style="color:var(--dim);font-weight:400">· ${gs.length}</span></div>${gs.map(row).join('')}</div>`:'';
   el.innerHTML=`<div style="padding:16px;display:flex;flex-direction:column;gap:14px">
     <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-      <h3 style="margin:0;font-size:16px">Alerts</h3>
-      <span style="color:var(--muted);font-size:12px">What the biggest wallets of every tracked token just did — detected instantly on-chain and at every refresh.</span>
+      <span style="display:inline-flex;border:1px solid var(--line2)">${[['global','Global alerts'],['mine','My alerts']].map(([k,l])=>`<button onclick="alertTab='${k}';renderAlerts()" style="height:30px;padding:0 14px;font-weight:700;font-size:12.5px;${alertTab===k?'background:var(--text);color:#fff':'color:var(--muted)'}">${l}</button>`).join('')}</span>
+      <span class="t3" style="font-size:12px">${alertTab==='mine'?'Only what touches the wallets and tokens you watch, plus your private hits.':'What the biggest wallets of every tracked token just did — instantly on-chain and at every refresh.'}</span>
       <span style="margin-left:auto;display:flex;gap:8px;align-items:center">
         <select onchange="alertTokFilter=this.value;renderAlerts()" style="height:28px;padding:0 8px;font-size:12px;font-weight:700">${toks.map(s=>`<option value="${s}" ${alertTokFilter===s?'selected':''}>${s==='ALL'?'All tokens':'$'+s}</option>`).join('')}</select>
         <span style="display:inline-flex;border:1px solid var(--line)">${[['feed','Latest first'],['wallet','By wallet']].map(([m,l])=>`<button onclick="alertMode='${m}';renderAlerts()" style="padding:0 10px;height:26px;font-size:11px;font-weight:700;${alertMode===m?'background:var(--text);color:#fff':'color:var(--muted)'}">${l}</button>`).join('')}</span>
@@ -1411,10 +1457,11 @@ async function renderAlerts(){
     <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:11px;color:var(--dim)">${Object.keys(AKIND).map(akindChip).join('')}<span style="margin-left:4px">· hover a kind for what it means · $ = size of the move at current prices</span></div>
     ${latest.length?`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">${latest.map(a=>`<button class="flowrow" style="border:1px solid var(--line);background:var(--panel);padding:10px 12px;display:block;text-align:left" ${a.addr?`onclick="openProfileByAddr('${a.addr}')"`:''}>
         <small style="color:var(--dim);font-size:10px;letter-spacing:.4px;text-transform:uppercase">${AICON[a.kind]} latest · ${agoStr(a.ts)} ago</small><br><b style="font-size:12px">${esc(a.title)}</b></button>`).join('')}</div>`:''}
-    ${acctPanel()}
-    ${TG_BOT?`<div style="border:1px solid var(--line);background:var(--panel2);padding:10px 14px;font-size:12px">Instant alerts in Telegram → <a href="https://t.me/${TG_BOT}" target="_blank" rel="noopener" style="color:var(--teal);font-weight:800">@${TG_BOT}</a> — /start subscribes, /watch 0x… TOKEN follows any wallet live</div>`:''}
+    ${alertTab==='mine'?acctPanel():''}
+    ${alertTab==='mine'&&!feed.length&&ACCT.user?'<div class="st" style="border:1px solid var(--line)">Nothing yet for your watches. Add a wallet or a token above — wallet watches fire on every transfer within seconds; token watches bring you every whale move, entry, exit and exchange flow for that token.</div>':''}
+    ${alertTab==='global'&&TG_BOT?`<div style="border:1px solid var(--line);background:var(--panel2);padding:10px 14px;font-size:12px">Instant alerts in Telegram → <a href="https://t.me/${TG_BOT}" target="_blank" rel="noopener" style="color:var(--teal);font-weight:800">@${TG_BOT}</a> — /start subscribes, /watch 0x… TOKEN follows any wallet live</div>`:''}
     ${alertMode==='feed'?(feed.length?`<div style="border:1px solid var(--line);background:var(--panel)"><div style="padding:9px 14px;font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)">Latest <span style="color:var(--dim);font-weight:400">· ${feed.length}</span></div>${feed.slice(0,feedN).map(feedRow).join('')}${feed.length>feedN?`<button onclick="alertOpen.add('feed:all');renderAlerts()" style="padding:10px 14px;font-size:11px;font-weight:700;color:var(--teal)">show all ${feed.length} →</button>`:''}</div>`:''):`${section('Wallets',wallets)}${section('Schools',schools)}`}
-    ${!list.length?'<div class="st" style="border:1px solid var(--line)">No alerts for this token yet. Whale moves, top-20 entries and exchange flows show up here as they happen.</div>':''}
+    ${!list.length&&alertTab==='global'?'<div class="st" style="border:1px solid var(--line)">No alerts for this token yet. Whale moves, top-20 entries and exchange flows show up here as they happen.</div>':''}
     <div style="color:var(--dim);font-size:11px">"By wallet" folds every alert of the same wallet into one row (net = sum of its alerted moves at current prices) · not financial advice</div>
   </div>`;
 }
@@ -1451,7 +1498,7 @@ async function acctInit(){
   }else if(hasPrivySession()){try{await privyInit();if(await acctToken()){const j=await acctApi('/api/me');acctSet(j.user)}}catch{}}
   acctNav();if(view==='alerts')renderAlerts();if(view==='profile')renderProfile()}
 function acctSet(u){ACCT.user=u;if(u&&ACCT.seenHits===null)ACCT.seenHits=new Set((u.hits||[]).map(h=>h.id));acctNav()}
-function acctNav(){const b=document.querySelector('#nav button[data-view="profile"] span');if(b)b.textContent=ACCT.user?(ACCT.user.label||'Account'):'Sign in'}
+function acctNav(){const b=document.querySelector('#nav button[data-view="profile"] span');if(b)b.textContent=ACCT.user?(ACCT.user.label||'Account'):'Sign in';const h=document.getElementById('acctBtn');if(h){h.textContent=ACCT.user?(ACCT.user.label||'Account'):'Sign in';h.classList.toggle('signed',!!ACCT.user)}}
 async function acctAfterLogin(msg){let j;try{j=await acctApi('/api/me?sync=1')}catch(e){throw new Error('signed in with Privy, but the account service said: '+errText(e))}ACCT.seenHits=null;acctSet(j.user);toastMsg(`${msg} as <b>${esc(j.user.label)}</b>`,'var(--teal)');closeSignIn();if(view==='alerts')renderAlerts();if(view==='profile')renderProfile();if(view==='wallet'&&location.hash.startsWith('#w='))openProfileByAddr(location.hash.slice(3));const f=ACCT.after;ACCT.after=null;if(f)try{f()}catch{}}
 async function acctRefresh(){if(!ACCT.user)return false;try{const j=await acctApi('/api/me');const fresh=(j.user.hits||[]).filter(h=>!ACCT.seenHits.has(h.id));fresh.slice(0,3).forEach(h=>toastMsg(`<b>${esc(h.title)}</b>`,h.usd>=0?'var(--teal)':'var(--coral)'));fresh.forEach(h=>ACCT.seenHits.add(h.id));ACCT.user=j.user;return fresh.length>0}catch{return false}}
 async function acctSignOut(rerender=true){try{if(ACCT.privy)await ACCT.privy.logout()}catch{}ACCT.token=null;ACCT.user=null;ACCT.seenHits=null;acctNav();if(rerender){if(view==='profile')setView('aquarium');else if(view==='alerts')renderAlerts()}}
@@ -1556,10 +1603,12 @@ function acctPanel(){
   if(!ACCT.user)return box(head('track any wallet · private alerts here + Telegram')+`<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="font-size:12px;color:var(--muted)">Sign in to add your own wallets to track — every tx of that wallet in a token, live.</span>
       <button class="btn primary" onclick="openSignIn('login')">Sign in</button></div>`);
   const u=ACCT.user,opts=TOKENS.map(t=>`<option>${t.sym}</option>`).join('');
-  const rows=(u.watches||[]).map(w=>`<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:12px"><span><button onclick="openProfileByAddr('${w.w}')" class="mono" style="color:var(--teal);font-weight:700">${short(w.w)}</button> ${cpa(w.w,'⧉')} <span style="color:var(--dim)">·</span> $${esc(w.t)}</span><button onclick="acctRemove('${w.w}','${w.t}')" title="remove" style="color:var(--coral);font-weight:800;font-size:11px">✕ remove</button></div>`).join('');
+  const rows=(u.watches||[]).map(w=>`<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:12px"><span><span class="t2" style="margin-right:6px">wallet</span><button onclick="openProfileByAddr('${w.w}')" class="mono" style="color:var(--teal);font-weight:700">${short(w.w)}</button> ${cpa(w.w,'⧉')} <span style="color:var(--dim)">·</span> $${esc(w.t)}</span><button onclick="acctRemove('${w.w}','${w.t}')" title="remove" style="color:var(--coral);font-weight:800;font-size:11px">✕ remove</button></div>`).join('')
+    +(u.tokens||[]).map(t=>`<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:12px"><span><span class="t2" style="margin-right:6px">token</span>${tokTag(t)} <span class="t3">every whale move, entry, exit and exchange flow</span></span><button onclick="acctOp('unwatchtok',{t:'${t}'})" title="remove" style="color:var(--coral);font-weight:800;font-size:11px">✕ remove</button></div>`).join('');
   const hits=(u.hits||[]).slice(0,12).map(h=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:12px"><span><b>${esc(h.title)}</b><br><small style="color:var(--muted)">${esc(h.sub||'')}</small></span><span style="white-space:nowrap;color:var(--dim);font-size:11px;text-align:right">${agoStr(h.ts)} ago${h.hash?` · <a href="https://basescan.org/tx/${h.hash}" target="_blank" rel="noopener" style="color:var(--dim);font-weight:700">tx ↗</a>`:''}</span></div>`).join('');
   return box(head(`signed in as <b>${esc(u.label)}</b> · <button onclick="setView('profile')" style="color:var(--teal);font-weight:700">account</button>`)+`
-    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><input id="acctW" placeholder="0x wallet address" class="mono" style="flex:1;min-width:240px;border:1px solid var(--line);padding:7px 9px;font-size:12px;background:var(--panel2)"><select id="acctT" style="border:1px solid var(--line);padding:7px;font-size:12px;background:var(--panel2)">${opts}</select><button onclick="acctAdd()" style="border:1px solid var(--teal);color:var(--teal);padding:7px 12px;font-weight:800;font-size:12px">+ Watch</button></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><input id="acctW" placeholder="0x wallet address" class="mono" style="flex:1;min-width:240px;border:1px solid var(--line);padding:7px 9px;font-size:12px;background:var(--panel2)"><select id="acctT" style="border:1px solid var(--line);padding:7px;font-size:12px;background:var(--panel2)">${opts}</select><button onclick="acctAdd()" style="border:1px solid var(--teal);color:var(--teal);padding:7px 12px;font-weight:800;font-size:12px">+ Watch wallet</button>
+      <span style="width:1px;height:22px;background:var(--line);margin:0 4px"></span><select id="acctTT" style="border:1px solid var(--line);padding:7px;font-size:12px;background:var(--panel2)">${opts}</select><button onclick="acctOp('watchtok',{t:document.getElementById('acctTT').value})" style="border:1px solid var(--teal);color:var(--teal);padding:7px 12px;font-weight:800;font-size:12px" title="Every whale move, entry, exit and exchange flow of this token lands in My alerts">+ Watch token</button></div>
     <div style="margin-top:8px">${rows||'<div style="padding:8px 0;color:var(--dim);font-size:12px">No watches yet — paste a wallet above. You get every transfer of that wallet in the chosen token, within seconds.</div>'}</div>
     ${hits?`<div style="margin-top:12px"><b style="font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)">Recent hits</b> <button onclick="acctOp('clearhits')" style="color:var(--dim);font-size:11px">clear</button>${hits}</div>`:''}`);
 }
@@ -1703,24 +1752,36 @@ function renderSchoolSvg(sc,focus,opts={}){
   const W=opts.w||560,Hh=opts.h||360,cx=W/2,cy=Hh/2;
   const mem=(sc.members||[]).map(m=>m.addr.toLowerCase());if(!mem.length)return'';
   const names=schoolNames(sc);
-  // outsiders that appear in evidence (e.g. a shared funder) get a small node too
   const extra=new Set();(sc.evidence||[]).forEach(e=>{[e.a,e.b].forEach(x=>{if(!mem.includes(x))extra.add(x)})});
-  const nodes=[...mem,...[...extra].slice(0,6)];const N=nodes.length;
-  const R=Math.min(W,Hh)/2-56;const pos={};
-  // degree-sorted circular layout: the most connected sit at the top; the focused wallet goes first
-  const deg={};(sc.evidence||[]).forEach(e=>{deg[e.a]=(deg[e.a]||0)+1;deg[e.b]=(deg[e.b]||0)+1});
-  const order=[...nodes].sort((a,b)=>(b===focus)-(a===focus)||(deg[b]||0)-(deg[a]||0));
-  order.forEach((a,i)=>{const ang=-Math.PI/2+i*2*Math.PI/N;pos[a]={x:cx+R*Math.cos(ang),y:cy+R*Math.sin(ang)}});
+  const outs=[...extra].slice(0,6);
+  const f0=focus&&mem.includes(focus)?focus:mem[0];
+  // layout: the focused wallet in the middle, the other members on a ring, outside wallets (shared funders / counterparties) on a wider, fainter ring
+  const ring=mem.filter(a=>a!==f0);const rx=W/2-90,ry=Hh/2-66,rx2=W/2-48,ry2=Hh/2-34; // ellipse for members, wider one for outsiders
+  const pos={[f0]:{x:cx,y:cy}};
+  ring.forEach((a,i)=>{const ang=-Math.PI/2+i*2*Math.PI/Math.max(1,ring.length);pos[a]={x:cx+rx*Math.cos(ang),y:cy+ry*Math.sin(ang)}});
+  outs.forEach((a,i)=>{const ang=-Math.PI/2+Math.PI/Math.max(1,outs.length)+i*2*Math.PI/Math.max(1,outs.length);pos[a]={x:cx+rx2*Math.cos(ang),y:cy+ry2*Math.sin(ang)}});
   const amt=e=>{const m=String(e.detail||'').match(/\$([\d,]+)/);return m?Number(m[1].replace(/,/g,'')):0};
-  const edges=(sc.evidence||[]).filter(e=>pos[e.a]&&pos[e.b]).map(e=>{const st=EDGE_STYLE[e.type]||EDGE_STYLE.transfer;const u=amt(e);const w=e.type==='transfer'?Math.min(6,st.w+Math.log10(Math.max(1,u))/1.5):st.w;
-    const hi=focus&&(e.a===focus||e.b===focus);
-    return `<line x1="${pos[e.a].x.toFixed(1)}" y1="${pos[e.a].y.toFixed(1)}" x2="${pos[e.b].x.toFixed(1)}" y2="${pos[e.b].y.toFixed(1)}" stroke="${st.c}" stroke-width="${w}" stroke-dasharray="${st.dash}" opacity="${focus?(hi?.95:.25):.75}"><title>${esc(st.n)}: ${esc(e.detail||'')}</title></line>`}).join('');
-  const node=a=>{const p=pos[a],isM=mem.includes(a),isF=a===focus;const nm=names[a]||short(a);const r=isF?15:isM?11:7;const tg=isM?schoolTags(a,p.x+r+3,p.y-r):'';
-    return `<g class="snode" style="cursor:pointer" onclick="openProfileByAddr('${a}')"><circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${r}" fill="${isM?(isF?CH.accent:CH.panel2):CH.panel}" stroke="${isM?CH.accent:CH.dim}" stroke-width="${isF?3:1.5}"${isM?'':' stroke-dasharray="3 2"'}><title>${esc(nm)}${isM?'':' (outside the top-100s — shared funder / counterparty)'}</title></circle>
-      <text x="${p.x.toFixed(1)}" y="${(p.y+r+13).toFixed(1)}" text-anchor="middle" font-size="${isM?11:9.5}" font-weight="${isF?800:isM?700:500}" fill="${isM?CH.text:CH.dim}" font-family="Roboto Mono, monospace">${esc(nm.slice(0,18))}</text>${tg}</g>`};
+  const holder=a=>(data&&data.list||[]).find(h=>h.addr.toLowerCase()===a)||null;
+  const evs=(sc.evidence||[]).filter(e=>pos[e.a]&&pos[e.b]);const pairN={},pairI={};evs.forEach(e=>{const k=[e.a,e.b].sort().join('|');pairN[k]=(pairN[k]||0)+1});
+  const edges=evs.map(e=>{const st=EDGE_STYLE[e.type]||EDGE_STYLE.transfer;const u=amt(e);const w=e.type==='transfer'?Math.min(7,st.w+Math.log10(Math.max(1,u))/1.4):st.w;
+    const hi=!focus||e.a===focus||e.b===focus;const A=pos[e.a],B=pos[e.b];const k=[e.a,e.b].sort().join('|');const ki=(pairI[k]=(pairI[k]||0)+1)-1,kn=pairN[k];
+    const tA=(e.a===f0)?0.62:(e.b===f0)?0.38:0.5;const L=Math.hypot(B.x-A.x,B.y-A.y)||1,nx=-(B.y-A.y)/L,ny=(B.x-A.x)/L,off=(ki-(kn-1)/2)*18; // stacked labels for multiple edges between the same pair
+    const mx=A.x+(B.x-A.x)*tA+nx*off,my=A.y+(B.y-A.y)*tA+ny*off;const lab=u?musd0(u):st.n;
+    return `<g opacity="${hi?.95:.22}"><line x1="${A.x.toFixed(1)}" y1="${A.y.toFixed(1)}" x2="${B.x.toFixed(1)}" y2="${B.y.toFixed(1)}" stroke="${st.c}" stroke-width="${w}" stroke-dasharray="${st.dash}" stroke-linecap="square"><title>${esc(st.n)}: ${esc(e.detail||'')}</title></line>
+      <rect x="${(mx-lab.length*3.4-4).toFixed(1)}" y="${(my-8).toFixed(1)}" width="${(lab.length*6.8+8).toFixed(1)}" height="15" fill="${CH.panel}" stroke="${st.c}" stroke-width="1"/><text x="${mx.toFixed(1)}" y="${(my+3.5).toFixed(1)}" text-anchor="middle" font-size="9.5" font-weight="700" fill="${st.c}" font-family="Roboto Mono, monospace">${esc(lab)}</text></g>`}).join('');
+  const node=a=>{const p=pos[a],isM=mem.includes(a),isF=a===f0;const nm=names[a]||short(a);const h=holder(a);const tier=h?(h.claim&&h.claim.avatar?h.claim.avatar.fish:h.tier):'medium';
+    const bw=isF?64:isM?50:36,bh=isF?46:isM?36:26,iw=bw-10,ih=Math.round(iw*0.72);const x0=p.x-bw/2,y0=p.y-bh/2;
+    const tg=isM?schoolTags(a,x0+bw+3,y0):'';
+    return `<g class="snode" style="cursor:pointer" onclick="openProfileByAddr('${a}')" opacity="${isM?1:.55}"><rect x="${x0.toFixed(1)}" y="${y0.toFixed(1)}" width="${bw}" height="${bh}" fill="${isF?'#0b1730':CH.panel2}" stroke="${isM?CH.accent:CH.dim}" stroke-width="${isF?2.5:1.2}"${isM?'':' stroke-dasharray="3 2"'}/>
+      ${isM?`<image href="assets/tank/${tier}.webp" x="${(p.x-iw/2).toFixed(1)}" y="${(p.y-ih/2).toFixed(1)}" width="${iw}" height="${ih}" preserveAspectRatio="xMidYMid meet"${h&&h.claim&&h.claim.avatar&&AV.color[h.claim.avatar.color]&&AV.color[h.claim.avatar.color].f!=='none'?` style="filter:${AV.color[h.claim.avatar.color].f}"`:''}/>`:`<text x="${p.x.toFixed(1)}" y="${(p.y+4).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="700" fill="${CH.dim}" font-family="Roboto Mono, monospace">?</text>`}
+      <title>${esc(nm)}${h?` · ${usd(h.value)} · rank #${h.rank}`:''}${isM?'':' · outside the top-100s (shared funder / counterparty)'}</title>
+      <rect x="${(p.x-Math.min(70,nm.slice(0,18).length*3.6+6)).toFixed(1)}" y="${(y0+bh+3).toFixed(1)}" width="${(Math.min(140,nm.slice(0,18).length*7.2+12)).toFixed(1)}" height="15" fill="${CH.panel}" opacity=".92"/>
+      <text x="${p.x.toFixed(1)}" y="${(y0+bh+14).toFixed(1)}" text-anchor="middle" font-size="${isM?11:9.5}" font-weight="${isF?800:isM?700:500}" fill="${isM?CH.text:CH.dim}" font-family="Roboto Mono, monospace">${esc(nm.slice(0,18))}</text>${tg}</g>`};
+  const nodes=[...outs,...ring,f0];
   return `<svg viewBox="0 0 ${W} ${Hh}" style="width:100%;height:auto;max-height:${Hh}px;display:block;background:var(--panel)" xmlns="http://www.w3.org/2000/svg">${edges}${nodes.map(node).join('')}</svg>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:10.5px;color:var(--muted);padding:6px 2px 0">${Object.entries(EDGE_STYLE).map(([k,v])=>`<span><i style="display:inline-block;width:16px;border-top:2px ${v.dash?'dashed':'solid'} ${v.c};vertical-align:middle;margin-right:5px"></i>${v.n}</span>`).join('')}<span><i style="display:inline-block;width:9px;height:9px;border:1.5px dashed #9AA0A6;border-radius:50%;vertical-align:middle;margin-right:5px"></i>outside wallet</span><span style="margin-left:auto">${sc.members.length} wallets · confidence ${esc(String(sc.confidence||'').toUpperCase())} · click a node to open it</span></div>`;
+    <div class="t3" style="display:flex;gap:12px;flex-wrap:wrap;padding:6px 2px 0">${Object.entries(EDGE_STYLE).map(([k,v])=>`<span><i style="display:inline-block;width:16px;border-top:2px ${v.dash?'dashed':'solid'} ${v.c};vertical-align:middle;margin-right:5px"></i>${v.n}</span>`).join('')}<span><i style="display:inline-block;width:9px;height:9px;border:1.5px dashed #9AA0A6;vertical-align:middle;margin-right:5px"></i>outside wallet</span><span style="margin-left:auto">${sc.members.length} wallets · confidence ${esc(String(sc.confidence||'').toUpperCase())} · click a fish to open it</span></div>`;
 }
+const musd0=v=>{const x=Math.abs(v);return x>=1e6?'$'+(x/1e6).toFixed(1)+'M':x>=1e3?'$'+(x/1e3).toFixed(0)+'K':'$'+Math.round(x)};
 function tokAmt(v,signed){const x=Math.abs(v);const s=x>=1e9?(x/1e9).toFixed(2)+'B':x>=1e6?(x/1e6).toFixed(2)+'M':x>=1e3?(x/1e3).toFixed(1)+'K':x.toFixed(0);return (signed?(v<0?'−':'+'):'')+s}
 function flowName(a){const h=data.list.find(x=>x.addr.toLowerCase()===a.toLowerCase());return h?(h.entity||h.basename||short(a)):short(a)}
 async function renderFlows(){
@@ -1857,22 +1918,34 @@ function schoolColor(id){const s=schoolOf(id);return (s&&s.color)||'rgba(120,150
 if(location.protocol!=='file:')loadSchools();
 function schoolOf(id){return SCHOOLS.find(s=>s.id===id)||null}
 async function tokData(sym){if(tokCache[sym])return tokCache[sym];try{tokCache[sym]=await fetchToken(sym)}catch(e){tokCache[sym]=null}return tokCache[sym]}
-function drawHistory(cv2,pts){
-  const x=cv2.getContext('2d');const W2=cv2.width=cv2.clientWidth*2,H2=cv2.height=380;x.scale(1,1);
+let WH={all:[],range:'all',hover:null};
+function histRanges(){const a=WH.all;if(a.length<2)return[];const span=(a[a.length-1].ts-a[0].ts)/864e5;const r=[];if(span>=1)r.push(['7d','7 days',7]);if(span>7.5)r.push(['30d','30 days',30]);if(span>31)r.push(['1y','1 year',365]);r.push(['all','all',1e9]);return r}
+function histSeries(){const R=histRanges().find(x=>x[0]===WH.range)||histRanges().slice(-1)[0];if(!R)return WH.all;const from=Date.now()-R[2]*864e5;const s=WH.all.filter(p=>p.ts>=from);return s.length>=2?s:WH.all}
+function histSetRange(r){WH.range=r;WH.hover=null;drawHistory(document.getElementById('wphist'));const el=document.getElementById('wpranges');if(el)el.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.r===r))}
+function drawHistory(cv2){
+  if(!cv2)return;const pts=histSeries();
+  const x=cv2.getContext('2d');const W2=cv2.width=cv2.clientWidth*2,H2=cv2.height=380;
   x.clearRect(0,0,W2,H2);
-  if(!pts||pts.length<2){x.fillStyle=CH.dim;x.font='24px Inter Tight';x.textAlign='center';x.fillText(pts&&pts.length===1?'First snapshot recorded. The chart begins.':'History accumulates with every refresh. Patience.',W2/2,H2/2);return}
-  const vs=pts.map(p=>p.usd),mn=Math.min(...vs),mx=Math.max(...vs),pad=44;
-  const X=i=>pad+ (W2-pad*2)*i/(pts.length-1), Y=v=>H2-40-(H2-90)*((v-mn)/((mx-mn)||1));
+  if(!pts||pts.length<2){x.fillStyle=CH.dim;x.font='24px Inter Tight';x.textAlign='center';x.fillText(pts&&pts.length===1?'First snapshot recorded. The chart begins.':'History accumulates with every refresh.',W2/2,H2/2);return}
+  const vs=pts.map(p=>p.usd),mn=Math.min(...vs),mx=Math.max(...vs),pad=44,top=50,bot=40;
+  const t0=pts[0].ts,t1=pts[pts.length-1].ts;
+  const X=p=>pad+(W2-pad*2)*((p.ts-t0)/((t1-t0)||1)), Y=v=>H2-bot-(H2-top-bot)*((v-mn)/((mx-mn)||1));
   x.strokeStyle=CH.grid;x.lineWidth=1;
-  for(let g=0;g<4;g++){const y=50+g*(H2-90)/3;x.beginPath();x.moveTo(pad,y);x.lineTo(W2-pad,y);x.stroke()}
-  x.fillStyle='rgba(0,0,255,.06)';const grd='rgba(0,0,255,.06)';
-  x.beginPath();pts.forEach((p,i)=>i?x.lineTo(X(i),Y(p.usd)):x.moveTo(X(0),Y(p.usd)));
+  for(let g=0;g<4;g++){const y=top+g*(H2-top-bot)/3;x.beginPath();x.moveTo(pad,y);x.lineTo(W2-pad,y);x.stroke()}
+  x.beginPath();pts.forEach((p,i)=>i?x.lineTo(X(p),Y(p.usd)):x.moveTo(X(p),Y(p.usd)));
   x.strokeStyle=CH.accent;x.lineWidth=3;x.stroke();
-  x.lineTo(X(pts.length-1),H2-40);x.lineTo(X(0),H2-40);x.closePath();x.fillStyle=grd;x.fill();
-  const lp=pts[pts.length-1];x.fillStyle=CH.accent;x.beginPath();x.arc(X(pts.length-1),Y(lp.usd),6,0,6.28);x.fill();
-  x.fillStyle=CH.muted;x.font='20px Roboto Mono';x.textAlign='left';x.fillText(usd(mx),pad,40);x.fillText(usd(mn),pad,H2-14);
-  x.textAlign='right';x.fillStyle=CH.dim;x.font='18px Inter Tight';
-  x.fillText(new Date(pts[0].ts).toLocaleDateString(),W2/2-20,H2-14);x.fillText(new Date(lp.ts).toLocaleDateString(),W2-pad,H2-14);
+  x.lineTo(X(pts[pts.length-1]),H2-bot);x.lineTo(X(pts[0]),H2-bot);x.closePath();x.fillStyle='rgba(0,0,255,.06)';x.fill();
+  const hp=WH.hover!=null?pts[WH.hover]:pts[pts.length-1];
+  x.fillStyle=CH.accent;x.beginPath();x.arc(X(hp),Y(hp.usd),6,0,6.28);x.fill();
+  if(WH.hover!=null){x.strokeStyle=CH.axis;x.setLineDash([6,6]);x.beginPath();x.moveTo(X(hp),top);x.lineTo(X(hp),H2-bot);x.stroke();x.setLineDash([])}
+  // readout: value + date of the hovered (or last) point, top-right; min/max on the left axis
+  x.fillStyle=CH.muted;x.font='18px Roboto Mono';x.textAlign='left';x.fillText(usd(mx),pad,40);x.fillText(usd(mn),pad,H2-bot+18);
+  x.textAlign='right';x.fillStyle=CH.text;x.font='700 22px Roboto Mono';x.fillText(usd(hp.usd),W2-pad,36);
+  x.fillStyle=CH.dim;x.font='16px Inter Tight';x.fillText(new Date(hp.ts).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})+(WH.hover!=null&&WH.hover>0?`  (${hp.usd-pts[WH.hover-1].usd>=0?'+':'−'}${usd(Math.abs(hp.usd-pts[WH.hover-1].usd))} vs prev)`:''),W2-pad,60);
+  x.textAlign='left';x.fillText(new Date(t0).toLocaleDateString(undefined,{month:'short',day:'numeric'}),pad+90,H2-bot+18);x.textAlign='right';x.fillText(new Date(t1).toLocaleDateString(undefined,{month:'short',day:'numeric'}),W2-pad,H2-bot+18);
+  const d0=pts[0].usd,dl=pts[pts.length-1].usd-d0;x.textAlign='center';x.fillStyle=dl>=0?CH.accent:CH.coral;x.font='700 17px Roboto Mono';x.fillText(`${dl>=0?'+':'−'}${usd(Math.abs(dl))} over this range`,W2/2,36);
+  cv2.onmousemove=e=>{const r=cv2.getBoundingClientRect();const fx=(e.clientX-r.left)/r.width*W2;let bi=0,bd=1e18;pts.forEach((p,i)=>{const d=Math.abs(X(p)-fx);if(d<bd){bd=d;bi=i}});if(bi!==WH.hover){WH.hover=bi;drawHistory(cv2)}};
+  cv2.onmouseleave=()=>{WH.hover=null;drawHistory(cv2)};
 }
 async function openProfile(h){
   // full-screen wallet page
@@ -1883,21 +1956,28 @@ async function openProfile(h){
   const scan=`https://basescan.org/address/${h.addr}`;
   const ark=`https://intel.arkm.com/explorer/address/${h.addr}`;
   el.innerHTML=`<div class="whead"><div class="fishic"><img src="assets/tank/${h.rank===1?'king':h.tier}.webp" style="width:40px;height:32px;object-fit:contain" onerror="this.style.display='none'"></div>
-    <div><h3 id="wpname">${h.claim?`${avatarHtml(h.claim.avatar,26)} ${esc(h.claim.name||'claimed wallet')}`:(h.entity||short(h.addr))}</h3><div class="addr">${cpa(h.addr,h.addr)}</div>
-      <div class="lbls" id="wplbls" style="margin-top:6px">${[tagPills(h),h.rank?`<span><i class="tg" style="background:${t.c};width:7px;height:7px"></i>rank #${h.rank} in $${h.tokSym||cur.sym} · ${t.n.toLowerCase()}</span>`:`<span class="ctx">free swimmer · not in a tracked top 100</span>`,lblChips(h,5)].join('')}</div></div>
+    <div style="min-width:0"><h3 id="wpname">${h.claim?`${avatarHtml(h.claim.avatar,26)} ${esc(h.claim.name||'claimed wallet')}`:(h.entity||short(h.addr))}</h3>
+      <div class="addr">${cpa(h.addr,h.addr)} <button class="ico" onclick="navigator.clipboard&&navigator.clipboard.writeText('${h.addr}');toastMsg('Address copied','var(--teal)')" title="Copy address"><svg viewBox="0 0 16 16"><rect x="5" y="5" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="2" y="2" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
+        <a class="ico" href="${scan}" target="_blank" rel="noopener" title="View on Basescan"><img src="assets/cex/basescan.png" alt="Basescan" onerror="this.onerror=null;this.src='https://www.google.com/s2/favicons?domain=basescan.org&sz=32'"></a>
+        <a class="ico" href="${ark}" target="_blank" rel="noopener" title="View on Arkham"><img src="assets/cex/arkham.png" alt="Arkham" onerror="this.onerror=null;this.src='https://www.google.com/s2/favicons?domain=intel.arkm.com&sz=32'"></a></div>
+      <div class="lbls" id="wplbls" style="margin-top:6px">${[tagPills(h),h.rank?`<span><i class="tg" style="background:${t.c};width:7px;height:7px"></i>rank #${h.rank} in $${h.tokSym||cur.sym} · ${t.n.toLowerCase()}</span>`:`<span class="ctx">free swimmer · not in a tracked top 100</span>`,lblChips(h,5)].join('')}</div>
+      <div class="t3" style="margin-top:6px"><button onclick="requireAuth(()=>proposeUI('${h.addr.toLowerCase()}'))" style="color:var(--teal);font-weight:700;font-size:11px">Suggest a tag or identity for this wallet →</button></div></div>
     <div class="val"><small id="wpvlabel">Tracked positions · Base</small><b class="mono" id="wpval">—</b></div>
-    <div class="wbtns"><button onclick="setView('aquarium')">← Aquarium</button><button id="wpcopy">Copy address</button><button id="wpshare">Share wallet</button><button id="wpwatch"></button><button onclick="acctWatchPrefill('${h.addr.toLowerCase()}')" title="get an alert on every tx of this wallet">Alert me</button><span id="wpclaim" style="display:contents"></span><button onclick="requireAuth(()=>proposeUI('${h.addr.toLowerCase()}'))" title="suggest a tag or who this wallet is">Propose tag / identity</button><span id="wpsocials" style="display:contents"></span><a href="${ark}" target="_blank" rel="noopener">Arkham ↗</a><a href="${scan}" target="_blank" rel="noopener">Basescan ↗</a></div></div>
+    <div class="wbtns"><button class="wb" onclick="setView('aquarium')" title="Back to the tank">← Whalarium</button>
+      <span class="wrel"><button class="wb" id="wpwatch"></button><button class="wb" id="wpalert" onclick="acctWatchPrefill('${h.addr.toLowerCase()}')" title="Get an alert on every transfer of this wallet"><svg viewBox="0 0 16 16"><rect x="6" y="2" width="4" height="2"/><rect x="5" y="4" width="6" height="2"/><rect x="4" y="6" width="8" height="4"/><rect x="3" y="10" width="10" height="2"/><rect x="7" y="13" width="2" height="2"/></svg>Alert me</button><span id="wpclaim" style="display:contents"></span></span>
+      <span id="wpsocials" style="display:contents"></span>
+      <button class="wb share" id="wpshare" style="margin-left:auto"><svg viewBox="0 0 16 16"><rect x="2" y="7" width="2" height="7"/><rect x="12" y="7" width="2" height="7"/><rect x="2" y="12" width="12" height="2"/><rect x="7" y="1" width="2" height="8"/><rect x="5" y="3" width="2" height="2"/><rect x="9" y="3" width="2" height="2"/></svg>Share</button></div></div>
   <div id="wpPropose" style="padding:0 16px"></div>
   <div class="wgrid" id="wpgrid">${loadingHtml('Loading positions, funding and transfers')}</div>`;
   drawMinis();
   {const a=h.addr.toLowerCase(),cl=document.getElementById('wpclaim');const mine=ACCT.user&&(ACCT.user.wallets||[]).includes(a),claimed=ACCT.user&&ACCT.user.claims&&ACCT.user.claims[a];
-    cl.innerHTML=claimed?`<button onclick="claimWallet('${a}',false)" style="color:var(--teal)">Claimed ✓ <small style="color:var(--dim)">· unclaim</small></button><span class="pill ctx" style="align-self:center">1/1 NFT · coming soon</span>`
-      :mine?`<button onclick="claimWallet('${a}',true)" style="border-color:var(--teal);color:var(--teal)">Claim this wallet</button>`
-      :`<button onclick="requireAuth(()=>{openSignIn('link')})" title="Sign in and verify this wallet (one gas-free signature) to claim it">Claim this wallet</button>`;}
-  document.getElementById('wpcopy').onclick=e=>{navigator.clipboard&&navigator.clipboard.writeText(h.addr);e.target.textContent='copied';setTimeout(()=>e.target.textContent='Copy address',1200)};
+    cl.innerHTML=claimed?`<button class="wb on" onclick="claimWallet('${a}',false)" title="Claimed by you · click to unclaim">✓ Claimed</button><span class="pill ctx" style="align-self:center">1/1 NFT · coming soon</span>`
+      :mine?`<button class="wb" style="border-color:var(--teal);color:var(--teal)" onclick="claimWallet('${a}',true)">Claim this wallet</button>`
+      :`<button class="wb" onclick="requireAuth(()=>{openSignIn('link')})" title="Sign in and verify this wallet (one gas-free signature) to claim it">Claim this wallet</button>`;}
   document.getElementById('wpshare').onclick=()=>{const u=location.origin+location.pathname+'?token='+cur.sym.toLowerCase()+'%23w='+h.addr;navigator.clipboard&&navigator.clipboard.writeText(location.href);toastMsg('Wallet link copied','var(--teal)')};
   const wb=document.getElementById('wpwatch');
-  const wSync=()=>{const on=WATCH.has(h.addr);wb.textContent=on?'★ Watching':'☆ Watch';wb.style.color=on?'var(--teal)':''};
+  const wSync=()=>{const on=WATCH.has(h.addr);wb.innerHTML=`<svg viewBox="0 0 16 16"><rect x="7" y="1" width="2" height="3"/><rect x="6" y="4" width="4" height="2"/><rect x="2" y="6" width="12" height="2"/><rect x="4" y="8" width="8" height="2"/><rect x="3" y="10" width="4" height="2"/><rect x="9" y="10" width="4" height="2"/><rect x="2" y="12" width="3" height="2"/><rect x="11" y="12" width="3" height="2"/></svg>${on?'Watching':'Watch'}`;wb.classList.toggle('on',on);wb.title=on?'On your watchlist · click to remove':'Add to your watchlist'};
+  {const al=document.getElementById('wpalert');const has=ACCT.user&&(ACCT.user.watches||[]).some(w=>w.w===h.addr.toLowerCase());if(al&&has){al.classList.add('on');al.lastChild.textContent='Alerting'}}
   wSync();wb.onclick=()=>{const added=WATCH.toggle(h.addr);toastMsg(added?'Added to watchlist':'Removed from watchlist',added?'var(--teal)':'var(--dim)');wSync()};
   let p=profCache[h.addr];
   if(!p&&REAL){try{const r=await fetch('data/wallets/'+h.addr.toLowerCase()+'.json?t='+Date.now(),{cache:'no-store'});if(r.ok)p=profCache[h.addr]=await r.json()}catch(e){}}
@@ -1966,7 +2046,7 @@ async function openProfile(h){
             return `<div style="font-size:11px;color:var(--muted);padding:3px 0">· <b class="mono" style="color:var(--teal);cursor:pointer" onclick="openProfileByAddr('${other}')">${esc(om&&om.name?om.name.slice(0,22):short(other))}</b> — ${esc(e.detail)}</div>`}).join('');
         const pts=Object.entries(sc.perToken).filter(([,v])=>v.members>1).map(([s,v])=>`$${s}: ${v.members} fish · ${v.pct}%`).join(' · ');
         return `<div class="wbox" style="border-color:rgba(77,107,255,.55)"><h5 style="color:#4D6BFF">School detected <small>${sc.members.length} wallets appear connected · confidence ${esc(String(sc.confidence||'high').toUpperCase())}</small></h5>
-          <div style="margin:4px 0 8px;border:1px solid var(--line)">${renderSchoolSvg(sc,me,{w:600,h:340})}</div>
+          <div style="margin:4px 0 8px;border:1px solid var(--line)">${renderSchoolSvg(sc,me,{w:600,h:400})}</div>
           <div style="display:flex;flex-wrap:wrap;gap:6px;padding:4px 0 8px">${others.map(m=>`<button onclick="openProfileByAddr('${m.addr}')" style="border:1px solid var(--line);padding:3px 8px;font-size:10.5px;cursor:pointer;color:var(--text)" class="mono">${esc(m.name?m.name.slice(0,20):short(m.addr))}</button>`).join('')}</div>
           ${pts?`<div class="hrow"><span>Combined holdings</span><span></span><b class="mono" style="font-size:11px">${pts}</b></div>`:''}
           <div style="padding-top:6px"><b style="font-size:10.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em">Why we think this</b>${evLines||'<div style="font-size:11px;color:var(--dim)">linked through other members of this school</div>'}</div>
@@ -1975,7 +2055,7 @@ async function openProfile(h){
       <div class="wbox"><h5>Top counterparties <small>from recent transfers</small></h5>${flowLine}${cplist.length?cplist.map(c=>`<div class="cprow" ${c.addr?`style="cursor:pointer" onclick="openProfileByAddr('${c.addr}')" title="Open wallet page"`:''}><div><b style="${c.label?'color:var(--teal)':''}">${c.k}</b> <span style="color:var(--dim);font-size:11px">· ${c.n} transfer${c.n>1?'s':''}</span><div class="bar3"><i style="width:${(c.inU/cpmax*100)}%;background:var(--teal)"></i><i style="width:${(c.outU/cpmax*100)}%;background:var(--coral)"></i></div></div><b class="mono">${usd(c.inU+c.outU)}</b></div>`).join('')+'<div class="empty2" style="padding-top:8px"><span style="color:var(--teal)">■</span> received&nbsp;&nbsp;<span style="color:var(--coral)">■</span> sent</div>':'<div class="empty2">No transfer data yet. Still waters.</div>'}</div>
     </div>
     <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
-      <div class="wbox"><h5 id="wphtitle">Balance history</h5><div style="padding:10px 8px"><canvas class="hist" id="wphist"></canvas></div></div>
+      <div class="wbox"><h5 id="wphtitle" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span id="wphlabel">Balance history</span><span id="wpranges" style="display:inline-flex;border:1px solid var(--line)"></span></h5><div style="padding:10px 8px"><canvas class="hist" id="wphist" style="cursor:crosshair"></canvas></div></div>
       <div class="wbox"><h5>Transfers <small>${transfers.length} recent · by Arkham</small></h5>${transfers.length?`<div style="max-height:430px;overflow:auto"><table><thead><tr><th>Time</th><th>Dir</th><th>Counterparty</th><th>Token</th><th class="r">USD</th><th class="r">Link</th></tr></thead><tbody>${transfers.map(x=>`<tr class="txrow"><td style="color:var(--muted);white-space:nowrap">${x.ts?agoStr(x.ts)+' ago':''}</td><td><span style="color:${x.dir==='out'?'var(--coral)':'var(--teal)'}">${x.dir==='out'?'OUT':'IN'}</span></td><td onclick="openProfileByAddr('${x.cp||''}')" title="Open wallet page">${x.cpLabel?`<b style="color:var(--teal)">${cexIcon(x.cpLabel)}${x.cpLabel}</b>`:(x.cp?`<span class="mono">${cpa(x.cp)}</span>`:'?')}${x.chain?` <span class="chainpill">${x.chain}</span>`:''}</td><td>${x.token||'<span style="color:var(--dim)">—</span>'}</td><td class="r mono">${x.usd?usd(x.usd):num(x.amount)}</td><td class="r">${x.hash?`<a href="https://basescan.org/tx/${x.hash}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--dim);font-weight:700">tx ↗</a>`:''}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty2">No transfers captured yet. The fish is patient.</div>'}</div>
       <div class="empty2" style="border:0">Portfolio & transfer data by <a href="${ark}" target="_blank" rel="noopener" style="color:var(--muted)">Arkham Intelligence</a> · labels by Arkham & <a href="https://frontrun.pro" target="_blank" rel="noopener" style="color:var(--muted)">Frontrun</a>${p?` · profile updated ${agoStr(p.updated)} ago`:''}</div>
     </div>`;
@@ -1988,9 +2068,13 @@ async function openProfile(h){
   else{series=pf;label='Balance history <small>backfills on the next refresh</small>'}
   const spanD=series.length>1?(new Date(series[series.length-1].ts)-new Date(series[0].ts))/864e5:0;
   if(series.length>=2&&(series.length<5||spanD<7))label+=' <small style="color:var(--dim)">· partial history</small>';
-  const htitle=document.getElementById('wphtitle');
-  if(htitle)htitle.innerHTML=label;
-  drawHistory(document.getElementById('wphist'),series);
+  // our own 2h snapshots of this wallet's position in the current token fill the gaps between Arkham's daily points
+  try{const snaps=await flowSnaps(cur.sym);const a=h.addr.toLowerCase();const F=cur.flows;const mine=(snaps||[]).map(sn=>{const o=sn.h&&sn.h[a];if(!o)return null;const am=snapAmt(o,sn,F);const p=sn.p||0;return am!=null&&p?{ts:sn.ts,usd:am*p}:(o.u?{ts:sn.ts,usd:o.u}:null)}).filter(Boolean);
+    if(mine.length>=3&&(series.length<4||spanD<3)){series=mine;label=`$${cur.sym} position value <small>one point per snapshot</small>`}}catch{}
+  const hl=document.getElementById('wphlabel');if(hl)hl.innerHTML=label;
+  WH={all:series.map(q=>({ts:+new Date(q.ts),usd:+q.usd})).filter(q=>isFinite(q.ts)&&isFinite(q.usd)).sort((a,b)=>a.ts-b.ts),range:'all',hover:null};
+  const rg=document.getElementById('wpranges');const R=histRanges();if(rg)rg.innerHTML=R.length>1?R.map(r=>`<button data-r="${r[0]}" class="${r[0]===WH.range?'on':''}" onclick="histSetRange('${r[0]}')" style="height:22px;padding:0 9px;font-size:10.5px;font-weight:700;text-transform:none;letter-spacing:0">${r[1]}</button>`).join(''):'';
+  drawHistory(document.getElementById('wphist'));
 }
 function jumpToken(sym){const t=TOKENS.find(x=>x.sym===sym);if(t){closeCard();loadToken(t).then(()=>setView('aquarium'))}}
 function closeCardOnly(){card.classList.remove('show')}

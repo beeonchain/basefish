@@ -1175,7 +1175,9 @@ for (const t of RUN_TOKENS) {
       let snaps = []; try { snaps = JSON.parse(fs.readFileSync(spath, 'utf8')); } catch {}
       const nowTs = Date.now(), want = nowTs - 864e5, want7 = nowTs - 7 * 864e5;
       const nearest = (target) => snaps.length ? snaps.reduce((b, s) => Math.abs(s.ts - target) < Math.abs(b.ts - target) ? s : b) : null;
-      const ref = nearest(want);
+      // 24h change = against the newest snapshot that is at least 24h old (so the window is 24–26h, never 22h); falls back to the nearest one
+      const older = snaps.filter((s) => s.ts <= want);
+      const ref = older.length ? older[older.length - 1] : nearest(want);
       if (ref) {
         changeRefH = Math.max(1, Math.round((nowTs - ref.ts) / 36e5));
         top.forEach((h, i) => {

@@ -42,6 +42,11 @@ export default async (req) => {
         const w = String(body.w || '').toLowerCase(), t = String(body.t || '').toUpperCase();
         const n = u.watches.length; u.watches = u.watches.filter((x) => !(x.w === w && (!t || x.t === t)));
         if (u.watches.length === n) { err = 'not on your list'; return false; }
+      } else if (op === 'watchtok' || op === 'unwatchtok') {
+        const t = String(body.t || '').toUpperCase(); if (!TOKENS.includes(t)) { err = 'unknown token'; return false; }
+        u.tokens = u.tokens || [];
+        if (op === 'watchtok') { if (u.tokens.includes(t)) { err = 'already watching'; return false; } if (u.tokens.length >= planOf(u).watches) { err = `your plan allows ${planOf(u).watches} watches`; return false; } u.tokens.push(t); }
+        else u.tokens = u.tokens.filter((x) => x !== t);
       } else if (op === 'linkcode') {
         const code = Math.random().toString(36).slice(2, 8).toUpperCase();
         u.link = { code, exp: Date.now() + 15 * 60e3 };
