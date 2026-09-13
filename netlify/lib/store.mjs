@@ -1,7 +1,8 @@
-// Shared helpers for Whalarium functions: GitHub-backed JSON store, sessions (JWT), user records.
+// Shared helpers for Whalarium functions: GitHub-backed JSON store, Privy sessions, user records.
 // Users live in data/users.json (committed via the Contents API — same pattern as tg_subs.json;
 // netlify.toml skips builds for that file). Keep writes rare: sign-in, watch add/remove, hits.
 import crypto from 'node:crypto';
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 
 export const REPO = 'beeonchain/basefish';
 export const USERS_PATH = 'data/users.json';
@@ -48,33 +49,58 @@ export async function readRaw(path, fallback) {
   try { return (await readJson(path, fallback)).data; } catch { return fallback; }
 }
 
-// ---- sessions: HS256 JWT, 30 days ----
-const secret = () => process.env.AUTH_SECRET || crypto.createHash('sha256').update('basefish-auth:' + (process.env.GH_DISPATCH_TOKEN || '')).digest('hex');
-const b64u = (b) => Buffer.from(b).toString('base64url');
-export function signSession(uid) {
-  const h = b64u(JSON.stringify({ alg: 'HS256', typ: 'JWT' })), p = b64u(JSON.stringify({ sub: uid, iat: Math.floor(Date.now() / 1e3), exp: Math.floor(Date.now() / 1e3) + 30 * 86400 }));
-  return `${h}.${p}.${crypto.createHmac('sha256', secret()).update(`${h}.${p}`).digest('base64url')}`;
+// ---- sessions: Privy access tokens (ES256 JWT, verified against the app's JWKS) ----
+// The browser signs in with Privy (email / Google / X / wallet) and sends privy.getAccessToken() as Bearer.
+// Users are keyed by their Privy DID. Linked accounts (wallets, email, X) are synced from Privy's API on demand.
+export const PRIVY_APP_ID = process.env.PRIVY_APP_ID || 'cmtznydhb01760cl6wiylerak';
+let _jwks = null;
+const jwks = () => _jwks || (_jwks = createRemoteJWKSet(new URL(`https://auth.privy.io/api/v1/apps/${PRIVY_APP_ID}/jwks.json`)));
+export async function readSession(req) {
+  const t = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '').trim();
+  if (!t || t.split('.').length !== 3) return null;
+  try { const { payload } = await jwtVerify(t, jwks(), { issuer: 'privy.io', audience: PRIVY_APP_ID }); return payload.sub || null; } catch { return null; }
 }
-export function readSession(req) {
-  const t = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
-  const [h, p, s] = t.split('.'); if (!h || !p || !s) return null;
-  const want = crypto.createHmac('sha256', secret()).update(`${h}.${p}`).digest('base64url');
-  if (want.length !== s.length || !crypto.timingSafeEqual(Buffer.from(want), Buffer.from(s))) return null;
-  try { const c = JSON.parse(Buffer.from(p, 'base64url').toString('utf8')); return c.exp > Date.now() / 1e3 ? c.sub : null; } catch { return null; }
+// linked accounts from Privy (needs PRIVY_APP_SECRET in Netlify env). Cached ~2 min per instance.
+const _pu = new Map();
+export async function privyUser(did, { fresh = false } = {}) {
+  const sec = process.env.PRIVY_APP_SECRET; if (!sec) return null;
+  const c = _pu.get(did); if (c && !fresh && Date.now() - c.at < 120e3) return c.v;
+  try {
+    const r = await fetch(`https://auth.privy.io/api/v1/users/${encodeURIComponent(did)}`, { headers: { Authorization: 'Basic ' + Buffer.from(`${PRIVY_APP_ID}:${sec}`).toString('base64'), 'privy-app-id': PRIVY_APP_ID } });
+    if (!r.ok) return c ? c.v : null;
+    const j = await r.json();
+    const la = j.linked_accounts || [];
+    const v = {
+      wallets: la.filter((a) => a.type === 'wallet' && a.chain_type !== 'solana').map((a) => String(a.address).toLowerCase()),
+      email: (la.find((a) => a.type === 'email') || {}).address || (la.find((a) => a.type === 'google_oauth') || {}).email || null,
+      google: (la.find((a) => a.type === 'google_oauth') || {}).email || null,
+      x: (la.find((a) => a.type === 'twitter_oauth') || {}).username || null,
+      xName: (la.find((a) => a.type === 'twitter_oauth') || {}).name || null,
+      created: j.created_at || null,
+    };
+    _pu.set(did, { at: Date.now(), v });
+    return v;
+  } catch { return c ? c.v : null; }
 }
-// short-lived nonce for wallet sign-in: HMAC of address + 5-minute bucket (stateless)
-export function nonceFor(addr, bucketOffset = 0) {
-  const b = Math.floor(Date.now() / 3e5) + bucketOffset;
-  return crypto.createHmac('sha256', secret()).update(`nonce:${addr.toLowerCase()}:${b}`).digest('hex').slice(0, 16);
+// admin = DIDs / emails / wallets listed in ADMIN_IDS (comma-separated) in Netlify env
+export function isAdmin(did, u) {
+  const ids = (process.env.ADMIN_IDS || '').split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
+  if (!ids.length) return false;
+  const mine = [did, u && u.email, ...((u && u.wallets) || [])].filter(Boolean).map((s) => String(s).toLowerCase());
+  return mine.some((m) => ids.includes(m));
 }
-export const siweMessage = (addr, nonce) => `Sign in to Whalarium\n\nWallet: ${addr}\nNonce: ${nonce}\n\nThis signature costs no gas and only proves you own this wallet.`;
+export const PLANS = { free: { fetches: 5, watches: 10 }, pro: { fetches: 100, watches: 50 } };
+export const planOf = (u) => PLANS[(u && u.plan) || 'free'] || PLANS.free;
+export const fetchLimit = (u) => (u && u.fetchLimit != null ? u.fetchLimit : planOf(u).fetches);
 
 // ---- user records ----
-// users.json = { users: { uid: { label, kind:'wallet'|'google', addr?, email?, watches:[{w,t}], hits:[...], tg?: chatId, link?: {code,exp}, created, seen } } }
-export const uidFor = (kind, id) => `${kind}:${id.toLowerCase()}`;
-export function publicUser(u, uid) {
-  return { id: uid, kind: u.kind, label: u.label, watches: u.watches || [], hits: (u.hits || []).slice(0, MAX_HITS), tg: !!u.tg, link: u.link && u.link.exp > Date.now() ? u.link.code : null };
+// users.json = { users: { did: { label, email, wallets:[], x, plan, fetchLimit?, fetches, watches:[{w,t}], hits:[...], claims:{addr:{name,avatar}}, avatar, tg?, link?, created, seen } } }
+export function publicUser(u, uid, extra = {}) {
+  return { id: uid, label: u.label, email: u.email || null, wallets: u.wallets || [], x: u.x || null, plan: u.plan || 'free', fetches: { used: u.fetches || 0, limit: fetchLimit(u) },
+    watches: u.watches || [], hits: (u.hits || []).slice(0, MAX_HITS), tg: !!u.tg, link: u.link && u.link.exp > Date.now() ? u.link.code : null,
+    claims: u.claims || {}, avatar: u.avatar || null, created: u.created || null, ...extra };
 }
+export const labelFor = (u) => (u.x ? '@' + u.x : u.email ? u.email.replace(/^(..).*@/, '$1…@') : (u.wallets && u.wallets[0]) ? u.wallets[0].slice(0, 6) + '…' + u.wallets[0].slice(-4) : 'whale');
 export const json = (o, status = 200) => new Response(JSON.stringify(o), { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
 
 // keep the Alchemy Address Activity webhook in sync with watched wallets (needs ALCH_NOTIFY_TOKEN — the

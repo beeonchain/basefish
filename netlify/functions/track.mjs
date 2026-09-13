@@ -1,14 +1,14 @@
 // POST /api/track {ca}  (signed-in users) — promote an untracked token into tokens.config.json and dispatch a refresh.
-// Limits: 3 per account per day, 12 per day overall, 60 tracked tokens max (until the tiered pipeline lands).
-import { readSession, updateJson, readRaw, USERS_PATH, json } from '../lib/store.mjs';
+// Quota: plan-based per account (free = 5 fetches, lifetime; admins can raise fetchLimit), 12 per day site-wide, 60 tokens max.
+import { readSession, updateJson, readRaw, USERS_PATH, json, fetchLimit } from '../lib/store.mjs';
 
 const CFG = 'tokens.config.json';
-const LIMITS = { perUserDay: 3, globalDay: 12, maxTokens: 60 };
+const LIMITS = { globalDay: 12, maxTokens: 60 };
 const PALETTE = ['#4C8DFF', '#F2C14E', '#A78BFA', '#22C55E', '#F97316', '#EC4899', '#14B8A6', '#EAB308', '#8B5CF6', '#EF4444', '#06B6D4', '#84CC16', '#F43F5E', '#6366F1', '#10B981', '#D946EF'];
 
 export default async (req) => {
   if (req.method !== 'POST') return json({ error: 'method' }, 405);
-  const uid = readSession(req);
+  const uid = await readSession(req);
   if (!uid) return json({ error: 'sign in to add tokens' }, 401);
   const body = await req.json().catch(() => ({}));
   const ca = String(body.ca || '').toLowerCase();
@@ -27,10 +27,10 @@ export default async (req) => {
     await updateJson(USERS_PATH, { users: {} }, (d) => {
       const u = d.users && d.users[uid]; if (!u) { err = 'no account'; return false; }
       d.meta = d.meta || {}; const g = d.meta.trackDay === day ? (d.meta.trackCount || 0) : 0;
-      const mine = u.trackDay === day ? (u.trackCount || 0) : 0;
-      if (mine >= LIMITS.perUserDay) { err = `limit: ${LIMITS.perUserDay} tokens per day per account`; return false; }
+      const used = u.fetches || 0, lim = fetchLimit(u);
+      if (used >= lim) { err = `you used all ${lim} fetches of the ${u.plan || 'free'} plan — more plans coming soon`; return false; }
       if (g >= LIMITS.globalDay) { err = 'daily add limit reached for the whole site — try tomorrow'; return false; }
-      u.trackDay = day; u.trackCount = mine + 1; d.meta.trackDay = day; d.meta.trackCount = g + 1;
+      u.fetches = used + 1; (u.fetchLog = u.fetchLog || []).push({ ca, ts: Date.now() }); d.meta.trackDay = day; d.meta.trackCount = g + 1;
     }, 'users: track token');
   } catch (e) { err = String(e.message || e).slice(0, 120); }
   if (err) return json({ error: err }, 400);
@@ -42,7 +42,7 @@ export default async (req) => {
       if (cfg.tokens.some((t) => String(t.contract).toLowerCase() === ca)) { added = cfg.tokens.find((t) => String(t.contract).toLowerCase() === ca).sym; return false; }
       if (cfg.tokens.length >= LIMITS.maxTokens) { err = 'tracked-token cap reached (60) — more room when the tiered pipeline ships'; return false; }
       while (cfg.tokens.some((t) => t.sym === sym)) sym = sym.slice(0, 8) + Math.floor(Math.random() * 90 + 10);
-      const t = { sym, name: String(info.name || sym).slice(0, 40), color: PALETTE[cfg.tokens.length % PALETTE.length], contract: ca, exclude: [], addedBy: uid.split(':')[0], addedAt: new Date().toISOString() };
+      const t = { sym, name: String(info.name || sym).slice(0, 40), color: PALETTE[cfg.tokens.length % PALETTE.length], contract: ca, exclude: [], addedBy: uid, addedAt: new Date().toISOString() };
       if (info.cgId) t.coingecko = info.cgId;
       cfg.tokens.push(t); added = sym;
     }, `tokens: add ${sym} (${ca.slice(0, 10)}) via site`);

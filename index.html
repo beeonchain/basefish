@@ -323,6 +323,12 @@
   .modal .in{width:480px;background:var(--panel);border:1px solid var(--line2);border-radius:var(--r);padding:24px}
   .modal h4{font:900 16px var(--font-display);text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px}
   .modal p{color:var(--muted);margin:0 0 10px;font-size:13px}
+  .sirow{display:flex;gap:6px;margin:8px 0 10px}.sirow input{flex:1;height:36px;padding:0 10px;font-size:13px;border:1px solid var(--line2)}
+  .sior{display:flex;align-items:center;gap:10px;color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin:4px 0 10px}.sior i{flex:1;border-top:1px solid var(--line)}
+  .sigrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .sib{display:flex;align-items:center;justify-content:center;gap:7px;height:38px;border:1px solid var(--line2);font-weight:700;font-size:12.5px;background:var(--panel)}.sib:hover{border-color:var(--accent);color:var(--accent)}
+  .sib .sig{font:900 15px var(--font-display);color:#4285F4}
+  .nav button.acctbtn{margin-top:8px;border-top:1px solid var(--line);padding-top:12px}
   @media (prefers-reduced-motion:reduce){.live i{animation:none}.toast div,.card.show{animation:none}}
   @media (max-width:1100px){.app{grid-template-columns:64px 1fr 280px}.brand h1,.brand small,.nav button span,.tracked,.disclaimer{display:none}.nav button{justify-content:center}}
   /* basic mobile pass — must come after the 1100px query so it wins */
@@ -366,6 +372,7 @@
       <button data-view="flows"><svg viewBox="0 0 16 16"><rect x="2" y="4" width="8" height="2"/><rect x="10" y="2" width="2" height="2"/><rect x="12" y="4" width="2" height="2"/><rect x="10" y="6" width="2" height="2"/><rect x="6" y="10" width="8" height="2"/><rect x="4" y="8" width="2" height="2"/><rect x="2" y="10" width="2" height="2"/><rect x="4" y="12" width="2" height="2"/></svg><span>Flows</span></button>
       <button data-view="alerts"><svg viewBox="0 0 16 16"><rect x="6" y="2" width="4" height="2"/><rect x="5" y="4" width="6" height="2"/><rect x="4" y="6" width="8" height="4"/><rect x="3" y="10" width="10" height="2"/><rect x="7" y="13" width="2" height="2"/></svg><span>Alerts</span><em class="navbadge" id="alertBadge" style="display:none"></em></button>
       <button data-view="watch"><svg viewBox="0 0 16 16"><rect x="7" y="2" width="2" height="3"/><rect x="2" y="7" width="3" height="2"/><rect x="11" y="7" width="3" height="2"/><rect x="6" y="5" width="4" height="2"/><rect x="5" y="7" width="6" height="2"/><rect x="6" y="9" width="4" height="2"/><rect x="4" y="11" width="2" height="2"/><rect x="10" y="11" width="2" height="2"/><rect x="7" y="9" width="2" height="3"/></svg><span>Watchlist</span></button>
+      <button data-view="profile" class="acctbtn"><svg viewBox="0 0 16 16"><rect x="5" y="2" width="6" height="6"/><rect x="3" y="9" width="10" height="5"/></svg><span>Sign in</span></button>
     </nav>
     <div class="tracked">
       <div class="lbl">Tracked token</div>
@@ -417,6 +424,7 @@
     <div class="view" id="alertsView"></div>
     <div class="view" id="miniView"></div>
     <div class="wp" id="walletPage"></div>
+    <div class="view" id="profileView"></div>
     <div class="bar">
       <div class="t">Fish size = wallet size<small>Bigger fish hold more. That's it. · tiers relative to this tank</small></div>
       <div class="sz"><canvas data-tier="small"></canvas><div>Small<b id="thSmall">&lt; $10K</b></div></div>
@@ -440,6 +448,7 @@
     </div></div>
   </aside>
 
+  <div class="modal" id="signin" onclick="if(event.target===this)closeSignIn()"><div class="in" id="signinIn" style="width:440px;max-width:94vw"></div></div>
   <footer class="foot"><span><span style="color:var(--teal)">■</span> <b>WHALARIUM</b> · the Base ecosystem, as a sea of wallets.</span><span>·</span><span id="modeNote">Data shown here is <b>simulated</b> for the prototype</span><span class="r">There's always a bigger whale · NFA</span></footer>
 </div>
 
@@ -483,8 +492,9 @@ function lblChips(h,max=3){
   const ty=h.entityType||h.type||null,tc=typeColor(ty);
   const type=ty?`<span style="color:${tc};border-color:${tc}55">${esc(ty)}</span>`:'';
   const ls=wlabels(h).sort((x,y)=>labelRank(x)-labelRank(y)),vis=ls.slice(0,max),hid=ls.slice(max),id='lb'+(++LBL_UID);
+  const claim=h.claim?`<span class="id" title="claimed by its owner on Whalarium">${avatarHtml(h.claim.avatar,14)}${esc(h.claim.name||'claimed')}${h.claim.x?' · @'+esc(h.claim.x):''}</span>`:'';
   const more=hid.length?`<span id="${id}" style="display:none;padding:0;border:0;background:none;height:auto;gap:inherit">${hid.map(labelChip).join('')}</span><button class="lblmore" title="Show all ${ls.length} labels" onclick="event.stopPropagation();document.getElementById('${id}').style.display='contents';this.remove()">+${hid.length}</button>`:'';
-  return type+vis.map(labelChip).join('')+more+(h.isContract?'<span>contract</span>':'')}
+  return claim+type+vis.map(labelChip).join('')+more+(h.isContract?'<span>contract</span>':'')}
 /* label priority — identity first and loud, provenance last and quiet:
    1 identity: @handle, basename/ENS, a known entity name (incl. exchanges → their brand colour)
    2 typed/descriptive labels (fund, "Top Trader", "X Top 100 Holder", …) → neutral
@@ -667,7 +677,12 @@ let sprReady=false;
   im.onload=()=>{SPR[k]={img:im,w:im.width,h:im.height};ok++;if(++n===SPR_LIST.length){sprReady=ok>=6;try{drawMinis()}catch(e){}}};
   im.onerror=()=>{if(++n===SPR_LIST.length)sprReady=ok>=6};
   im.src='assets/tank/'+k+'.webp'})})();
-function sprFor(h){if(!sprReady)return null;if(h.rank===1&&SPR.king)return SPR.king;return SPR[h.tier]||null}
+function sprFor(h){if(!sprReady)return null;if(h.claim&&h.claim.avatar&&SPR[h.claim.avatar.fish])return SPR[h.claim.avatar.fish];if(h.rank===1&&SPR.king)return SPR.king;return SPR[h.tier]||null}
+/* claimed fish: colour filter + pixel accessory drawn over the sprite */
+function drawAvatarExtras(f,W2,H2){const av=f.h.claim&&f.h.claim.avatar;if(!av||av.acc==='none')return;ctx.save();ctx.translate(f.x,f.y);ctx.scale(f.dir,1);ctx.fillStyle='#F2C14E';
+  if(av.acc==='crown'){const u=Math.max(2,W2*.035),x0=-u*2.5,y0=-H2/2-u*3;[[0,3,5,1.5],[0,1,1,2],[2,0,1,3],[4,1,1,2]].forEach(([x,y,w,h])=>ctx.fillRect(x0+x*u,y0+y*u,w*u,h*u))}
+  else if(av.acc==='chain'){const u=Math.max(2,W2*.03),x0=-u*5,y0=H2*.18;for(let i=0;i<10;i++)ctx.fillRect(x0+i*u,y0+(i%2)*u,u,u)}
+  ctx.restore()}
 /* environment layout: seeded per token */
 let env=[],envVault=null;
 function buildEnv(seed){
@@ -777,7 +792,9 @@ function drawOneFishInner(f,t){
   if(sp){
     const W2=s*2.25,H2=W2*sp.h/sp.w;
     ctx.save();ctx.translate(f.x,f.y);ctx.scale(f.dir,1);ctx.rotate(Math.sin(t*1.5+f.phase)*0.055*AMP);
+    const av=f.h.claim&&f.h.claim.avatar;if(av&&AV.color[av.color]&&AV.color[av.color].f!=='none')ctx.filter=AV.color[av.color].f;
     ctx.drawImage(sp.img,-W2/2,-H2/2,W2,H2);ctx.restore();
+    if(av)drawAvatarExtras(f,W2,H2);
   }else{
     drawFish(f.x,f.y,s,f.dir,t,TIER[f.h.tier].c,0,f.phase);
     if(f.h.rank===1&&s>40)drawChain(f.x,f.y,s*.95,f.dir);
@@ -795,7 +812,7 @@ function fishLabel(f,t,force){
   ctx.save();ctx.globalAlpha=force==='soft'?.7:force?1:(f.h.rank<=6?.92:Math.max(f.glow,f===selected?1:0));
   ctx.font=`500 ${f.h.tier==='whale'?11:10}px Roboto Mono, monospace`;
   const tags=(f.h.tags||[]).slice(0,4);                       // tags = coloured pixel squares, never emoji
-  const lbl=(f.h.infra?(KIND[f.h.kind]||KIND.contract).n+' · ':'')+(f.h.entity||f.h.label||short(f.h.addr)).slice(0,24);
+  const lbl=(f.h.infra?(KIND[f.h.kind]||KIND.contract).n+' · ':'')+((f.h.claim&&f.h.claim.name)||f.h.entity||f.h.label||short(f.h.addr)).slice(0,24);
   const sq=tags.length?tags.length*8+4:0,tw=ctx.measureText(lbl).width+14+sq;
   const sel=f===selected||f===hovered;
   let ly=Math.max(4,f.y-s*.62-22),lx=f.x-tw/2; // never clipped above the tank
@@ -1077,7 +1094,7 @@ function buildPicker(){
   document.querySelectorAll('#tokpick button').forEach(b=>b.onclick=()=>{closeCard();loadToken(TOKENS.find(t=>t.sym===b.dataset.sym));toastMsg(`Aquarium switched to <b>$${cur.sym}</b>`,'var(--muted)')});
 }
 /* views */
-const VIEW_T={aquarium:['Whalarium','Every wallet is a fish. Top 100, live from Base.'],holders:['Top holders','The top 100 wallets of this token, ranked by balance.'],wallets:['Ecosystem Whales','Every wallet that sits in a top 100, across all tracked tokens.'],flows:['Flows','Are the biggest wallets buying or selling?'],alerts:['Alerts','What the biggest wallets just did.'],watch:['Watchlist','Wallets you follow.'],wallet:['Wallet','One wallet, across every tracked token.'],mini:['Token lookup','Any Base token by contract address.']};
+const VIEW_T={aquarium:['Whalarium','Every wallet is a fish. Top 100, live from Base.'],holders:['Top holders','The top 100 wallets of this token, ranked by balance.'],wallets:['Ecosystem Whales','Every wallet that sits in a top 100, across all tracked tokens.'],flows:['Flows','Are the biggest wallets buying or selling?'],alerts:['Alerts','What the biggest wallets just did.'],watch:['Watchlist','Wallets you follow.'],wallet:['Wallet','One wallet, across every tracked token.'],mini:['Token lookup','Any Base token by contract address.'],profile:['Account','Your accounts, plan, fish and claimed wallets.']};
 function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>{b.classList.toggle('on',b.dataset.view===v);b.classList.toggle('parent-on',b.dataset.view==='aquarium'&&v==='holders')});
   {const t=VIEW_T[v]||VIEW_T.aquarium;const a=document.getElementById('viewTitle'),b=document.getElementById('viewSub');if(a)a.textContent=t[0];if(b)b.textContent=t[1];}
   document.querySelector('.app').classList.toggle('noRail',v!=='aquarium');
@@ -1090,6 +1107,8 @@ function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>{
   document.getElementById('alertsView').classList.toggle('show',v==='alerts');
   document.getElementById('miniView').classList.toggle('show',v==='mini');
   document.getElementById('walletPage').classList.toggle('show',v==='wallet');
+  document.getElementById('profileView').classList.toggle('show',v==='profile');
+  if(v==='profile')renderProfile();
   if(v!=='wallet'&&location.hash.startsWith('#w='))history.replaceState(null,'',location.pathname+location.search);
   if(v==='wallets')renderWallets();
   if(v==='watch')renderWatch();
@@ -1398,55 +1417,120 @@ async function renderAlerts(){
     if(view==='alerts'&&(fresh.length||mine))renderAlerts();else updateAlertBadge();
   },60000);
 })();
-/* ---- Accounts: sign in with wallet or Google, keep a private watch list, link Telegram ---- */
-const ACCT={token:null,user:null,cfg:null,busy:false,seenHits:null};
-try{ACCT.token=localStorage.getItem('bf_session')||null}catch{}
+/* ---- Accounts (Privy): email code / Google / X / wallet sign-in, linked wallets, plan + fetch quota, claims, avatar ---- */
+const ACCT={token:null,user:null,cfg:null,busy:false,seenHits:null,privy:null,after:null};
+const AV={fish:['small','medium','large','whale'],color:{blue:{n:'Blue',f:'none',c:'#3B6BFF'},gold:{n:'Gold',f:'hue-rotate(185deg) saturate(1.9) brightness(1.12)',c:'#F2C14E'},coral:{n:'Coral',f:'hue-rotate(140deg) saturate(1.15)',c:'#E5484D'}},acc:{none:'None',crown:'Crown',chain:'Chain'}};
+async function loadPrivy(){if(window.PrivyCore)return;await new Promise((res,rej)=>{const s=document.createElement('script');s.src='assets/privy.js?v=1';s.onload=res;s.onerror=()=>rej(new Error('could not load the sign-in library'));document.head.appendChild(s)})}
+async function privyInit(){if(ACCT.privy)return ACCT.privy;if(!ACCT.cfg)try{ACCT.cfg=await fetch('/api/auth').then(r=>r.json())}catch{ACCT.cfg={privy:'cmtznydhb01760cl6wiylerak'}}
+  await loadPrivy();const P=window.PrivyCore;ACCT.privy=new P.Privy({appId:ACCT.cfg.privy,storage:new P.LocalStorage()});await ACCT.privy.initialize();return ACCT.privy}
+async function acctToken(){if(!ACCT.privy)return ACCT.token;try{ACCT.token=await ACCT.privy.getAccessToken()}catch{ACCT.token=null}return ACCT.token}
 const acctH=()=>ACCT.token?{'content-type':'application/json',authorization:'Bearer '+ACCT.token}:{'content-type':'application/json'};
-async function acctApi(path,body){const r=await fetch(path,{method:body?'POST':'GET',headers:acctH(),body:body?JSON.stringify(body):undefined});const j=await r.json().catch(()=>({}));if(!r.ok){if(r.status===401&&path==='/api/me'){acctSignOut(false)}throw new Error(j.error||('HTTP '+r.status))}return j}
-async function acctInit(){try{ACCT.cfg=await acctApi('/api/auth')}catch{ACCT.cfg={wallet:true,google:null}}if(ACCT.token){try{const j=await acctApi('/api/me');acctSet(j.user)}catch{}}if(view==='alerts')renderAlerts()}
-function acctSet(u){ACCT.user=u;if(u&&ACCT.seenHits===null)ACCT.seenHits=new Set((u.hits||[]).map(h=>h.id))}
-async function acctRefresh(){if(!ACCT.token||!ACCT.user)return false;try{const j=await acctApi('/api/me');const fresh=(j.user.hits||[]).filter(h=>!ACCT.seenHits.has(h.id));fresh.slice(0,3).forEach(h=>toastMsg(`<b>${esc(h.title)}</b>`,h.usd>=0?'var(--teal)':'var(--coral)'));fresh.forEach(h=>ACCT.seenHits.add(h.id));ACCT.user=j.user;return fresh.length>0}catch{return false}}
-function acctSignOut(rerender=true){ACCT.token=null;ACCT.user=null;ACCT.seenHits=null;try{localStorage.removeItem('bf_session')}catch{}if(rerender)renderAlerts()}
-function acctSession(j){ACCT.token=j.token;try{localStorage.setItem('bf_session',j.token)}catch{}ACCT.seenHits=null;acctSet(j.user);toastMsg(`Signed in as <b>${esc(j.user.label)}</b>`,'var(--teal)');renderAlerts()}
-async function signInWallet(){
-  if(ACCT.busy)return;ACCT.busy=true;
-  try{
-    const eth=window.ethereum;if(!eth){toastMsg('No wallet found — install MetaMask, Coinbase Wallet or Rabby, or use Google.','var(--coral)');return}
-    const [addr]=await eth.request({method:'eth_requestAccounts'});
-    const n=await acctApi('/api/auth',{mode:'nonce',addr});
-    const sig=await eth.request({method:'personal_sign',params:[n.message,addr]});
-    acctSession(await acctApi('/api/auth',{mode:'wallet',addr,sig,nonce:n.nonce}));
-  }catch(e){toastMsg('Sign-in failed: '+esc(e.message||'rejected'),'var(--coral)')}finally{ACCT.busy=false}
-}
-function mountGoogle(){const cid=ACCT.cfg&&ACCT.cfg.google,el=document.getElementById('gsiBtn');if(!cid||!el)return;
-  const go=()=>{try{google.accounts.id.initialize({client_id:cid,callback:async(r)=>{try{acctSession(await acctApi('/api/auth',{mode:'google',credential:r.credential}))}catch(e){toastMsg('Google sign-in failed: '+esc(e.message),'var(--coral)')}}});google.accounts.id.renderButton(el,{theme:'outline',size:'medium',text:'signin_with',shape:'rectangular'})}catch{}};
-  if(window.google&&google.accounts){go();return}
-  if(!document.getElementById('gsiScript')){const sc=document.createElement('script');sc.id='gsiScript';sc.src='https://accounts.google.com/gsi/client';sc.async=true;sc.onload=go;document.head.appendChild(sc)}else setTimeout(mountGoogle,400)}
+async function acctApi(path,body){await acctToken();const r=await fetch(path,{method:body?'POST':'GET',headers:acctH(),body:body?JSON.stringify(body):undefined});const j=await r.json().catch(()=>({}));if(!r.ok){if(r.status===401&&path.startsWith('/api/me')){acctSignOut(false)}throw new Error(j.error||('HTTP '+r.status))}return j}
+const hasPrivySession=()=>{try{return Object.keys(localStorage).some(k=>/^privy/i.test(k)&&/token|session|refresh/i.test(k))}catch{return false}};
+async function acctInit(){
+  try{ACCT.cfg=await fetch('/api/auth').then(r=>r.json())}catch{ACCT.cfg={privy:'cmtznydhb01760cl6wiylerak'}}
+  const q=new URLSearchParams(location.search);
+  if(q.get('privy_oauth_code')){ // back from Google / X
+    try{const p=await privyInit();const mode=sessionStorage.getItem('pv_mode')||'login';sessionStorage.removeItem('pv_mode');
+      if(mode==='link')await p.auth.oauth.linkWithCode(q.get('privy_oauth_code'),q.get('privy_oauth_state'));else await p.auth.oauth.loginWithCode(q.get('privy_oauth_code'),q.get('privy_oauth_state'));
+      q.delete('privy_oauth_code');q.delete('privy_oauth_state');q.delete('privy_oauth_provider');history.replaceState(null,'',location.pathname+(q.toString()?'?'+q:'')+location.hash);
+      await acctAfterLogin(mode==='link'?'Account linked':'Signed in');if(mode==='link')setView('profile');
+    }catch(e){toastMsg('Sign-in failed: '+esc(e.message||'try again'),'var(--coral)')}
+  }else if(hasPrivySession()){try{await privyInit();if(await acctToken()){const j=await acctApi('/api/me');acctSet(j.user)}}catch{}}
+  acctNav();if(view==='alerts')renderAlerts();if(view==='profile')renderProfile()}
+function acctSet(u){ACCT.user=u;if(u&&ACCT.seenHits===null)ACCT.seenHits=new Set((u.hits||[]).map(h=>h.id));acctNav()}
+function acctNav(){const b=document.querySelector('#nav button[data-view="profile"] span');if(b)b.textContent=ACCT.user?(ACCT.user.label||'Account'):'Sign in'}
+async function acctAfterLogin(msg){const j=await acctApi('/api/me?sync=1');ACCT.seenHits=null;acctSet(j.user);toastMsg(`${msg} as <b>${esc(j.user.label)}</b>`,'var(--teal)');closeSignIn();if(view==='alerts')renderAlerts();if(view==='profile')renderProfile();if(view==='wallet'&&location.hash.startsWith('#w='))openProfileByAddr(location.hash.slice(3));const f=ACCT.after;ACCT.after=null;if(f)try{f()}catch{}}
+async function acctRefresh(){if(!ACCT.user)return false;try{const j=await acctApi('/api/me');const fresh=(j.user.hits||[]).filter(h=>!ACCT.seenHits.has(h.id));fresh.slice(0,3).forEach(h=>toastMsg(`<b>${esc(h.title)}</b>`,h.usd>=0?'var(--teal)':'var(--coral)'));fresh.forEach(h=>ACCT.seenHits.add(h.id));ACCT.user=j.user;return fresh.length>0}catch{return false}}
+async function acctSignOut(rerender=true){try{if(ACCT.privy)await ACCT.privy.logout()}catch{}ACCT.token=null;ACCT.user=null;ACCT.seenHits=null;acctNav();if(rerender){if(view==='profile')setView('aquarium');else if(view==='alerts')renderAlerts()}}
+/* requireAuth(fn): run fn now if signed in, else open the sign-in modal and run it after */
+function requireAuth(fn){if(ACCT.user){fn&&fn();return true}ACCT.after=fn||null;openSignIn('login');return false}
+/* ---- sign-in / link modal ---- */
+let SI={mode:'login',email:'',step:'start'};
+function openSignIn(mode){SI={mode:mode||'login',email:'',step:'start'};renderSignIn();document.getElementById('signin').classList.add('show');setTimeout(()=>{const i=document.getElementById('siEmail');i&&i.focus()},50)}
+function closeSignIn(){const m=document.getElementById('signin');if(m)m.classList.remove('show')}
+function renderSignIn(){const link=SI.mode==='link';const el=document.getElementById('signinIn');if(!el)return;
+  const btn=(l,f,ic)=>`<button class="sib" onclick="${f}">${ic||''}<span>${l}</span></button>`;
+  el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline"><h4 style="margin:0">${link?'Link another account':'Sign in to Whalarium'}</h4><button onclick="closeSignIn()" style="color:var(--dim);font-weight:800">✕</button></div>
+    <p>${link?'Prove you own another wallet, or attach an email / X handle to this account.':'One account for your watches, alerts, claimed wallets and token fetches. Free.'}</p>
+    ${SI.step==='code'?`<div class="sirow"><input id="siCode" placeholder="6-digit code from your email" inputmode="numeric" autocomplete="one-time-code" onkeydown="if(event.key==='Enter')siEmailCode()"><button class="btn primary" onclick="siEmailCode()">${link?'Link email':'Sign in'}</button></div><div style="color:var(--dim);font-size:11.5px;margin:-4px 0 10px">Code sent to <b>${esc(SI.email)}</b> · <button onclick="SI.step='start';renderSignIn()" style="color:var(--teal);font-weight:700">change</button></div>`
+    :`<div class="sirow"><input id="siEmail" type="email" placeholder="you@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')siEmailSend()"><button class="btn primary" onclick="siEmailSend()">${link?'Link email':'Continue'}</button></div>`}
+    <div class="sior"><i></i><span>or</span><i></i></div>
+    <div class="sigrid">${btn('Google',"siOAuth('google')",'<b class="sig">G</b>')}${btn('X / Twitter',"siOAuth('twitter')",ICON_X)}${btn(link?'Verify a wallet':'Wallet',"siWallet()",'<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" shape-rendering="crispEdges"><rect x="1" y="3" width="14" height="10"/><rect x="10" y="7" width="3" height="2" fill="#fff"/></svg>')}</div>
+    <div id="siMsg" style="min-height:16px;color:var(--coral);font-size:11.5px;margin-top:8px"></div>
+    <div style="color:var(--dim);font-size:11px;margin-top:6px">Wallet sign-in is a gas-free signature. We never ask for a transaction. Powered by Privy.</div>`}
+const siMsg=(m)=>{const e=document.getElementById('siMsg');if(e)e.textContent=m||''};
+async function siEmailSend(){const em=(document.getElementById('siEmail').value||'').trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){siMsg('Enter a valid email');return}
+  try{siMsg('Sending code…');const p=await privyInit();await p.auth.email.sendCode(em);SI.email=em;SI.step='code';renderSignIn();setTimeout(()=>{const i=document.getElementById('siCode');i&&i.focus()},50)}catch(e){siMsg(e.message||'could not send the code')}}
+async function siEmailCode(){const code=(document.getElementById('siCode').value||'').trim();if(code.length<4){siMsg('Enter the code');return}
+  try{siMsg('Checking…');const p=await privyInit();if(SI.mode==='link')await p.auth.email.linkWithCode(SI.email,code);else await p.auth.email.loginWithCode(SI.email,code);await acctAfterLogin(SI.mode==='link'?'Email linked':'Signed in');if(SI.mode==='link')renderProfile()}catch(e){siMsg(e.message||'wrong code')}}
+async function siOAuth(provider){try{siMsg('Redirecting…');const p=await privyInit();sessionStorage.setItem('pv_mode',SI.mode);const r=await p.auth.oauth.generateURL(provider,location.origin+location.pathname);location.assign(r.url||r)}catch(e){siMsg(e.message||'could not start '+provider)}}
+async function siWallet(){const eth=window.ethereum;if(!eth){siMsg('No wallet found in this browser — install MetaMask, Coinbase Wallet or Rabby, or use email.');return}
+  try{siMsg('Waiting for your wallet…');const p=await privyInit();const [addr]=await eth.request({method:'eth_requestAccounts'});const cid=await eth.request({method:'eth_chainId'});
+    const wallet={address:addr,chainId:'eip155:'+parseInt(cid,16)};const {message}=await p.auth.siwe.init(wallet,location.host,location.origin);
+    const sig=await eth.request({method:'personal_sign',params:[message,addr]});
+    if(SI.mode==='link')await p.auth.siwe.linkWithSiwe(sig,wallet,message);else await p.auth.siwe.loginWithSiwe(sig,wallet,message,'login-or-sign-up');
+    await acctAfterLogin(SI.mode==='link'?'Wallet linked':'Signed in');if(SI.mode==='link')renderProfile()}catch(e){siMsg(e.message||'signature rejected')}}
+/* ---- watches (Alerts tab) ---- */
 async function acctAdd(){const w=(document.getElementById('acctW').value||'').trim(),t=document.getElementById('acctT').value;if(!/^0x[0-9a-fA-F]{40}$/.test(w)){toastMsg('Paste a full wallet address (0x…40 hex).','var(--coral)');return}
   try{const j=await acctApi('/api/me',{op:'add',w,t});ACCT.user=j.user;toastMsg(`Watching <b>${short(w.toLowerCase())}</b> for $${t}`,'var(--teal)');renderAlerts()}catch(e){toastMsg(esc(e.message),'var(--coral)')}}
-async function acctRemove(w,t){try{const j=await acctApi('/api/me',{op:'remove',w,t});ACCT.user=j.user;renderAlerts()}catch(e){toastMsg(esc(e.message),'var(--coral)')}}
-async function acctOp(op){try{const j=await acctApi('/api/me',{op});ACCT.user=j.user;renderAlerts()}catch(e){toastMsg(esc(e.message),'var(--coral)')}}
-function acctWatchPrefill(addr){setView('alerts');setTimeout(()=>{const i=document.getElementById('acctW');if(i){i.value=addr;i.scrollIntoView({block:'center'})}},50)}
+async function acctRemove(w,t){try{const j=await acctApi('/api/me',{op:'remove',w,t});ACCT.user=j.user;renderAlerts();if(view==='profile')renderProfile()}catch(e){toastMsg(esc(e.message),'var(--coral)')}}
+async function acctOp(op,extra){try{const j=await acctApi('/api/me',{op,...(extra||{})});ACCT.user=j.user;if(view==='alerts')renderAlerts();if(view==='profile')renderProfile();return j.user}catch(e){toastMsg(esc(e.message),'var(--coral)');return null}}
+function acctWatchPrefill(addr){requireAuth(()=>{setView('alerts');setTimeout(()=>{const i=document.getElementById('acctW');if(i){i.value=addr;i.scrollIntoView({block:'center'})}},50)})}
 function acctPanel(){
   const box=(inner)=>`<div style="border:1px solid var(--teal);background:var(--panel);padding:12px 14px">${inner}</div>`;
   const head=(sub)=>`<div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:8px"><b style="font-size:12px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)">Your watches</b><span style="color:var(--dim);font-size:11px">${sub}</span></div>`;
-  if(!ACCT.user){
-    const g=ACCT.cfg&&ACCT.cfg.google;setTimeout(mountGoogle,0);
-    return box(head('track any wallet · private alerts here + Telegram')+`<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="font-size:12px;color:var(--muted)">Sign in to add your own wallets to track — every tx of that wallet in a token, live.</span>
-      <button onclick="signInWallet()" style="border:1px solid var(--teal);color:var(--teal);padding:7px 12px;font-weight:800;font-size:12px">Connect wallet</button>${g?'<span id="gsiBtn"></span>':''}</div>`);
-  }
+  if(!ACCT.user)return box(head('track any wallet · private alerts here + Telegram')+`<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="font-size:12px;color:var(--muted)">Sign in to add your own wallets to track — every tx of that wallet in a token, live.</span>
+      <button class="btn primary" onclick="openSignIn('login')">Sign in</button></div>`);
   const u=ACCT.user,opts=TOKENS.map(t=>`<option>${t.sym}</option>`).join('');
   const rows=(u.watches||[]).map(w=>`<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:12px"><span><button onclick="openProfileByAddr('${w.w}')" class="mono" style="color:var(--teal);font-weight:700">${short(w.w)}</button> ${cpa(w.w,'⧉')} <span style="color:var(--dim)">·</span> $${esc(w.t)}</span><button onclick="acctRemove('${w.w}','${w.t}')" title="remove" style="color:var(--coral);font-weight:800;font-size:11px">✕ remove</button></div>`).join('');
   const hits=(u.hits||[]).slice(0,12).map(h=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:12px"><span><b>${esc(h.title)}</b><br><small style="color:var(--muted)">${esc(h.sub||'')}</small></span><span style="white-space:nowrap;color:var(--dim);font-size:11px;text-align:right">${agoStr(h.ts)} ago${h.hash?` · <a href="https://basescan.org/tx/${h.hash}" target="_blank" rel="noopener" style="color:var(--dim);font-weight:700">tx ↗</a>`:''}</span></div>`).join('');
-  const tg=u.tg?`<span style="color:var(--teal);font-weight:700">Telegram linked</span> <button onclick="acctOp('unlink')" style="color:var(--dim);font-size:11px">unlink</button>`
-    :u.link?`Send <code class="mono" style="font-weight:800;color:var(--teal)">/link ${u.link}</code> to <a href="https://t.me/${TG_BOT}" target="_blank" rel="noopener" style="color:var(--teal);font-weight:800">@${TG_BOT}</a> (15 min) — then hits also land in Telegram`
-    :`<button onclick="acctOp('linkcode')" style="border:1px solid var(--line);padding:4px 9px;font-size:11px;font-weight:700;color:var(--teal)">Link Telegram</button> <span style="color:var(--dim)">get hits in the bot too</span>`;
-  return box(head(`signed in as <b>${esc(u.label)}</b> · <button onclick="acctSignOut()" style="color:var(--dim);font-weight:700">sign out</button>`)+`
+  return box(head(`signed in as <b>${esc(u.label)}</b> · <button onclick="setView('profile')" style="color:var(--teal);font-weight:700">account</button>`)+`
     <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><input id="acctW" placeholder="0x wallet address" class="mono" style="flex:1;min-width:240px;border:1px solid var(--line);padding:7px 9px;font-size:12px;background:var(--panel2)"><select id="acctT" style="border:1px solid var(--line);padding:7px;font-size:12px;background:var(--panel2)">${opts}</select><button onclick="acctAdd()" style="border:1px solid var(--teal);color:var(--teal);padding:7px 12px;font-weight:800;font-size:12px">+ Watch</button></div>
     <div style="margin-top:8px">${rows||'<div style="padding:8px 0;color:var(--dim);font-size:12px">No watches yet — paste a wallet above. You get every transfer of that wallet in the chosen token, within seconds.</div>'}</div>
-    <div style="margin-top:10px;font-size:12px">${tg}</div>
     ${hits?`<div style="margin-top:12px"><b style="font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)">Recent hits</b> <button onclick="acctOp('clearhits')" style="color:var(--dim);font-size:11px">clear</button>${hits}</div>`:''}`);
 }
+/* ---- avatar (one fish, three colours, two accessories) ---- */
+function avatarHtml(av,size){av=av||{fish:'medium',color:'blue',acc:'none'};const c=AV.color[av.color]||AV.color.blue;const s=size||40;
+  const acc=av.acc==='crown'?`<svg viewBox="0 0 10 10" style="position:absolute;left:34%;top:-22%;width:34%;height:34%" fill="#F2C14E" shape-rendering="crispEdges"><rect x="0" y="7" width="10" height="3"/><rect x="0" y="3" width="2" height="4"/><rect x="4" y="1" width="2" height="6"/><rect x="8" y="3" width="2" height="4"/></svg>`
+    :av.acc==='chain'?`<svg viewBox="0 0 12 4" style="position:absolute;left:22%;bottom:4%;width:56%;height:18%" fill="#F2C14E" shape-rendering="crispEdges"><rect x="0" y="0" width="2" height="2"/><rect x="2" y="2" width="2" height="2"/><rect x="4" y="0" width="2" height="2"/><rect x="6" y="2" width="2" height="2"/><rect x="8" y="0" width="2" height="2"/><rect x="10" y="2" width="2" height="2"/></svg>`:'';
+  return `<span style="position:relative;display:inline-block;width:${s*1.3}px;height:${s}px;vertical-align:middle"><img src="assets/tank/${av.fish||'medium'}.webp" style="width:100%;height:100%;object-fit:contain;filter:${c.f}" alt="">${acc}</span>`}
+function avatarPick(k,v){const av={...(ACCT.user&&ACCT.user.avatar||{fish:'medium',color:'blue',acc:'none'}),[k]:v};acctOp('avatar',{avatar:av})}
+/* ---- claims + proposals (wallet page) ---- */
+async function claimWallet(addr,on){const name=on?(prompt('Display name for this wallet (shown on the fish, table and wallet page). Leave empty to use your account name.','')||''):'';if(on&&name===null)return;const u=await acctOp(on?'claim':'unclaim',{addr,name});if(u){toastMsg(on?'Wallet claimed — your name and avatar show on it after the next refresh (~2h).':'Claim removed.',on?'var(--teal)':'var(--dim)');openProfileByAddr(addr)}}
+function proposeUI(addr){const el=document.getElementById('wpPropose');if(!el)return;if(el.innerHTML){el.innerHTML='';return}
+  el.innerHTML=`<div style="border:1px solid var(--line);padding:12px 14px;margin-top:10px;display:grid;gap:8px;max-width:640px">
+    <b style="font-size:12px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)">Propose a tag or an identity</b>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><select id="ppTag" style="padding:6px"><option>CT</option><option>DEV</option><option>MM</option><option>CEX</option><option>INSIDER</option><option>SCAM</option><option>OG</option><option>DIAMOND</option><option>SNIPE</option><option>WHALE</option></select><input id="ppNote" placeholder="why? (optional, 140 chars)" style="flex:1;min-width:200px;padding:6px"><button class="btn" onclick="propose('${addr}','tag')">Propose tag</button></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><input id="ppX" placeholder="@xhandle" style="width:140px;padding:6px"><input id="ppName" placeholder="or a name" style="width:160px;padding:6px"><input id="ppEv" placeholder="evidence link (tweet, ENS, site…)" style="flex:1;min-width:200px;padding:6px"><button class="btn" onclick="propose('${addr}','identity')">Propose identity</button></div>
+    <div style="color:var(--dim);font-size:11px">Proposals are reviewed by the Whalarium team before they show on the wallet. Approved ones credit you.</div></div>`}
+async function propose(addr,kind){if(!requireAuth())return;const g=id=>(document.getElementById(id)||{}).value||'';
+  try{await acctApi('/api/propose',kind==='tag'?{kind,addr,tag:g('ppTag'),note:g('ppNote')}:{kind,addr,x:g('ppX'),name:g('ppName'),evidence:g('ppEv')});toastMsg('Proposal sent — thanks. We review these by hand.','var(--teal)');proposeUI(addr)}catch(e){toastMsg(esc(e.message),'var(--coral)')}}
+/* ---- profile view ---- */
+function renderProfile(){const el=document.getElementById('profileView');if(!el)return;
+  if(!ACCT.user){el.innerHTML=`<div style="padding:40px 16px;max-width:520px"><h3 style="margin:0 0 6px;font-size:18px">Your account</h3><p style="color:var(--muted);margin:0 0 14px">Watches, private alerts, claimed wallets, your avatar in the tank and token fetches live here. Sign in with email, Google, X or a wallet — it takes ten seconds and costs nothing.</p><button class="btn primary" onclick="openSignIn('login')">Sign in</button></div>`;return}
+  const u=ACCT.user,av=u.avatar||{fish:'medium',color:'blue',acc:'none'};
+  const box=(t,inner,right)=>`<div class="card-ui" style="padding:0"><div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 14px;border-bottom:1px solid var(--line)"><b style="font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)">${t}</b><span style="color:var(--dim);font-size:11px">${right||''}</span></div><div style="padding:12px 14px">${inner}</div></div>`;
+  const row=(k,v)=>`<div style="display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid var(--line);font-size:12.5px"><span style="color:var(--muted)">${k}</span><span style="text-align:right;min-width:0">${v}</span></div>`;
+  const wallets=(u.wallets||[]).map(w=>`<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:12px"><span>${cpa(w)} ${u.claims&&u.claims[w]?'<span class="pill id" style="height:18px;font-size:10px">claimed</span>':''}</span><span style="display:flex;gap:8px"><button onclick="openProfileByAddr('${w}')" style="color:var(--teal);font-weight:700;font-size:11px">wallet page →</button></span></div>`).join('');
+  const claims=Object.entries(u.claims||{}).map(([a,c])=>`<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:12px"><span>${avatarHtml(av,22)} <b>${esc(c.name||u.label)}</b> · ${cpa(a)}</span><button onclick="claimWallet('${a}',false)" style="color:var(--coral);font-weight:800;font-size:11px">unclaim</button></div>`).join('');
+  const pct=Math.min(100,Math.round(100*(u.fetches.used||0)/Math.max(1,u.fetches.limit)));
+  const tg=u.tg?`<span style="color:var(--teal);font-weight:700">linked</span> <button onclick="acctOp('unlink')" style="color:var(--dim);font-size:11px">unlink</button>`:u.link?`send <code class="mono" style="font-weight:800;color:var(--teal)">/link ${u.link}</code> to <a href="https://t.me/${TG_BOT}" target="_blank" rel="noopener" style="color:var(--teal);font-weight:800">@${TG_BOT}</a> (15 min)`:`<button onclick="acctOp('linkcode')" style="border:1px solid var(--line);padding:3px 8px;font-size:11px;font-weight:700;color:var(--teal)">Link Telegram</button>`;
+  el.innerHTML=`<div style="padding:16px;display:grid;gap:14px;max-width:1100px">
+    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap"><span style="border:1px solid var(--line);background:var(--panel2);padding:6px">${avatarHtml(av,56)}</span><div><h3 style="margin:0;font-size:20px">${esc(u.label)}</h3><div style="color:var(--muted);font-size:12px">${u.plan.toUpperCase()} plan · member since ${u.created?new Date(u.created).toLocaleDateString():'today'}${u.admin?' · <a href="/admin" style="color:var(--teal);font-weight:800">admin console →</a>':''}</div></div><span style="margin-left:auto;display:flex;gap:8px"><button class="btn" onclick="acctOp('sync')" title="Re-read linked accounts from Privy">Refresh</button><button class="btn ghost" onclick="acctSignOut()">Sign out</button></span></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px">
+      ${box('Accounts',`${row('Email',u.email?esc(u.email):'<span style="color:var(--dim)">none</span>')}${row('X',u.x?`<a href="https://x.com/${esc(u.x)}" target="_blank" rel="noopener" style="font-weight:700">@${esc(u.x)}</a>`:'<span style="color:var(--dim)">not linked</span>')}
+        <div style="margin-top:10px;font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)">Wallets <span style="color:var(--dim);text-transform:none;letter-spacing:0">· ${(u.wallets||[]).length}</span></div>${wallets||'<div style="padding:6px 0;color:var(--dim);font-size:12px">No wallet linked yet.</div>'}
+        <div style="margin-top:10px"><button class="btn" onclick="openSignIn('link')">+ Verify another wallet / link email / X</button></div>
+        <div style="color:var(--dim);font-size:11px;margin-top:8px">Linking a wallet asks it for one gas-free signature — that is how we know it is yours. Linked wallets can be claimed below.</div>`)}
+      ${box('Plan & usage',`${row('Plan',`<b>${u.plan}</b>`)}${row('Token fetches',`<b class="mono">${u.fetches.used} / ${u.fetches.limit}</b>`)}<div style="height:6px;background:var(--panel2);border:1px solid var(--line);margin:8px 0 6px"><i style="display:block;height:100%;width:${pct}%;background:${pct>=100?'var(--coral)':'var(--teal)'}"></i></div><div style="color:var(--dim);font-size:11px">"Fetch full data" on a pasted contract address uses one fetch. ${u.fetches.used>=u.fetches.limit?'You have used them all — bigger plans are coming soon.':`${u.fetches.limit-u.fetches.used} left on the free plan.`}</div>${row('Watches',`<b class="mono">${(u.watches||[]).length}</b> <button onclick="setView('alerts')" style="color:var(--teal);font-weight:700;font-size:11px">manage →</button>`)}${row('Telegram',tg)}`)}
+      ${box('Your fish',`<div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><span style="border:1px solid var(--line);background:#0b1730;padding:8px">${avatarHtml(av,64)}</span><div style="display:grid;gap:8px;font-size:12px">
+          <div><span style="color:var(--muted);display:inline-block;width:70px">Fish</span>${AV.fish.map(f=>`<button onclick="avatarPick('fish','${f}')" class="pill ${av.fish===f?'id':''}" style="margin-right:4px;cursor:pointer">${f}</button>`).join('')}</div>
+          <div><span style="color:var(--muted);display:inline-block;width:70px">Colour</span>${Object.entries(AV.color).map(([k,c])=>`<button onclick="avatarPick('color','${k}')" class="pill ${av.color===k?'id':''}" style="margin-right:4px;cursor:pointer"><i class="tg" style="background:${c.c};width:8px;height:8px"></i>${c.n}</button>`).join('')}</div>
+          <div><span style="color:var(--muted);display:inline-block;width:70px">Accessory</span>${Object.entries(AV.acc).map(([k,n])=>`<button onclick="avatarPick('acc','${k}')" class="pill ${av.acc===k?'id':''}" style="margin-right:4px;cursor:pointer">${n}</button>`).join('')}</div></div></div>
+        <div style="color:var(--dim);font-size:11px;margin-top:10px">Your fish swims in every tank where one of your claimed wallets is in the top 100. <span class="pill ctx">1/1 NFT of your fish — coming soon</span></div>`,'saved automatically')}
+      ${box('Claimed wallets',claims||'<div style="color:var(--dim);font-size:12px">Nothing claimed yet. Open the wallet page of one of your linked wallets and press <b>Claim this wallet</b> — your name and fish replace the anonymous one.</div>')}
+    </div></div>`}
 acctInit();
 /* ---- Mini aquarium: any Base token by contract address, on demand (holders as of yesterday via Bitquery) ---- */
 let MINI=null;
@@ -1458,12 +1542,12 @@ async function openMini(ca,info){
   MINI=info;const H=info.holders||[],sym=esc(info.sym),price=info.price||0;
   const fmtP=v=>v>=1?'$'+v.toFixed(2):v>0?'$'+v.toPrecision(3):'—';
   const rows=H.map(h=>`<tr><td class="mono" style="color:var(--dim)">${h.rank}</td><td class="mono">${cpa(h.addr)}</td><td class="r mono">${num(h.amount)}</td><td class="r mono">${h.pct!=null?h.pct.toFixed(2)+'%':'—'}</td><td class="r mono">${price?usd(h.usd):'—'}</td><td class="r"><button onclick="openProfileByAddr('${h.addr}')" style="color:var(--teal);font-weight:700;font-size:11px">wallet →</button></td></tr>`).join('');
-  const canTrack=!!ACCT.user;
+  const canTrack=!!ACCT.user;const fq=ACCT.user?ACCT.user.fetches:null;const fqTxt=fq?`${Math.max(0,fq.limit-fq.used)} of ${fq.limit} fetches left`:'sign in · 5 free fetches';
   el.innerHTML=`<div style="padding:16px;display:flex;flex-direction:column;gap:14px">
     <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">${info.logo?`<img src="${info.logo}" style="width:34px;height:34px;border:1px solid var(--line)" onerror="this.style.display='none'">`:''}<div><h3 style="margin:0;font-size:18px">$${sym} <span style="color:var(--muted);font-weight:500;font-size:13px">${esc(info.name)}</span></h3><div class="mono" style="font-size:11px;color:var(--dim)">${cpa(ca,ca)}</div></div>
       <span class="pill" style="background:var(--panel2);color:var(--muted);border:1px solid var(--line)">PREVIEW · not tracked yet</span>
       <span style="margin-left:auto;display:flex;gap:8px;align-items:center">
-        <button onclick="trackMini('${ca}')" title="${canTrack?'Add this token to Whalarium: full aquarium, flows, alerts, schools':'Sign in (Alerts tab) to add tokens'}" style="border:1px solid var(--teal);background:var(--teal);color:#fff;padding:8px 14px;font-weight:800;font-size:12px">Fetch full data</button>
+        <button onclick="trackMini('${ca}')" title="${canTrack?'Add this token to Whalarium: full aquarium, flows, alerts, schools':'Sign in to add tokens'}" style="border:1px solid var(--teal);background:var(--teal);color:#fff;padding:8px 14px;font-weight:800;font-size:12px">Fetch full data</button><span style="color:var(--dim);font-size:11px;white-space:nowrap">${fqTxt}</span>
         <a href="https://basescan.org/token/${ca}" target="_blank" rel="noopener" style="color:var(--muted);font-weight:700;font-size:11px">Basescan ↗</a><a href="https://dexscreener.com/base/${ca}" target="_blank" rel="noopener" style="color:var(--muted);font-weight:700;font-size:11px">Dexscreener ↗</a></span></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <div style="flex:1;min-width:150px;border:1px solid var(--line);padding:12px 14px;background:var(--panel)"><div style="color:var(--dim);font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;font-weight:700">Price</div><div class="mono" style="font-size:19px;font-weight:800;margin-top:4px">${fmtP(price)}</div><div style="color:${(info.chg||0)>=0?'var(--teal)':'var(--coral)'};font-size:11px;margin-top:3px">${info.chg!=null?(info.chg>=0?'+':'')+info.chg.toFixed(2)+'% 24h':'no 24h data'}</div></div>
@@ -1471,12 +1555,12 @@ async function openMini(ca,info){
       <div style="flex:1;min-width:150px;border:1px solid var(--line);padding:12px 14px;background:var(--panel)"><div style="color:var(--dim);font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;font-weight:700">Top ${H.length} hold</div><div class="mono" style="font-size:19px;font-weight:800;margin-top:4px">${info.topShare!=null?info.topShare.toFixed(1)+'%':'—'}</div><div style="color:var(--muted);font-size:11px;margin-top:3px">of supply · includes pools &amp; exchanges (unfiltered preview)</div></div>
       <div style="flex:1;min-width:150px;border:1px solid var(--line);padding:12px 14px;background:var(--panel)"><div style="color:var(--dim);font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;font-weight:700">Balances as of</div><div class="mono" style="font-size:19px;font-weight:800;margin-top:4px">${esc(info.asOf||'—')}</div><div style="color:var(--muted);font-size:11px;margin-top:3px">daily snapshot · live data once tracked</div></div>
     </div>
-    <div style="border:1px solid var(--line);background:var(--panel2);padding:10px 14px;font-size:12px"><b>Fetch full data</b> adds $${sym} to Whalarium: live top-100 with exchange/pool filtering, labels &amp; X identities, schools, flows history, instant alerts and the fish tank. Takes ~10 minutes after you click. ${canTrack?'':'<span style="color:var(--coral)">Sign in first (Alerts tab → Your watches).</span>'}</div>
+    <div style="border:1px solid var(--line);background:var(--panel2);padding:10px 14px;font-size:12px"><b>Fetch full data</b> adds $${sym} to Whalarium: live top-100 with exchange/pool filtering, labels &amp; X identities, schools, flows history, instant alerts and the fish tank. Takes ~10 minutes after you click. ${canTrack?'':'<button onclick="openSignIn(\'login\')" style="color:var(--teal);font-weight:800">Sign in</button> to use one of your 5 free fetches.'}</div>
     ${H.length?`<div style="border:1px solid var(--line);background:var(--panel);overflow-x:auto"><table style="min-width:640px"><thead><tr><th>#</th><th>Wallet</th><th class="r">Amount</th><th class="r">% supply</th><th class="r">Value</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`:`<div style="padding:26px;color:var(--dim);border:1px solid var(--line)">No holder snapshot available for this token yet${info.holdersError?': <small>'+esc(info.holdersError)+'</small>':''}.</div>`}
   </div>`;
 }
 async function trackMini(ca){
-  if(!ACCT.user){toastMsg('Sign in first — Alerts tab → Your watches → Connect wallet / Google','var(--coral)');setView('alerts');return}
+  if(!ACCT.user){requireAuth(()=>trackMini(ca));return}
   try{const j=await acctApi('/api/track',{ca});
     if(j.already){toastMsg(`$${esc(j.sym)} is already tracked`,'var(--muted)');jumpToken(j.sym);return}
     toastMsg(`<b>$${esc(j.sym)}</b> added — full aquarium in ~10 min${j.dispatched?'':' (refresh queued)'}`,'var(--teal)');
@@ -1722,12 +1806,17 @@ async function openProfile(h){
   const scan=`https://basescan.org/address/${h.addr}`;
   const ark=`https://intel.arkm.com/explorer/address/${h.addr}`;
   el.innerHTML=`<div class="whead"><div class="fishic"><img src="assets/tank/${h.rank===1?'king':h.tier}.webp" style="width:40px;height:32px;object-fit:contain" onerror="this.style.display='none'"></div>
-    <div><h3 id="wpname">${h.entity||short(h.addr)}</h3><div class="addr">${cpa(h.addr,h.addr)}</div>
+    <div><h3 id="wpname">${h.claim?`${avatarHtml(h.claim.avatar,26)} ${esc(h.claim.name||'claimed wallet')}`:(h.entity||short(h.addr))}</h3><div class="addr">${cpa(h.addr,h.addr)}</div>
       <div class="lbls" id="wplbls" style="margin-top:6px">${[tagPills(h),h.rank?`<span><i class="tg" style="background:${t.c};width:7px;height:7px"></i>rank #${h.rank} in $${h.tokSym||cur.sym} · ${t.n.toLowerCase()}</span>`:`<span class="ctx">free swimmer · not in a tracked top 100</span>`,lblChips(h,5)].join('')}</div></div>
     <div class="val"><small id="wpvlabel">Tracked positions · Base</small><b class="mono" id="wpval">—</b></div>
-    <div class="wbtns"><button onclick="setView('aquarium')">← Aquarium</button><button id="wpcopy">Copy address</button><button id="wpshare">Share wallet</button><button id="wpwatch"></button><button onclick="acctWatchPrefill('${h.addr.toLowerCase()}')" title="get an alert on every tx of this wallet">Alert me</button><span id="wpsocials" style="display:contents"></span><a href="${ark}" target="_blank" rel="noopener">Arkham ↗</a><a href="${scan}" target="_blank" rel="noopener">Basescan ↗</a></div></div>
+    <div class="wbtns"><button onclick="setView('aquarium')">← Aquarium</button><button id="wpcopy">Copy address</button><button id="wpshare">Share wallet</button><button id="wpwatch"></button><button onclick="acctWatchPrefill('${h.addr.toLowerCase()}')" title="get an alert on every tx of this wallet">Alert me</button><span id="wpclaim" style="display:contents"></span><button onclick="requireAuth(()=>proposeUI('${h.addr.toLowerCase()}'))" title="suggest a tag or who this wallet is">Propose tag / identity</button><span id="wpsocials" style="display:contents"></span><a href="${ark}" target="_blank" rel="noopener">Arkham ↗</a><a href="${scan}" target="_blank" rel="noopener">Basescan ↗</a></div></div>
+  <div id="wpPropose" style="padding:0 16px"></div>
   <div class="wgrid" id="wpgrid">${loadingHtml('Loading positions, funding and transfers')}</div>`;
   drawMinis();
+  {const a=h.addr.toLowerCase(),cl=document.getElementById('wpclaim');const mine=ACCT.user&&(ACCT.user.wallets||[]).includes(a),claimed=ACCT.user&&ACCT.user.claims&&ACCT.user.claims[a];
+    cl.innerHTML=claimed?`<button onclick="claimWallet('${a}',false)" style="color:var(--teal)">Claimed ✓ <small style="color:var(--dim)">· unclaim</small></button><span class="pill ctx" style="align-self:center">1/1 NFT · coming soon</span>`
+      :mine?`<button onclick="claimWallet('${a}',true)" style="border-color:var(--teal);color:var(--teal)">Claim this wallet</button>`
+      :`<button onclick="requireAuth(()=>{openSignIn('link')})" title="Sign in and verify this wallet (one gas-free signature) to claim it">Claim this wallet</button>`;}
   document.getElementById('wpcopy').onclick=e=>{navigator.clipboard&&navigator.clipboard.writeText(h.addr);e.target.textContent='copied';setTimeout(()=>e.target.textContent='Copy address',1200)};
   document.getElementById('wpshare').onclick=()=>{const u=location.origin+location.pathname+'?token='+cur.sym.toLowerCase()+'%23w='+h.addr;navigator.clipboard&&navigator.clipboard.writeText(location.href);toastMsg('Wallet link copied','var(--teal)')};
   const wb=document.getElementById('wpwatch');
@@ -1742,7 +1831,7 @@ async function openProfile(h){
     if(m)positions.push({sym:tk.sym,color:tk.color,usd:m.usd,pct:m.pct,amount:m.amount,rank:list.indexOf(m)+1});}
   if(!positions.length&&h.value)positions.push({sym:cur.sym,color:cur.color,usd:h.value,pct:h.pct,amount:h.amount,rank:h.rank||0});
   const grid=document.getElementById('wpgrid');
-  if(p&&p.entity&&p.entity.name)document.getElementById('wpname').textContent=p.entity.name;
+  if(p&&p.entity&&p.entity.name&&!h.claim)document.getElementById('wpname').textContent=p.entity.name;
   // profile JSON may carry more labels than the holders list — re-render the chip row with the union
   if(p&&p.entity&&((p.entity.labels||[]).length||p.entity.type||p.entity.label)){
     const m2={...h,entity:h.entity||p.entity.name,entityType:h.entityType||p.entity.type,label:h.label||p.entity.label,labels:[...(h.labels||[]),...(p.entity.labels||[])]};

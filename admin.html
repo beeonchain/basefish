@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>WHALARIUM · admin</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Doto:wght@700;900&family=Inter+Tight:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;700&display=swap">
+<style>
+  :root{--panel:#fff;--panel2:#EEF0F3;--line:#DEE1E7;--line2:#B1B7C3;--text:#0A0B0D;--muted:#5B616E;--dim:#8A91A0;--accent:#0000FF;--coral:#E5484D;--font:'Inter Tight',system-ui,sans-serif;--mono:'Roboto Mono',ui-monospace,monospace}
+  *{box-sizing:border-box}body{margin:0;background:#fff;color:var(--text);font:13px/1.45 var(--font);-webkit-font-smoothing:antialiased}
+  header{display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--line)}
+  header h1{font:900 20px/1 'Doto',monospace;letter-spacing:.02em;margin:0;text-transform:uppercase}header h1 em{font-style:normal;color:var(--accent)}
+  header a{color:var(--accent);font-weight:700;text-decoration:none}
+  main{padding:16px 20px;display:grid;gap:16px;max-width:1400px}
+  .box{border:1px solid var(--line);background:var(--panel)}.box>h3{margin:0;padding:9px 14px;font:700 11px var(--font);letter-spacing:.09em;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .box>div{padding:12px 14px}
+  table{width:100%;border-collapse:collapse}th{text-align:left;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);padding:8px 10px;border-bottom:1px solid var(--line2);white-space:nowrap}td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:12.5px}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}.dim{color:var(--dim)}.r{text-align:right}
+  button,select,input{font:inherit;color:inherit}button{cursor:pointer;background:none;border:1px solid var(--line2);padding:5px 10px;font-weight:700;font-size:12px}button:hover{border-color:var(--accent);color:var(--accent)}
+  button.p{background:var(--accent);border-color:var(--accent);color:#fff}button.d{color:var(--coral);border-color:var(--coral)}
+  input,select{border:1px solid var(--line);background:var(--panel2);padding:5px 8px;font-size:12px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px}
+  .pill{display:inline-flex;align-items:center;height:20px;padding:0 7px;border:1px solid var(--line);font-size:10.5px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  .kv{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-top:1px solid var(--line)}.kv:first-child{border-top:0}
+  #toast{position:fixed;right:16px;bottom:16px;display:grid;gap:6px}#toast div{background:var(--text);color:#fff;padding:8px 12px;font-size:12px;border-left:3px solid var(--accent)}
+</style>
+</head>
+<body>
+<header><h1>Whalarium <em>admin</em></h1><span class="dim" id="who">checking session…</span><a href="/" style="margin-left:auto">← site</a></header>
+<main id="main"><div class="dim" style="padding:20px">Loading…</div></main>
+<div id="toast"></div>
+<script src="assets/privy.js?v=1"></script>
+<script>
+const APP_ID='cmtznydhb01760cl6wiylerak';
+let privy=null,token=null,DATA=null;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const short=a=>a?a.slice(0,6)+'…'+a.slice(-4):'';
+const ago=ts=>{if(!ts)return '—';const m=Math.max(1,Math.round((Date.now()-ts)/60000));return m<60?m+'m ago':m<1440?Math.floor(m/60)+'h ago':Math.floor(m/1440)+'d ago'};
+const toast=(m,bad)=>{const t=document.getElementById('toast');const d=document.createElement('div');d.textContent=m;if(bad)d.style.borderColor='#E5484D';t.appendChild(d);setTimeout(()=>d.remove(),3500)};
+async function api(body){token=await privy.getAccessToken();const r=await fetch('/api/admin',{method:body?'POST':'GET',headers:{'content-type':'application/json',authorization:'Bearer '+token},body:body?JSON.stringify(body):undefined});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||('HTTP '+r.status));return j}
+async function main(){
+  try{privy=new PrivyCore.Privy({appId:APP_ID,storage:new PrivyCore.LocalStorage()});await privy.initialize();token=await privy.getAccessToken()}catch(e){}
+  if(!token){document.getElementById('who').textContent='not signed in';document.getElementById('main').innerHTML='<div style="padding:20px">Sign in on the <a href="/">main site</a> first (same browser), then come back here.</div>';return}
+  try{DATA=await api();}catch(e){document.getElementById('who').textContent='signed in';document.getElementById('main').innerHTML=`<div style="padding:20px;color:#E5484D">${esc(e.message)} — add your DID / email / wallet to <code>ADMIN_IDS</code> in the Netlify environment.</div>`;return}
+  document.getElementById('who').textContent='admin';render()}
+async function op(body,msg){try{await api(body);toast(msg||'done');DATA=await api();render()}catch(e){toast(e.message,true)}}
+function render(){const d=DATA,m=document.getElementById('main');
+  const users=d.users.map(u=>`<tr><td><b>${esc(u.label)}</b><br><span class="dim mono" style="font-size:10.5px">${esc(u.id)}</span></td><td>${u.email?esc(u.email):'<span class="dim">—</span>'}<br>${u.x?'@'+esc(u.x):''}</td><td class="mono" style="font-size:11px">${u.wallets.map(w=>`<a href="/#w=${w}" target="_blank" style="color:inherit">${short(w)}</a>`).join('<br>')||'<span class="dim">—</span>'}</td>
+    <td><select onchange="op({op:'setPlan',uid:'${u.id}',plan:this.value},'plan updated')">${Object.keys(d.plans).map(p=>`<option ${u.plan===p?'selected':''}>${p}</option>`).join('')}</select></td>
+    <td class="mono">${u.fetches} / ${u.limit} <button onclick="op({op:'addCredits',uid:'${u.id}',n:5},'+5 fetches')" title="add 5 fetches">+5</button> <button onclick="const v=prompt('New fetch limit for ${esc(u.label)}',${u.limit});if(v!=null)op({op:'setLimit',uid:'${u.id}',limit:+v},'limit set')">set</button></td>
+    <td class="mono r">${u.watches}</td><td class="mono r">${u.claims}</td><td>${u.tg?'<span class="pill">tg</span>':''}</td><td class="dim">${ago(u.seen)}</td></tr>`).join('');
+  const toks=d.tokens.map(t=>`<tr><td><b>$${esc(t.sym)}</b> <span class="dim">${esc(t.name||'')}</span></td><td class="mono" style="font-size:11px">${short(t.contract)}</td><td>${t.curated?'<span class="pill" style="color:var(--accent);border-color:var(--accent)">curated</span>':t.addedBy?`<span class="pill">user</span>`:'<span class="pill">auto</span>'}${t.trending?' <span class="pill">trending</span>':''}</td><td class="mono r">${t.cap?'$'+(t.cap/1e6).toFixed(1)+'M':'—'}</td>
+    <td class="r"><button onclick="op({op:'curate',sym:'${t.sym}',on:${t.curated?'false':'true'}},'${t.curated?'back to auto':'curated'}')">${t.curated?'un-curate':'keep forever'}</button> <button class="d" onclick="if(confirm('Remove $${t.sym} from the tracked list?'))op({op:'removeToken',sym:'${t.sym}'},'removed')">remove</button></td></tr>`).join('');
+  const props=(d.proposals||[]).map(p=>`<tr><td>${p.kind==='tag'?`<span class="pill">${esc(p.tag)}</span> ${esc(p.note||'')}`:`identity: ${p.x?'@'+esc(p.x):''} ${esc(p.name||'')} <a href="${esc(p.evidence||'#')}" target="_blank" class="dim">evidence ↗</a>`}</td><td class="mono"><a href="/#w=${p.addr}" target="_blank" style="color:inherit">${short(p.addr)}</a></td><td class="dim">${esc(p.by||'')} · ${ago(p.ts)}</td><td class="r"><button class="p" onclick="op({op:'proposal',id:'${p.id}',decision:'approve'},'approved')">approve</button> <button class="d" onclick="op({op:'proposal',id:'${p.id}',decision:'reject'},'rejected')">reject</button></td></tr>`).join('');
+  m.innerHTML=`
+  <div class="grid">
+    <div class="box"><h3>Pipeline</h3><div>
+      <div class="kv"><span class="dim">Last run</span><span class="mono">${d.run?`${esc(d.run.tier)} · ${ago(new Date(d.run.finished||d.run.started).getTime())}${d.run.errors&&d.run.errors.length?` · <span style="color:var(--coral)">${d.run.errors.length} errors</span>`:''}`:'—'}</span></div>
+      <div class="kv"><span class="dim">Tokens refreshed</span><span class="mono">${d.run?d.run.tokens:'—'}</span></div>
+      <div class="kv"><span class="dim">Webhook addresses</span><span class="mono">${d.run&&d.run.webhook?`${d.run.webhook.want??d.run.webhook.have??'—'}`:'—'}</span></div>
+      <div class="kv"><span class="dim">Users / bot chats</span><span class="mono">${d.users.length} / ${d.chats}</span></div>
+    </div></div>
+    <div class="box"><h3>Telegram bot</h3><div>
+      <div class="kv"><span class="dim">Global pause</span><span><b style="color:${d.pause.on?'var(--coral)':'var(--accent)'}">${d.pause.on?'ON — only admins + allowlist get alerts':'off — everyone gets alerts'}</b></span></div>
+      <div style="margin-top:10px"><button class="${d.pause.on?'p':'d'}" onclick="op({op:'pause',on:${d.pause.on?'false':'true'}},'pause ${d.pause.on?'off':'on'}')">${d.pause.on?'Resume for everyone':'Pause for everyone'}</button> <span class="dim">allowlist: ${(d.pause.allow||[]).length} chats (manage with /allow in the bot)</span></div>
+    </div></div>
+    <div class="box"><h3>Add a token permanently</h3><div>
+      <div style="display:flex;gap:6px"><input id="ca" placeholder="0x contract address on Base" class="mono" style="flex:1"><button class="p" onclick="const v=document.getElementById('ca').value.trim();if(/^0x[0-9a-fA-F]{40}$/.test(v))op({op:'addToken',ca:v},'added + refresh dispatched');else toast('bad address',true)">Add &amp; curate</button></div>
+      <div class="dim" style="margin-top:8px">Curated tokens are never dropped by the daily discovery and don't use anyone's fetch quota. A refresh is dispatched right away (~10 min).</div>
+    </div></div>
+  </div>
+  <div class="box"><h3>Proposals <span class="dim">${(d.proposals||[]).length} open</span></h3><div style="padding:0">${props?`<table><thead><tr><th>Proposal</th><th>Wallet</th><th>By</th><th></th></tr></thead><tbody>${props}</tbody></table>`:'<div style="padding:14px" class="dim">Nothing waiting.</div>'}</div></div>
+  <div class="box"><h3>Users <span class="dim">${d.users.length} · usage per account</span></h3><div style="padding:0;overflow-x:auto"><table><thead><tr><th>Account</th><th>Email / X</th><th>Wallets</th><th>Plan</th><th>Fetches</th><th class="r">Watches</th><th class="r">Claims</th><th></th><th>Seen</th></tr></thead><tbody>${users||'<tr><td colspan="9" class="dim">No accounts yet.</td></tr>'}</tbody></table></div></div>
+  <div class="box"><h3>Tracked tokens <span class="dim">${d.tokens.length}</span></h3><div style="padding:0;overflow-x:auto"><table><thead><tr><th>Token</th><th>Contract</th><th>Source</th><th class="r">Cap</th><th></th></tr></thead><tbody>${toks}</tbody></table></div></div>`}
+main();
+</script>
+</body>
+</html>

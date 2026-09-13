@@ -6,7 +6,7 @@ import fs from 'node:fs';
 
 const CFG = 'tokens.config.json';
 // 20 biggest + up to 3 trending, 25 in total (incl. the hand-curated ones). Anyone who wants another token pastes its CA on the site.
-const LIMITS = { autoTop: 20, trending: 3, total: 25, hot: 25 };
+const LIMITS = { autoTop: 20, trending: 3, total: 23, hot: 60 };
 const MIN = { mcap: 1_500_000, liq: 120_000, liqTrending: 60_000 };
 // not "holders of a Base project": stables, wrapped/bridged/staked majors, RWA/treasury wrappers, LP receipts
 const EXCL_SYM = /^(usdc|usdbc|usdt|dai|eurc|eur\w*|usde|susde|usds|susds|gho|frax|lusd|tusd|pyusd|ausd|apxusd|apyusd|usdai|susdai|crvusd|reusd|usd0|syrupusdc|steakusdc|sdai|ustbl|eutbl|thbill|jtrsy|jaaa|usad|weth|eth|aweth|cbeth|acbeth|wsteth|weeth|rseth|wrseth|reth|lseth|ezeth|steth|meth|sfrxeth|frxeth|ynETH|wbtc|cbbtc|tbtc|lbtc|fbtc|solvbtc|unibtc|gtbtc|clbtc|xbtc|jitosol|wsol|sol|bnb|wbnb|matic|pol|avax|link|aave|comp|crv|snx|1inch|cake|uni|sushi|bal|ldo|eigen|pendle|ena|ethfi|zro|icp|tao|tel|chz|trac|zen|xcn|morpho|op|arb)$/i;
@@ -85,14 +85,15 @@ export function mergeConfig(cfg, picked) {
   const byAddr = new Map(manual.map((t) => [String(t.contract).toLowerCase(), t]));
   const syms = new Set(manual.map((t) => t.sym));
   const out = [...manual];
+  let autoN = 0; // the cap counts discovered tokens only — curated + user-added ones ride on top
   for (const r of picked) {
-    if (out.length >= LIMITS.total) break;
+    if (autoN >= LIMITS.total) break;
     if (byAddr.has(r.addr)) { const m = byAddr.get(r.addr); if (r.trending) m.trending = true; else delete m.trending; m.cap = Math.round(r.cap); continue; }
     let sym = r.sym; while (syms.has(sym)) sym = sym.slice(0, 10) + Math.floor(Math.random() * 90 + 10); syms.add(sym);
     const prev = tokens.find((t) => String(t.contract).toLowerCase() === r.addr) || {};
     const t = { sym, name: r.name, color: prev.color || colorFor(sym), contract: r.addr, exclude: prev.exclude || [], auto: true, cap: Math.round(r.cap) };
     if (r.cg) t.coingecko = r.cg; if (r.logo) t.logoUrl = r.logo; if (r.trending) t.trending = true;
-    out.push(t);
+    out.push(t); autoN++;
   }
   // tiers: the original five + the biggest/most-traded run every 2h, everything else daily
   const rank = new Map(picked.map((r, i) => [r.addr, i]));

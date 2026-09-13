@@ -1401,6 +1401,10 @@ try {
   let manualTags = {}; try { manualTags = JSON.parse(fs.readFileSync(MANUAL_TAGS_PATH, 'utf8')); } catch {}
   const contracts = Object.fromEntries(cfg.tokens.map(t => [t.sym, t.contract.toLowerCase()]));
   const tagsOut = computeTags({ ALLTOPS, frCache, fundCache, manual: manualTags, firstBuy, launch: launchCache, contracts });
+  // claimed wallets (site accounts): name + avatar ride on the holder rows so the tank / tables / wallet page can show them
+  const CLAIMS = {};
+  try { const us = JSON.parse(fs.readFileSync('data/users.json', 'utf8')).users || {}; for (const [uid, u] of Object.entries(us)) for (const [a, c] of Object.entries(u.claims || {})) if ((u.wallets || []).includes(a)) CLAIMS[a] = { name: c.name || u.label || null, x: u.x || null, avatar: u.avatar || null, uid }; } catch {}
+  const IDENT = {}; for (const [a, m] of Object.entries(manualTags)) if (m && m.identity) IDENT[a.toLowerCase()] = m.identity;
   const tagCount = {}; for (const g of Object.values(tagsOut.global)) for (const t of g.tags) tagCount[t] = (tagCount[t] || 0) + 1;
   for (const pt of Object.values(tagsOut.perToken)) for (const e of Object.values(pt)) for (const t of e.tags) tagCount[t] = (tagCount[t] || 0) + 1;
   console.log('tags:', JSON.stringify(tagCount), `· first-buy cache ${Object.keys(firstBuy).length} pairs (budget left ${firstBuyBudget}) · launches ${Object.values(launchCache).filter(Boolean).length}`);
@@ -1415,6 +1419,9 @@ try {
         if ((h.school ?? null) !== sid) { h.school = sid; touched = true; }
       }
       if (applyTags(d, sym, tagsOut)) touched = true;
+      for (const h of d.holdersTop || []) { const a = h.addr.toLowerCase(); const c = CLAIMS[a] || null, idn = IDENT[a] || null;
+        if (JSON.stringify(h.claim || null) !== JSON.stringify(c)) { if (c) h.claim = c; else delete h.claim; touched = true; }
+        if (idn && idn.x && !(h.labels || []).some(l => /^@/.test(l))) { h.labels = [...(h.labels || []), '@' + idn.x]; touched = true; } }
       if (touched) fs.writeFileSync(p, JSON.stringify(d));
     } catch (e) {}
   }

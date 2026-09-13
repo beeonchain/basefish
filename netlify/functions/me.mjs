@@ -1,31 +1,42 @@
-// Account endpoint. GET → profile (watches, private hits, TG link state).
-// POST {op:'add', w, t} | {op:'remove', w, t} | {op:'linkcode'} | {op:'unlink'} | {op:'clearhits'}
-import { readRaw, updateJson, USERS_PATH, SUBS_PATH, readSession, publicUser, json, trackedSyms, MAX_WATCHES, webhookAddresses } from '../lib/store.mjs';
+// Account endpoint (Privy-authenticated). GET → profile (creates the record on first visit, syncs linked accounts).
+// POST {op:'add', w, t} | {op:'remove', w, t} | {op:'linkcode'} | {op:'unlink'} | {op:'clearhits'} | {op:'sync'}
+//      | {op:'claim', addr, name?} | {op:'unclaim', addr} | {op:'avatar', avatar:{fish,color,acc}}
+import { readRaw, updateJson, USERS_PATH, SUBS_PATH, readSession, privyUser, publicUser, labelFor, json, trackedSyms, planOf, webhookAddresses, isAdmin } from '../lib/store.mjs';
+
+const AVATAR = { fish: ['small', 'medium', 'large', 'whale'], color: ['blue', 'gold', 'coral'], acc: ['none', 'crown', 'chain'] };
+function applyLinked(u, la) { if (!la) return; u.wallets = la.wallets; u.email = la.email; u.x = la.x; u.label = labelFor(u); }
 
 export default async (req) => {
-  const uid = readSession(req);
+  const uid = await readSession(req);
   if (!uid) return json({ error: 'sign in' }, 401);
+  const url = new URL(req.url);
   if (req.method === 'GET') {
     const d = await readRaw(USERS_PATH, { users: {} });
-    const u = d.users && d.users[uid];
-    return u ? json({ user: publicUser(u, uid) }) : json({ error: 'no account' }, 401);
+    let u = d.users && d.users[uid];
+    if (!u || url.searchParams.get('sync')) { // first visit: create the record with the accounts Privy knows about
+      const la = await privyUser(uid, { fresh: true });
+      await updateJson(USERS_PATH, { users: {} }, (dd) => { dd.users = dd.users || {}; const x = dd.users[uid] || (dd.users[uid] = { watches: [], hits: [], fetches: 0, plan: 'free', created: Date.now() }); applyLinked(x, la); x.seen = Date.now(); u = x; }, 'users: sign-in');
+    }
+    return json({ user: publicUser(u, uid, { admin: isAdmin(uid, u) }) });
   }
   if (req.method !== 'POST') return json({ error: 'method' }, 405);
   const body = await req.json().catch(() => ({}));
   const op = String(body.op || '');
   const TOKENS = await trackedSyms();
+  const la = op === 'sync' || op === 'claim' ? await privyUser(uid, { fresh: true }) : null;
   let out = null, err = null, addedAddr = null;
   try {
     await updateJson(USERS_PATH, { users: {} }, (d) => {
       const u = d.users && d.users[uid];
       if (!u) { err = 'no account'; return false; }
       u.watches = u.watches || []; u.hits = u.hits || [];
+      if (la) applyLinked(u, la);
       if (op === 'add') {
         const w = String(body.w || '').toLowerCase(), t = String(body.t || '').toUpperCase();
         if (!/^0x[0-9a-f]{40}$/.test(w)) { err = 'that is not a wallet address'; return false; }
         if (!TOKENS.includes(t)) { err = 'unknown token'; return false; }
         if (u.watches.some((x) => x.w === w && x.t === t)) { err = 'already watching'; return false; }
-        if (u.watches.length >= MAX_WATCHES) { err = `limit is ${MAX_WATCHES} watches`; return false; }
+        if (u.watches.length >= planOf(u).watches) { err = `your plan allows ${planOf(u).watches} watches`; return false; }
         u.watches.push({ w, t, added: Date.now() }); addedAddr = w;
       } else if (op === 'remove') {
         const w = String(body.w || '').toLowerCase(), t = String(body.t || '').toUpperCase();
@@ -38,9 +49,21 @@ export default async (req) => {
         u.tg = null; u.link = null;
       } else if (op === 'clearhits') {
         u.hits = [];
+      } else if (op === 'sync') {
+        // linked accounts refreshed above
+      } else if (op === 'claim') {
+        const a = String(body.addr || '').toLowerCase();
+        if (!(u.wallets || []).includes(a)) { err = 'link that wallet to your account first (Account → verify another wallet)'; return false; }
+        u.claims = u.claims || {}; u.claims[a] = { name: String(body.name || '').slice(0, 24) || null, ts: Date.now() };
+      } else if (op === 'unclaim') {
+        const a = String(body.addr || '').toLowerCase(); if (u.claims) delete u.claims[a];
+      } else if (op === 'avatar') {
+        const v = body.avatar || {};
+        const pick = (k, dflt) => (AVATAR[k].includes(v[k]) ? v[k] : dflt);
+        u.avatar = { fish: pick('fish', 'medium'), color: pick('color', 'blue'), acc: pick('acc', 'none') };
       } else { err = 'unknown op'; return false; }
       u.seen = Date.now();
-      out = publicUser(u, uid);
+      out = publicUser(u, uid, { admin: isAdmin(uid, u) });
     }, `users: ${op}`);
   } catch (e) { err = String(e.message || e).slice(0, 160); }
   if (err) return json({ error: err }, 400);
