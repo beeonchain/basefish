@@ -17,8 +17,9 @@ const tracked = new Map((index.tokens || []).map((t) => [String(t.sym).toUpperCa
 const syms = new Map();
 for (const f of fs.readdirSync(DATA)) {
   if (!f.endsWith('.json') || ['index.json', 'toklogos.json', 'alerts.json', 'alerts_state.json', 'codes.json', 'contracts.json', 'basenames.json', 'users.json', 'proposals.json', 'run_log.json'].includes(f)) continue;
-  const d = rd(`${DATA}/${f}`); if (!d || !Array.isArray(d.holders)) continue;
-  for (const h of d.holders) for (const l of (h.labels || [])) {
+  const d = rd(`${DATA}/${f}`); if (!d) continue;
+  const hs = [...(Array.isArray(d.holdersTop) ? d.holdersTop : []), ...(Array.isArray(d.holders) ? d.holders : []), ...(Array.isArray(d.infra) ? d.infra : [])];
+  for (const h of hs) for (const l of (h.labels || [])) {
     const m = String(l).match(/^(\S+?) top (\d+) holder$/i); if (!m) continue;
     const k = m[1].toUpperCase(); syms.set(k, (syms.get(k) || 0) + 1);
   }
