@@ -1411,11 +1411,19 @@ if (process.env.ALCH_NOTIFY_TOKEN) {
         want.add(a); n++;
       }
     }
-    try { const subs = JSON.parse(fs.readFileSync('data/tg_subs.json', 'utf8')); for (const c of Object.values(subs.chats || {})) for (const w of c.watches || []) want.add(w.w.toLowerCase()); } catch {}
-    try { const us = JSON.parse(fs.readFileSync('data/users.json', 'utf8')); for (const u of Object.values(us.users || {})) for (const w of u.watches || []) want.add(w.w.toLowerCase()); } catch {}
+    // a user's watch is explicit intent ("fire on every transfer"): it is never dropped as noise below WH_NOISE_WATCH
+    // transfers / 24h (spam airdrops alone can push a normal wallet past the whale cap), and a watched wallet that was
+    // evicted under the old cap is put back
+    const watched = new Set();
+    try { const subs = JSON.parse(fs.readFileSync('data/tg_subs.json', 'utf8')); for (const c of Object.values(subs.chats || {})) for (const w of c.watches || []) watched.add(w.w.toLowerCase()); } catch {}
+    try { const us = JSON.parse(fs.readFileSync('data/users.json', 'utf8')); for (const u of Object.values(us.users || {})) for (const w of u.watches || []) watched.add(w.w.toLowerCase()); } catch {}
+    const NOISE_MAX = Number(process.env.WH_NOISE_MAX || 100), NOISE_WATCH = Number(process.env.WH_NOISE_WATCH || 1000); // >100 tx/day = bot, not a whale; watches get 10× headroom
+    let unpaused = 0;
+    for (const a of watched) { want.add(a); if (noisy[a] && !(noisy[a].watched && noisy[a].n >= NOISE_WATCH)) { delete noisy[a]; unpaused++; } }
+    if (unpaused) { try { const st = JSON.parse(fs.readFileSync('data/alerts_state.json', 'utf8')); st.noisy = noisy; fs.writeFileSync('data/alerts_state.json', JSON.stringify(st)); } catch {} }
     // noise audit (every run): how many transfers did each candidate make in the last 24h? A real holder makes a handful;
     // a bot / router / MM makes hundreds and would flood the webhook (Alchemy pauses it: CAPPED_CAPACITY). Evict those.
-    const NOISE_MAX = Number(process.env.WH_NOISE_MAX || 100); let audited = 0, evicted = 0; // anything over 100 tx/day is a bot, not a whale
+    let audited = 0, evicted = 0;
     if (ALCH_KEY) {
       const rpc = async (m, ps) => { const r = await fetch(`https://base-mainnet.g.alchemy.com/v2/${ALCH_KEY}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: m, params: ps }) }); const j = await r.json(); if (j.error) throw new Error(j.error.message); return j.result; };
       try {
@@ -1424,11 +1432,12 @@ if (process.env.ALCH_NOTIFY_TOKEN) {
         for (let i = 0; i < cands.length; i += 8) {
           await Promise.all(cands.slice(i, i + 8).map(async a => {
             try {
+              const cap = watched.has(a) ? NOISE_WATCH : NOISE_MAX;
               const [out, inn] = await Promise.all([
-                rpc('alchemy_getAssetTransfers', [{ fromBlock, toBlock: 'latest', fromAddress: a, category: ['erc20', 'external'], maxCount: '0x' + NOISE_MAX.toString(16), excludeZeroValue: false }]),
-                rpc('alchemy_getAssetTransfers', [{ fromBlock, toBlock: 'latest', toAddress: a, category: ['erc20', 'external'], maxCount: '0x' + NOISE_MAX.toString(16), excludeZeroValue: false }])]);
+                rpc('alchemy_getAssetTransfers', [{ fromBlock, toBlock: 'latest', fromAddress: a, category: ['erc20', 'external'], maxCount: '0x' + cap.toString(16), excludeZeroValue: false }]),
+                rpc('alchemy_getAssetTransfers', [{ fromBlock, toBlock: 'latest', toAddress: a, category: ['erc20', 'external'], maxCount: '0x' + cap.toString(16), excludeZeroValue: false }])]);
               const n = ((out && out.transfers) || []).length + ((inn && inn.transfers) || []).length; audited++;
-              if (n >= NOISE_MAX) { noisy[a] = { ts: Date.now(), n, by: 'audit' }; want.delete(a); evicted++; }
+              if (n >= cap) { noisy[a] = { ts: Date.now(), n, by: 'audit', ...(watched.has(a) ? { watched: true } : {}) }; want.delete(a); evicted++; }
             } catch {}
           }));
         }

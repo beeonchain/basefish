@@ -28,16 +28,17 @@ function throttled(addr, feed) {
 // noise breaker: an address that fires this many notifications in an hour is a bot / contract, not a whale.
 // Drop it from the webhook (every notification costs compute units) and remember it so the pipeline's sync
 // doesn't add it back. Real whales never come close to this.
-const NOISE = { perHour: 12 }; // per function instance — several instances run in parallel, so the real rate is higher
+const NOISE = { perHour: 12, perHourWatched: 80 }; // per function instance — several instances run in parallel, so the real rate is higher
 const hourly = new Map(); // addr -> [ts...] notifications seen by this instance
 const evicted = new Set();
-async function noiseCheck(addr) {
+async function noiseCheck(addr, watched) {
   const now = Date.now(); const l = (hourly.get(addr) || []).filter((t) => now - t < 36e5); l.push(now); hourly.set(addr, l);
-  if (l.length < NOISE.perHour || evicted.has(addr)) return false;
+  const cap = watched ? NOISE.perHourWatched : NOISE.perHour; // a user's watch gets far more headroom before it is called a bot
+  if (l.length < cap || evicted.has(addr)) return false;
   evicted.add(addr);
   try {
     await webhookAddresses([], [addr]);
-    await updateJson('data/alerts_state.json', { tx: {} }, (st) => { st.noisy = st.noisy || {}; st.noisy[addr] = { ts: now, n: l.length }; }, `alerts: evict noisy ${short(addr)} from webhook`);
+    await updateJson('data/alerts_state.json', { tx: {} }, (st) => { st.noisy = st.noisy || {}; st.noisy[addr] = { ts: now, n: l.length, by: 'live', ...(watched ? { watched: true } : {}) }; }, `alerts: evict noisy ${short(addr)} from webhook`);
   } catch {}
   return true;
 }
@@ -62,7 +63,10 @@ async function loadCtx() {
   const subs = (await raw('tg_subs.json')) || (await g('tg_subs.json')) || { chats: {} };
   const users = ((await raw('users.json')) || { users: {} }).users || {};
   const feed = ((await raw('alerts.json')) || (await g('alerts.json')) || {}).alerts || [];
-  ctx = { tokens, cex, subs, users, feed };
+  const watched = new Set();
+  for (const u of Object.values(users)) for (const w of u.watches || []) watched.add(String(w.w).toLowerCase());
+  for (const c of Object.values(subs.chats || {})) for (const w of c.watches || []) watched.add(String(w.w).toLowerCase());
+  ctx = { tokens, cex, subs, users, feed, watched };
   ctxAt = Date.now();
   return ctx;
 }
@@ -100,7 +104,7 @@ export default async (req) => {
   let body; try { body = JSON.parse(raw); } catch { return new Response('ok'); }
   const acts = (body.event && body.event.activity) || [];
   if (!acts.length) return new Response('ok');
-  const { tokens, cex, subs, users, feed: feedCtx } = await loadCtx();
+  const { tokens, cex, subs, users, feed: feedCtx, watched } = await loadCtx();
   const hits = {}; // uid -> [hit] for site accounts (private, stored on the user record)
   // global pause (admin /pauseall): only admins + allowlisted chats receive anything; feed still updates
   const admins = new Set((process.env.TG_ADMIN_CHATS || '7400046972').split(',').map((s) => s.trim()));
@@ -112,7 +116,7 @@ export default async (req) => {
     const hash = a.hash;
     if (!tok || !hash) continue;
     const from = String(a.fromAddress || '').toLowerCase(), to = String(a.toAddress || '').toLowerCase();
-    for (const w of [from, to]) if (tok.top.has(w)) await noiseCheck(w);
+    for (const w of [from, to]) if (tok.top.has(w) || watched.has(w)) await noiseCheck(w, watched.has(w));
     const amt = Number(a.value) || 0, usd = amt * tok.price;
     const link = `https://basescan.org/tx/${hash}`;
     // 1) custom watches — any size, straight to the owner
