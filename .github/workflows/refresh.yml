@@ -50,6 +50,8 @@ jobs:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           ALCH_NOTIFY_TOKEN: ${{ secrets.ALCH_NOTIFY_TOKEN }}
         run: node scripts/fetch.mjs
+      - name: Token logos for holder labels
+        run: node scripts/toklogos.mjs || echo "toklogos failed — keeping current cache"
       - name: Commit data
         run: |
           git config user.name "whalarium-bot"
