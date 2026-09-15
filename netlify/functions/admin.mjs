@@ -2,7 +2,7 @@
 // GET  → users (usage per account), tokens, bot pause state, last run, proposals
 // POST {op:'setPlan',uid,plan} | {op:'setLimit',uid,limit} | {op:'addCredits',uid,n} | {op:'addToken',ca} | {op:'curate',sym,on}
 //      | {op:'removeToken',sym} | {op:'pause',on} | {op:'proposal',id,decision:'approve'|'reject'}
-import { readJson, readSession, readRaw, updateJson, USERS_PATH, SUBS_PATH, json, isAdmin, fetchLimit, PLANS } from '../lib/store.mjs';
+import { readJson, readSession, readRaw, updateJson, USERS_PATH, SUBS_PATH, ADMINS_PATH, json, isAdminFull, isMaster, addedAdmins, fetchLimit, PLANS } from '../lib/store.mjs';
 
 const CFG = 'tokens.config.json', PROPS = 'data/proposals.json', TAGS = 'data/tags_manual.json';
 const PALETTE = ['#4C8DFF', '#F2C14E', '#A78BFA', '#22C55E', '#F97316', '#EC4899', '#14B8A6', '#EAB308', '#8B5CF6', '#EF4444', '#06B6D4', '#84CC16'];
@@ -16,7 +16,8 @@ export default async (req) => {
   if (!uid) return json({ error: 'sign in' }, 401);
   const users = await readRaw(USERS_PATH, { users: {} });
   const me = users.users && users.users[uid];
-  if (!isAdmin(uid, me)) return json({ error: 'not an admin' }, 403);
+  if (!(await isAdminFull(uid, me))) return json({ error: 'not an admin' }, 403);
+  const master = isMaster(uid, me); // the master role is never revealed to other admins: they get role 'admin' and no admins list
 
   if (req.method === 'GET') {
     const cfg = (await readJson(CFG, { tokens: [] })).data; // GitHub API, not the raw CDN — must reflect writes made seconds ago
@@ -26,7 +27,9 @@ export default async (req) => {
     const list = Object.entries(users.users || {}).map(([id, u]) => ({ id, label: u.label, email: u.email || null, x: u.x || null, wallets: u.wallets || [], plan: u.plan || 'free', fetches: u.fetches || 0, limit: fetchLimit(u), fetchLog: (u.fetchLog || []).slice(-10), watches: (u.watches || []).length, claims: Object.keys(u.claims || {}).length, tg: !!u.tg, created: u.created || null, seen: u.seen || null }))
       .sort((a, b) => (b.seen || 0) - (a.seen || 0));
     const tokens = (cfg.tokens || []).map((t) => ({ sym: t.sym, name: t.name, contract: t.contract, auto: !!t.auto, curated: !t.auto && !t.addedBy, addedBy: t.addedBy || null, tier: t.tier || 'hot', cap: t.cap || null, trending: !!t.trending }));
-    return json({ users: list, tokens, plans: PLANS, pause: subs.pause || { on: false, allow: [] }, chats: Object.keys(subs.chats || {}).length, run: run ? { started: run.started, finished: run.finished, tier: run.tier, errors: run.errors, webhook: run.webhook, tokens: Object.keys(run.tokens || {}).length } : null, proposals: (props.items || []).filter((p) => p.status === 'open') });
+    const out = { role: master ? 'master' : 'admin', users: list, tokens, plans: PLANS, pause: subs.pause || { on: false, allow: [] }, chats: Object.keys(subs.chats || {}).length, run: run ? { started: run.started, finished: run.finished, tier: run.tier, errors: run.errors, webhook: run.webhook, tokens: Object.keys(run.tokens || {}).length } : null, proposals: (props.items || []).filter((p) => p.status === 'open') };
+    if (master) out.admins = await addedAdmins();
+    return json(out);
   }
   if (req.method !== 'POST') return json({ error: 'method' }, 405);
   const b = await req.json().catch(() => ({}));
@@ -70,6 +73,18 @@ export default async (req) => {
         else if (b.on) { delete cfg.tokens[i].auto; delete cfg.tokens[i].addedBy; } else cfg.tokens[i].auto = true;
       }, `tokens: ${op} ${sym} (admin)`);
       return json({ ok: hit });
+    }
+    if (op === 'addAdmin' || op === 'removeAdmin') {
+      if (!master) return json({ error: 'unknown op' }, 400); // indistinguishable from a non-existent op for everyone else
+      const id = String(b.id || '').trim().toLowerCase();
+      if (!id || id.length > 120 || !(/^0x[0-9a-f]{40}$/.test(id) || /^did:privy:[a-z0-9]+$/.test(id) || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(id))) return json({ error: 'give a wallet address, a Privy DID or an email' }, 400);
+      let ids = [];
+      await updateJson(ADMINS_PATH, { ids: [] }, (d) => {
+        d.ids = (d.ids || []).filter((x) => String(x.id).toLowerCase() !== id);
+        if (op === 'addAdmin') d.ids.push({ id, note: String(b.note || '').slice(0, 60), ts: Date.now() });
+        ids = d.ids;
+      }, `admins: ${op === 'addAdmin' ? 'add' : 'remove'} ${id.slice(0, 10)}`);
+      return json({ ok: true, admins: ids });
     }
     if (op === 'pause') {
       await updateJson(SUBS_PATH, { chats: {} }, (s) => { s.pause = { ...(s.pause || {}), on: !!b.on, allow: (s.pause && s.pause.allow) || [] }; }, `admin: pause ${b.on ? 'on' : 'off'}`);

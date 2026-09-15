@@ -1,7 +1,7 @@
 // Account endpoint (Privy-authenticated). GET → profile (creates the record on first visit, syncs linked accounts).
 // POST {op:'add', w, t} | {op:'remove', w, t} | {op:'linkcode'} | {op:'unlink'} | {op:'clearhits'} | {op:'sync'}
 //      | {op:'claim', addr, name?} | {op:'unclaim', addr} | {op:'avatar', avatar:{fish,color,acc}}
-import { readRaw, updateJson, USERS_PATH, SUBS_PATH, readSession, privyUser, publicUser, labelFor, json, trackedSyms, planOf, webhookAddresses, isAdmin } from '../lib/store.mjs';
+import { readRaw, updateJson, USERS_PATH, SUBS_PATH, readSession, privyUser, publicUser, labelFor, json, trackedSyms, planOf, webhookAddresses, isAdminFull } from '../lib/store.mjs';
 
 const AVATAR = { fish: ['small', 'medium', 'large', 'whale'], color: ['blue', 'gold', 'coral'], acc: ['none', 'crown', 'chain'] };
 // v2 = the layered shark PFP (assets/avatar.js): one id per trait category, validated against the collection
@@ -25,7 +25,7 @@ export default async (req) => {
       const la = await privyUser(uid, { fresh: true });
       await updateJson(USERS_PATH, { users: {} }, (dd) => { dd.users = dd.users || {}; const x = dd.users[uid] || (dd.users[uid] = { watches: [], hits: [], fetches: 0, plan: 'free', created: Date.now() }); applyLinked(x, la); x.seen = Date.now(); u = x; }, 'users: sign-in');
     }
-    return json({ user: publicUser(u, uid, { admin: isAdmin(uid, u) }) });
+    return json({ user: publicUser(u, uid, { admin: await isAdminFull(uid, u) }) });
   }
   if (req.method !== 'POST') return json({ error: 'method' }, 405);
   const body = await req.json().catch(() => ({}));
@@ -33,6 +33,7 @@ export default async (req) => {
   const TOKENS = await trackedSyms();
   const la = op === 'sync' || op === 'claim' ? await privyUser(uid, { fresh: true }) : null;
   let out = null, err = null, addedAddr = null;
+  const adminNow = await (async () => { const d0 = await readRaw(USERS_PATH, { users: {} }); return isAdminFull(uid, d0.users && d0.users[uid]); })().catch(() => false);
   try {
     await updateJson(USERS_PATH, { users: {} }, (d) => {
       const u = d.users && d.users[uid];
@@ -76,7 +77,7 @@ export default async (req) => {
         else { const pick = (k, dflt) => (AVATAR[k].includes(v[k]) ? v[k] : dflt); u.avatar = { fish: pick('fish', 'medium'), color: pick('color', 'blue'), acc: pick('acc', 'none') }; }
       } else { err = 'unknown op'; return false; }
       u.seen = Date.now();
-      out = publicUser(u, uid, { admin: isAdmin(uid, u) });
+      out = publicUser(u, uid, { admin: adminNow });
     }, `users: ${op}`);
   } catch (e) { err = String(e.message || e).slice(0, 160); }
   if (err) return json({ error: err }, 400);

@@ -82,14 +82,20 @@ export async function privyUser(did, { fresh = false } = {}) {
     return v;
   } catch { return c ? c.v : null; }
 }
-// admin = DIDs / emails / wallets listed in ADMIN_IDS (comma-separated) in Netlify env
-// founder wallet is always admin; ADMIN_IDS (comma-separated DIDs / emails / wallets) adds more
-export const FOUNDER_WALLETS = ['0xc034e02dc51eb30c9ae48069ce09bda36e4ed1ea'];
-export function isAdmin(did, u) {
-  const ids = [...FOUNDER_WALLETS, ...(process.env.ADMIN_IDS || '').split(',').map((s) => s.trim().toLowerCase()).filter(Boolean)];
-  const mine = [did, u && u.email, ...((u && u.wallets) || [])].filter(Boolean).map((s) => String(s).toLowerCase());
-  return mine.some((m) => ids.includes(m));
+// Roles. MASTER = the founder wallet: full console plus the "admins" panel (add / remove admins). The master role is
+// never exposed to other admins — every other admin sees a plain admin console. Admins = the secondary founder wallets,
+// ADMIN_IDS in Netlify env (comma-separated DIDs / emails / wallets) and whatever the master added (data/admins.json).
+export const MASTER_WALLETS = ['0xc034e02dc51eb30c9ae48069ce09bda36e4ed1ea'];
+export const FOUNDER_WALLETS = ['0xd8ea15eca3f246c76ae10fcd07f7e71b9e6860d2'];
+export const ADMINS_PATH = 'data/admins.json';
+const idsOf = (did, u) => [did, u && u.email, ...((u && u.wallets) || [])].filter(Boolean).map((s) => String(s).toLowerCase());
+export function isMaster(did, u) { return idsOf(did, u).some((m) => MASTER_WALLETS.includes(m)); }
+export function isAdmin(did, u, extra = []) {
+  const ids = [...MASTER_WALLETS, ...FOUNDER_WALLETS, ...(process.env.ADMIN_IDS || '').split(',').map((s) => s.trim().toLowerCase()).filter(Boolean), ...extra];
+  return idsOf(did, u).some((m) => ids.includes(m));
 }
+export async function addedAdmins() { const d = await readRaw(ADMINS_PATH, { ids: [] }); return (d.ids || []).map((x) => ({ ...x, id: String(x.id).toLowerCase() })); }
+export async function isAdminFull(did, u) { return isAdmin(did, u, (await addedAdmins()).map((x) => x.id)); }
 export const PLANS = { free: { fetches: 5, watches: 10 }, pro: { fetches: 100, watches: 50 } };
 export const planOf = (u) => PLANS[(u && u.plan) || 'free'] || PLANS.free;
 export const fetchLimit = (u) => (u && u.fetchLimit != null ? u.fetchLimit : planOf(u).fetches);
