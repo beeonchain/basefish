@@ -11,10 +11,9 @@
       "exclude": [
         "0x7061f0B28F5a95AaE717905Bb59AA4e08C165268"
       ],
-      "cap": 48731473,
+      "cap": 46680599,
       "tier": "hot",
-      "rank": 19,
-      "trending": true
+      "rank": 15
     },
     {
       "sym": "TOSHI",
@@ -23,9 +22,9 @@
       "contract": "0xac1bd2486aaf3b5c0fc3fd868558b082a531b2b4",
       "coingecko": "toshi",
       "exclude": [],
-      "cap": 47678355,
+      "cap": 44303182,
       "tier": "hot",
-      "rank": 20
+      "rank": 16
     },
     {
       "sym": "BASECAT",
@@ -48,7 +47,7 @@
       "exclude": [],
       "tier": "hot",
       "trending": true,
-      "cap": 544895278,
+      "cap": 523292718,
       "rank": 2
     },
     {
@@ -59,7 +58,7 @@
       "coingecko": "virtual-protocol",
       "exclude": [],
       "tier": "hot",
-      "cap": 398220882,
+      "cap": 383142447,
       "rank": 3
     },
     {
@@ -90,23 +89,12 @@
       "contract": "0xacfe6019ed1a7dc6f7b508c02d1b04ec88cc21bf",
       "exclude": [],
       "auto": true,
-      "cap": 1064577136,
+      "cap": 1040138245,
       "coingecko": "venice-token",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/54023/large/VVV_Token_Transparent.png?1741856877",
       "trending": true,
       "tier": "hot",
       "rank": 1
-    },
-    {
-      "sym": "GHST",
-      "name": "So4",
-      "color": "#06B6D4",
-      "contract": "0xac780b6e4ee50585df265c7766cc2bed51e43fb8",
-      "exclude": [],
-      "auto": true,
-      "cap": 305004574,
-      "tier": "hot",
-      "rank": 4
     },
     {
       "sym": "TIBBIR",
@@ -115,12 +103,12 @@
       "contract": "0xa4a2e2ca3fbfe21aed83471d28b6f65a233c6e00",
       "exclude": [],
       "auto": true,
-      "cap": 228493358,
+      "cap": 204564401,
       "coingecko": "ribbita-by-virtuals",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/54970/large/Untitled_design.png?1742941268",
       "trending": true,
       "tier": "hot",
-      "rank": 5
+      "rank": 4
     },
     {
       "sym": "DRV",
@@ -129,11 +117,11 @@
       "contract": "0x9d0e8f5b25384c7310cb8c6ae32c8fbeb645d083",
       "exclude": [],
       "auto": true,
-      "cap": 139285212,
+      "cap": 175905504,
       "coingecko": "derive",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/52889/large/Token_Logo.png?1734601695",
       "tier": "hot",
-      "rank": 6
+      "rank": 5
     },
     {
       "sym": "AWE",
@@ -142,23 +130,36 @@
       "contract": "0x1b4617734c43f6159f3a70b7e06d883647512778",
       "exclude": [],
       "auto": true,
-      "cap": 118851980,
+      "cap": 119911923,
       "coingecko": "stp-network",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/8713/large/awe-network.jpg?1747816016",
+      "tier": "hot",
+      "rank": 6
+    },
+    {
+      "sym": "LAPTOP",
+      "name": "LAPTOP",
+      "color": "#F97316",
+      "contract": "0xb095274743941e953c746f9c228da9c18bb6ec29",
+      "exclude": [],
+      "auto": true,
+      "cap": 86038766,
+      "coingecko": "hunter-biden-s-laptop-3",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/102176837/large/Laptop_Logo.png?1788875459",
+      "trending": true,
       "tier": "hot",
       "rank": 7
     },
     {
-      "sym": "NOCK",
-      "name": "Nock",
+      "sym": "O",
+      "name": "o1.exchange",
       "color": "#FB7185",
-      "contract": "0x9b5e262cf9bb04869ab40b19af91d2dc85761722",
+      "contract": "0x182fa643e5f29d5eca75e7b9cf9336a3fe4620b2",
       "exclude": [],
       "auto": true,
-      "cap": 88511237,
-      "coingecko": "nockchain",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/68474/large/GrCcG9N9_400x400.jpg?1755845184",
-      "trending": true,
+      "cap": 85173329,
+      "coingecko": "o1-exchange",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/102173974/large/o1.png?1781654491",
       "tier": "hot",
       "rank": 8
     },
@@ -169,75 +170,24 @@
       "contract": "0x9e6a46f294bb67c20f1d1e7afb0bbef614403b55",
       "exclude": [],
       "auto": true,
-      "cap": 87160762,
+      "cap": 84370094,
       "coingecko": "mag7-ssi",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/52962/large/mag7.png?1734863745",
       "tier": "hot",
       "rank": 9
     },
     {
-      "sym": "O",
-      "name": "o1.exchange",
+      "sym": "NOCK",
+      "name": "Nock",
       "color": "#FB7185",
-      "contract": "0x182fa643e5f29d5eca75e7b9cf9336a3fe4620b2",
+      "contract": "0x9b5e262cf9bb04869ab40b19af91d2dc85761722",
       "exclude": [],
       "auto": true,
-      "cap": 86963561,
-      "coingecko": "o1-exchange",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/102173974/large/o1.png?1781654491",
+      "cap": 74554534,
+      "coingecko": "nockchain",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/68474/large/GrCcG9N9_400x400.jpg?1755845184",
       "tier": "hot",
       "rank": 10
-    },
-    {
-      "sym": "CHIP",
-      "name": "Chip",
-      "color": "#F43F5E",
-      "contract": "0x0c1c1c109fe34733fca54b82d7b46b75cfb71f6e",
-      "exclude": [],
-      "auto": true,
-      "cap": 82850957,
-      "coingecko": "chip-2",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/102171777/large/CHIP_Token_Logo_Large.png?1776777444",
-      "tier": "hot",
-      "rank": 11
-    },
-    {
-      "sym": "KOTAEMON",
-      "name": "KOTAEMON github.com/cinnamon/KOTAEMON",
-      "color": "#14B8A6",
-      "contract": "0xadf25e81ecec4f3c0a1d064efb31f6d4acc8d04a",
-      "exclude": [],
-      "auto": true,
-      "cap": 81254535,
-      "tier": "hot",
-      "rank": 12
-    },
-    {
-      "sym": "LAPTOP",
-      "name": "LAPTOP",
-      "color": "#F97316",
-      "contract": "0xb095274743941e953c746f9c228da9c18bb6ec29",
-      "exclude": [],
-      "auto": true,
-      "cap": 76253044,
-      "coingecko": "hunter-biden-s-laptop-3",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/102176837/large/Laptop_Logo.png?1788875459",
-      "trending": true,
-      "tier": "hot",
-      "rank": 13
-    },
-    {
-      "sym": "LSK",
-      "name": "Lisk",
-      "color": "#10B981",
-      "contract": "0xac485391eb2d7d88253a7f1ef18c37f4242d1a24",
-      "exclude": [],
-      "auto": true,
-      "cap": 67273624,
-      "coingecko": "lisk",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/385/large/LSK-logo.png?1788508326",
-      "tier": "hot",
-      "rank": 14
     },
     {
       "sym": "DIEM",
@@ -246,11 +196,11 @@
       "contract": "0xf4d97f2da56e8c3098f3a8d538db630a2606a024",
       "exclude": [],
       "auto": true,
-      "cap": 66103518,
+      "cap": 64861085,
       "coingecko": "diem",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/68436/large/DIEM_SeaMid_-_200px.png?1755734213",
       "tier": "hot",
-      "rank": 15
+      "rank": 11
     },
     {
       "sym": "OMI",
@@ -259,11 +209,11 @@
       "contract": "0x3792dbdd07e87413247df995e692806aa13d3299",
       "exclude": [],
       "auto": true,
-      "cap": 55923198,
+      "cap": 52637647,
       "coingecko": "ecomi",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/4428/large/ECOMI.png?1696505023",
       "tier": "hot",
-      "rank": 16
+      "rank": 12
     },
     {
       "sym": "KTA",
@@ -272,12 +222,12 @@
       "contract": "0xc0634090f2fe6c6d75e61be2b949464abb498973",
       "exclude": [],
       "auto": true,
-      "cap": 51951586,
+      "cap": 48361762,
       "coingecko": "keeta",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/54723/large/2025-03-05_22.53.06.jpg?1741234207",
       "trending": true,
       "tier": "hot",
-      "rank": 17
+      "rank": 13
     },
     {
       "sym": "BIM",
@@ -286,40 +236,106 @@
       "contract": "0x555fff48549c1a25a723bd8e7ed10870d82e8379",
       "exclude": [],
       "auto": true,
-      "cap": 49321915,
+      "cap": 47090285,
       "coingecko": "bim-2",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/54860/large/bim-fi.jpg?1742179842",
+      "tier": "hot",
+      "rank": 14
+    },
+    {
+      "sym": "BASEDHYPE",
+      "name": "BasedHype",
+      "color": "#F2C14E",
+      "contract": "0x84a9183c9d11146d8e6a820dfc675a61b11eadeb",
+      "exclude": [],
+      "auto": true,
+      "cap": 42456498,
+      "coingecko": "basedhype",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/68733/large/BasedHype_Logo.png?1756408633",
+      "tier": "hot",
+      "rank": 17
+    },
+    {
+      "sym": "MSETH",
+      "name": "Metronome Synth ETH",
+      "color": "#EC4899",
+      "contract": "0x7ba6f01772924a82d9626c126347a28299e98c98",
+      "exclude": [],
+      "auto": true,
+      "cap": 39117740,
+      "coingecko": "metronome-synth-eth",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/67512/large/metronome_mseth.png?1753017508",
       "tier": "hot",
       "rank": 18
     },
     {
-      "sym": "AAPL",
-      "name": "Apple Inc.",
-      "color": "#14B8A6",
-      "contract": "0xb200000000000000000000c2e324d24d7eecd1fb",
+      "sym": "MOCA",
+      "name": "Moca",
+      "color": "#8B5CF6",
+      "contract": "0x2b11834ed1feaed4b4b3a86a6f571315e25a884d",
       "exclude": [],
       "auto": true,
-      "cap": 2005248,
-      "coingecko": "apple-coinbase-tokenized-stock",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/102175597/large/aapl_200x200.png?1787068801",
+      "cap": 37370651,
+      "coingecko": "mocaverse",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/37812/large/moca.jpg?1720693068",
+      "tier": "hot",
+      "rank": 19
+    },
+    {
+      "sym": "OETHB",
+      "name": "OETH Base",
+      "color": "#06B6D4",
+      "contract": "0xdbfefd2e8460a6ee4955a68582f85708baea60a3",
+      "exclude": [],
+      "auto": true,
+      "cap": 34711709,
+      "coingecko": "super-oeth",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/39828/large/Super_OETH.png?1724208268",
+      "tier": "hot",
+      "rank": 20
+    },
+    {
+      "sym": "CTR",
+      "name": "CTR",
+      "color": "#6366F1",
+      "contract": "0x11030f79109269d796fd0fb956d6244e502757f7",
+      "exclude": [],
+      "auto": true,
+      "cap": 17191388,
+      "coingecko": "citrea",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/102173169/large/CTR.png?1778226916",
       "trending": true,
       "tier": "hot",
       "rank": 21
     },
     {
-      "sym": "NVDAC",
-      "name": "NVIDIA Corporation",
-      "color": "#F97316",
-      "contract": "0xb20000000000000000000078ee7ce2fe4908108c",
+      "sym": "EDEL",
+      "name": "Edel",
+      "color": "#A78BFA",
+      "contract": "0xfb31f85a8367210b2e4ed2360d2da9dc2d2ccc95",
       "exclude": [],
       "auto": true,
-      "cap": 4172953,
-      "coingecko": "nvidia-coinbase-tokenized-stock",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/102175596/large/nvda_200x200.png?1787068801",
+      "cap": 17227250,
+      "coingecko": "edel",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/70661/large/Edel_Logo_Dark_-_200px.png?1762997249",
       "trending": true,
       "tier": "hot",
       "rank": 22
+    },
+    {
+      "sym": "STONKEX",
+      "name": "The Stonks Exchange",
+      "color": "#0EA5E9",
+      "contract": "0x5ab000ff9b9ffe0349ce5ffa5fd86f217c3680f5",
+      "exclude": [],
+      "auto": true,
+      "cap": 7745640,
+      "coingecko": "the-stonks-exchange",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/102175858/large/3ch0d6jb3yebllqq0y9agkhzobeg.?1787807036",
+      "trending": true,
+      "tier": "hot",
+      "rank": 23
     }
   ],
-  "discovered_at": "2026-09-15T05:11:26.513Z"
+  "discovered_at": "2026-09-16T05:09:16.221Z"
 }
