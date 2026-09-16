@@ -1,5 +1,5 @@
 {
- "started": "2026-09-16T16:17:21.019Z",
+ "started": "2026-09-16T18:17:23.121Z",
  "tier": "hot",
  "tokens": {
   "BRETT": {
@@ -7,133 +7,133 @@
    "src": "bq-holders+live",
    "top": 100,
    "infra": 44,
-   "price": 0.00463713
+   "price": 0.00468277
   },
   "TOSHI": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 70,
-   "price": 0.00010459
+   "price": 0.00010556
   },
   "BASECAT": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 8,
-   "price": 0.01699134
+   "price": 0.01554854
   },
   "AERO": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 81,
-   "price": 0.526854
+   "price": 0.536098
   },
   "VIRTUAL": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 85,
-   "price": 0.581409
+   "price": 0.587004
   },
   "SR": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 4,
-   "price": 0.00088666
+   "price": 0.00093018
   },
   "BPAD": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 2,
-   "price": 0.0001337
+   "price": 0.0001364
   },
   "VVV": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 78,
-   "price": 22.34
+   "price": 23.22
   },
   "TIBBIR": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 7,
-   "price": 0.20434
+   "price": 0.206668
   },
   "DRV": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 11,
-   "price": 0.181733
+   "price": 0.179151
   },
   "AWE": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 48,
-   "price": 0.063394
+   "price": 0.063537
   },
   "LAPTOP": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 31,
-   "price": 0.189984
+   "price": 0.189574
   },
   "O": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 22,
-   "price": 0.530633
+   "price": 0.530282
   },
   "MAG7SSI": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 14,
-   "price": 0.504098
+   "price": 0.507281
   },
   "NOCK": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 10,
-   "price": 0.03411009
+   "price": 0.03602974
   },
   "DIEM": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 30,
-   "price": 1772.06
+   "price": 1821.52
   },
   "OMI": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 18,
-   "price": 0.00019129
+   "price": 0.00018982
   },
   "KTA": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 31,
-   "price": 0.080848
+   "price": 0.081183
   },
   "BIM": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 8,
-   "price": 1.57
+   "price": 1.58
   },
   "BASEDHYPE": {
    "ok": true,
@@ -147,71 +147,71 @@
    "src": "bq-holders+live",
    "top": 100,
    "infra": 14,
-   "price": 1820.24
+   "price": 1864.35
   },
   "MOCA": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 20,
-   "price": 0.00856272
+   "price": 0.00861096
   },
   "OETHB": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 8,
-   "price": 2392.35
+   "price": 2411.95
   },
   "CTR": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 44,
-   "price": 0.01143327
+   "price": 0.01144595
   },
   "EDEL": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 6,
-   "price": 0.02637497
+   "price": 0.02636244
   },
   "STONKEX": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 9,
-   "price": 0.00828992
+   "price": 0.00760883
   }
  },
  "errors": [],
  "tags": {
-  "WHALE": 498,
+  "WHALE": 500,
   "OG": 305,
   "CT": 26,
   "SNIPE": 22,
-  "DIAMOND": 235
+  "DIAMOND": 226
  },
- "finished": "2026-09-16T17:10:54.794Z",
+ "finished": "2026-09-16T19:17:31.983Z",
  "budgets": {
   "arkham": 0,
-  "profile": 57,
+  "profile": 55,
   "frontrun": 150,
   "rpc": 390,
   "funding": 0
  },
  "webhook": {
   "have": 310,
-  "want": 311,
-  "added": 4,
-  "removed": 3,
-  "audited": 310,
-  "evicted": 0,
-  "noisy": 89
+  "want": 310,
+  "added": 2,
+  "removed": 2,
+  "audited": 309,
+  "evicted": 1,
+  "noisy": 90
  },
  "alertTx": {
-  "looked": 6,
-  "found": 6
+  "looked": 7,
+  "found": 7
  }
 }
