@@ -2,7 +2,7 @@
 // GET  → users (usage per account), tokens, bot pause state, last run, proposals
 // POST {op:'setPlan',uid,plan} | {op:'setLimit',uid,limit} | {op:'addCredits',uid,n} | {op:'addToken',ca} | {op:'curate',sym,on}
 //      | {op:'removeToken',sym} | {op:'pause',on} | {op:'proposal',id,decision:'approve'|'reject'}
-import { readJson, readSession, readRaw, updateJson, USERS_PATH, SUBS_PATH, ADMINS_PATH, json, isAdminFull, isMaster, addedAdmins, fetchLimit, PLANS } from '../lib/store.mjs';
+import { readJson, readSession, readRaw, updateJson, privyUser, USERS_PATH, SUBS_PATH, ADMINS_PATH, json, isAdminFull, isMaster, addedAdmins, fetchLimit, PLANS } from '../lib/store.mjs';
 
 const CFG = 'tokens.config.json', PROPS = 'data/proposals.json', TAGS = 'data/tags_manual.json';
 const PALETTE = ['#4C8DFF', '#F2C14E', '#A78BFA', '#22C55E', '#F97316', '#EC4899', '#14B8A6', '#EAB308', '#8B5CF6', '#EF4444', '#06B6D4', '#84CC16'];
@@ -14,8 +14,12 @@ async function dispatch(tier = 'hot') {
 export default async (req) => {
   const uid = await readSession(req);
   if (!uid) return json({ error: 'sign in' }, 401);
-  const users = await readRaw(USERS_PATH, { users: {} });
-  const me = users.users && users.users[uid];
+  const users = (await readJson(USERS_PATH, { users: {} })).data; // GitHub API, not the raw CDN: a record made seconds ago must count
+  let me = users.users && users.users[uid];
+  // the wallets an admin signs in with are what make them an admin — take them from Privy itself, so a brand-new
+  // account (or one that just linked the admin wallet) is not refused because the stored record lags behind
+  const la = await privyUser(uid, { fresh: true }).catch(() => null);
+  if (la) me = { ...(me || {}), wallets: [...new Set([...((me && me.wallets) || []), ...(la.wallets || [])])], email: (me && me.email) || la.email || null };
   if (!(await isAdminFull(uid, me))) return json({ error: 'not an admin' }, 403);
   const master = isMaster(uid, me); // the master role is never revealed to other admins: they get role 'admin' and no admins list
 
