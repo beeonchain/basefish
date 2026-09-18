@@ -49,8 +49,8 @@
        4 context   (provenance) bare text, 11px, dim, ↳ prefix           → almost silent          */
   .pill,.lbls span{display:inline-flex;align-items:center;gap:5px;height:22px;font-size:11px;line-height:1;padding:0 7px;border-radius:0;font-weight:500;letter-spacing:0;text-transform:none;border:1px solid var(--line);background:transparent;color:var(--muted);white-space:nowrap;vertical-align:middle;font-family:var(--font-body)}
   .pill.id,.lbls span.id{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-line);font-weight:700;font-size:12px;padding:0 8px;height:24px}
-  .pill.cls{font-weight:700;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-family:var(--font-mono)}
-  .pill.tagp,.lbls span.tagp{font-weight:700;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-family:var(--font-mono);background:transparent}
+  .pill.cls{font-weight:600;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-family:var(--font-body)}
+  .pill.tagp,.lbls span.tagp{font-weight:600;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-family:var(--font-body);background:transparent}
   .pill.ctx,.lbls span.ctx{border-color:transparent;background:transparent;color:var(--dim);padding:0 2px;font-weight:500}
   .pill.ctx::before,.lbls span.ctx::before{content:'↳';font-family:var(--font-mono);font-size:10px;opacity:.7}
   .pill svg,.lbls span svg{flex:none}
@@ -70,13 +70,13 @@
   .t2{font-family:var(--font-body);font-weight:600;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
   .t3{font-family:var(--font-body);font-weight:400;font-size:11px;color:var(--dim);opacity:.85}
   .ib{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border:1px solid var(--line2);color:var(--dim);font:700 9px var(--font-mono);vertical-align:middle;margin-left:4px;cursor:help}
-  .tile{flex:1;min-width:170px;border:1px solid var(--line);padding:10px 14px;background:var(--panel);display:flex;flex-direction:column;gap:4px}
-  .fbox{border:1px solid var(--line);background:var(--panel);min-width:0}
+  .tile{flex:1;min-width:170px;border:0;padding:10px 14px;background:var(--panel2);display:flex;flex-direction:column;gap:4px}
+  .fbox{border:0;background:var(--panel2);min-width:0}
   .fbox>.fh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line)}
   .fbox>.fb{padding:12px 14px}
   /* facts under a figure: small boxed key:value pairs — important, but a level below the figure */
   .kv2{display:flex;gap:4px;flex-wrap:wrap;margin-top:2px}
-  .kv2 span{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px;border:1px solid var(--line);background:var(--panel2);font-size:11px;color:var(--muted);white-space:nowrap}
+  .kv2 span{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px;border:0;background:var(--panel3);font-size:11px;color:var(--muted);white-space:nowrap}
   .kv2 span b{font-family:var(--font-mono);font-weight:700;color:var(--text)}
   /* where the coins went: one table per direction */
   .dest{display:grid;grid-template-columns:1fr;gap:0;border:1px solid var(--line)}
@@ -85,7 +85,7 @@
   .dest .dr>span:first-child{display:inline-flex;align-items:center;gap:6px;font-weight:600;line-height:1.25}
   .dest .dbar{height:10px;background:var(--panel2);border:1px solid var(--line)}.dest .dbar>i{display:block;height:100%}
   .dest .r{text-align:right}
-  .card-ui{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);padding:var(--sp-4)}
+  .card-ui{border:0;background:var(--panel2);padding:var(--sp-4)}
   .card-ui h5,.wbox>h5{font:700 11px var(--font-body);letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
   .num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
   input,select{color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:var(--r-sm);font-family:var(--font-body)}
@@ -93,9 +93,11 @@
   button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   button:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
   .mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
-  .app{display:grid;grid-template-columns:220px 1fr 300px;grid-template-rows:64px 1fr 40px;height:100vh;gap:0}
+  .app{display:grid;grid-template-columns:220px 1fr 300px;grid-template-rows:56px 1fr 36px;height:100vh;gap:0}
   /* ---------- sidebar ---------- */
-  .side{grid-row:1/3;border-right:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;padding:16px 12px;gap:6px}
+  .side{grid-row:1/3;border-right:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;padding:16px 12px;gap:4px}
+  .nav .grp{font:600 10px var(--font-body);letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:16px 10px 6px}
+  .nav .grp:first-child{padding-top:4px}
   .cexl{display:inline-block;vertical-align:middle;border-radius:50%;flex:none;background:#fff}
   .cexi{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:14px;padding:0 3px;margin-right:4px;font:800 8.5px/1 var(--font-mono);color:#fff;vertical-align:middle;letter-spacing:.3px;border-radius:0;font-style:normal}
   .cpa{cursor:copy;border-bottom:1px dotted var(--dim)}.cpa:hover{color:var(--teal);border-bottom-color:var(--teal)}
@@ -105,41 +107,46 @@
   .bword{display:block;width:79px;height:26px;color:var(--text)}.bword svg{width:100%;height:100%;display:block}
   .brand h1{margin:0;line-height:1}
   .brand small{display:block;color:var(--dim);font-size:10px;letter-spacing:.12em;text-transform:uppercase;margin-top:3px;font-weight:600}
-  .nav button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border-radius:0;color:var(--muted);font-weight:600;text-align:left;font-size:13px}
+  .nav button{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border-radius:0;color:var(--muted);font-weight:600;text-align:left;font-size:13px;box-shadow:inset 2px 0 0 transparent}
   .nav button svg{width:15px;height:15px;flex:none;fill:currentColor;shape-rendering:crispEdges}
   .nav button:hover{background:var(--panel2);color:var(--text)}
-  .nav button.on{background:var(--panel2);color:var(--teal);box-shadow:inset 3px 0 0 var(--teal)}
+  .nav button.on{background:var(--panel2);color:var(--text);box-shadow:inset 2px 0 0 var(--accent)}
   .nav button.subitem{padding-left:34px;font-size:12.5px;font-weight:500;position:relative}
   .nav button.subitem::before{content:'';position:absolute;left:18px;top:0;bottom:50%;width:8px;border-left:1px solid var(--line2);border-bottom:1px solid var(--line2)}
   .nav button.subitem svg{display:none}
   .nav button.subitem.on{font-weight:700}
   .nav button.parent-on{color:var(--text)}
   .nav .soon{margin-left:auto;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);border:1px solid var(--line);padding:1px 5px;border-radius:0}
-  .nav .navbadge{margin-left:auto;font-size:10px;font-weight:800;padding:2px 6px;background:var(--text);color:#fff;font-style:normal;font-family:var(--font-mono)}
-  .tracked{margin-top:auto;border:1px solid var(--line);border-radius:var(--r);padding:12px;background:var(--panel)}
-  .tracked .lbl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:700}
-  .tracked .tok{display:flex;align-items:center;gap:9px;margin:8px 0 10px}
+  .nav .navbadge{margin-left:auto;font-size:10px;font-weight:700;padding:2px 6px;background:var(--accent);color:#fff;font-style:normal;font-family:var(--font-mono)}
+  .tracked{margin-top:auto;border:0;padding:12px;background:var(--panel2)}
+  .tracked .lbl{display:none}
+  .tracked .tok{display:none}
   .tracked .tok .ic{width:30px;height:30px;border-radius:var(--r-sm);display:grid;place-items:center;font:800 11px var(--font-display);color:var(--text);overflow:hidden;background:var(--panel2)}
   .tracked .tok b{font:700 15px var(--font-display);display:block}
   .tracked .tok span{color:var(--muted);font-size:11px}
-  .kv{display:flex;justify-content:space-between;padding:5px 0;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+  .kv{display:flex;justify-content:space-between;padding:4px 0;font-size:12.5px;color:var(--muted)}
   .kv b{color:var(--text);font-weight:600}
   .up{color:var(--teal)} .down{color:var(--coral)}
   .disclaimer{font-size:12px;color:var(--dim);line-height:1.4;padding:10px 6px 0}
   /* ---------- header ---------- */
   /* header: title · token picker · stats · search · share — one row, the search is the CA entry point */
-  .head{grid-column:2/4;display:flex;align-items:center;gap:14px;padding:0 20px;border-bottom:1px solid var(--line)}
-  .htitle{flex:none;min-width:150px}
+  .head{grid-column:2/4;display:flex;align-items:center;gap:16px;padding:0 16px 0 20px;border-bottom:1px solid var(--line)}
+  .status{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .status b{font-family:var(--font-mono);font-weight:700;color:var(--text)}
+  .status .sep{color:var(--line2);margin:0 6px}
+  .status .live{cursor:help}
+  .status .stale{color:var(--coral)}
+  .htitle{display:none}
   .head h2{font:800 20px/1 var(--font-display);margin:0;letter-spacing:-.02em;white-space:nowrap}
   .head h2 em{font-style:normal;color:var(--accent)}
   .head .sub{color:var(--dim);font-size:11.5px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
   @media (max-width:1600px){.head .sub{display:none}}
   .hsearch{position:relative;margin-left:auto;flex:0 1 340px;min-width:220px;display:flex;align-items:center}
   .hsearch .hsi{position:absolute;left:10px;width:12px;height:12px;fill:var(--dim);pointer-events:none}
-  .hsearch input{width:100%;height:34px;border:1px solid var(--line2);background:var(--panel);padding:0 30px 0 30px;font:500 12px var(--font-mono);color:var(--text);outline:none}
+  .hsearch input{width:100%;height:34px;border:0;background:var(--panel2);padding:0 30px 0 30px;font:500 12px var(--font-mono);color:var(--text);outline:none}
   .hsearch input::placeholder{color:var(--dim)}
-  .hsearch input:focus{border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal)}
-  .hsearch .hsk{position:absolute;right:8px;font:600 10px var(--font-mono);color:var(--dim);border:1px solid var(--line);padding:1px 5px;pointer-events:none}
+  .hsearch input:focus{box-shadow:inset 0 0 0 1px var(--accent)}
+  .hsearch .hsk{position:absolute;right:8px;font:600 10px var(--font-mono);color:var(--dim);background:var(--panel);padding:1px 5px;pointer-events:none}
   .hsearch input:focus~.hsk{display:none}
   #hqDrop{position:absolute;top:100%;left:0;right:0;z-index:30;background:var(--panel);border:1px solid var(--line2);display:none;max-height:300px;overflow:auto;box-shadow:0 10px 30px rgba(10,11,13,.12)}
   #hqDrop button{display:block;width:100%;text-align:left;padding:9px 12px;font-size:13px;border-bottom:1px solid var(--line);cursor:pointer;color:var(--text)}
@@ -177,14 +184,16 @@
   .akf:hover{border-color:var(--accent-line)}.akf.on{border-color:var(--text);background:var(--panel2);color:var(--text)}
   @media (max-width:1350px){.hsearch input{width:170px}}
   @media (prefers-reduced-motion:reduce){.tank .glass{display:none}}
-  .tokpick{display:flex;gap:6px;margin-left:0;padding:0;border:0;background:transparent;max-width:30vw;overflow-x:auto;scrollbar-width:none;position:relative}
+  .tokpick{display:none}
   .tokpick::-webkit-scrollbar{display:none}
   .tokpick::-webkit-scrollbar{height:4px}.tokpick::-webkit-scrollbar-thumb{background:var(--line)}
   .tokall{position:relative;margin-left:6px}
   .tokall{margin-left:0}
-  .tokall>button{height:34px;padding:0 12px;border:1px solid var(--line2);background:var(--panel);font-weight:700;font-size:12px;font-family:var(--font-body);color:var(--text);white-space:nowrap;border-radius:var(--r)}
+  .tokall>button{height:34px;padding:0 10px 0 8px;border:0;background:var(--panel2);font-weight:700;font-size:13px;font-family:var(--font-mono);color:var(--text);white-space:nowrap;display:inline-flex;align-items:center;gap:8px}
+  .tokall>button img,.tokall>button i{width:18px;height:18px;display:inline-block;flex:none}
+  .tokall>button .caret{color:var(--dim);font-size:10px}
   .tokall>button:hover{color:var(--text);border-color:var(--accent-line)}
-  .tokmenu{position:absolute;top:100%;right:0;z-index:30;width:400px;max-height:70vh;overflow:auto;background:var(--panel);border:1px solid var(--line2);box-shadow:0 10px 30px rgba(10,11,13,.12);display:none}
+  .tokmenu{position:absolute;top:100%;left:0;z-index:30;width:360px;max-height:70vh;overflow:auto;background:var(--panel);border:1px solid var(--line2);box-shadow:0 10px 30px rgba(10,11,13,.12);display:none}
   .tokmenu.open{display:block}
   .tokmenu input{width:100%;box-sizing:border-box;padding:10px 12px;border:0;border-bottom:1px solid var(--line);font:600 13px var(--font-mono);background:var(--panel2);border-radius:0}
   .tokmenu .trow{display:flex;align-items:center;gap:9px;width:100%;padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}
@@ -197,13 +206,19 @@
   /* Wallets view aggregates all 5 tokens — no single token is "selected" there */
   .app.wview .tokpick button.on{background:transparent;color:var(--muted)}
   .app.wview .tracked{display:none}
-  .app.wview .stats{display:none}
-  .app.tankview .htitle{display:none}
-  .lblmore{height:22px;font-size:10.5px;padding:0 7px;border-radius:0;background:transparent;color:var(--accent);border:1px solid var(--accent-line);cursor:pointer;font-weight:700;font-family:var(--font-mono);letter-spacing:.04em}
+  .app.wview .status{display:none}
+  .ptitle{display:flex;align-items:baseline;gap:10px;min-height:28px}
+  .ptitle h2{font:800 20px/1 var(--font-display);margin:0;letter-spacing:-.02em;white-space:nowrap}
+  .ptitle .sub{color:var(--dim);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .seg{margin-left:auto;display:inline-flex;background:var(--panel2);padding:2px;align-self:center}
+  .seg button{height:26px;padding:0 12px;font-weight:600;font-size:12px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+  .seg button svg{width:12px;height:12px;fill:currentColor;shape-rendering:crispEdges}
+  .seg button.on{background:var(--text);color:#fff}
+  .lblmore{height:22px;font-size:10.5px;padding:0 7px;border-radius:0;background:var(--accent-soft);color:var(--accent);border:0;cursor:pointer;font-weight:700;font-family:var(--font-body)}
   .lblmore:hover{background:var(--accent-soft)}
   .lbls{display:flex;gap:4px 5px;flex-wrap:wrap;align-items:center}
   .lbls .cexi{margin-right:0}
-  .stats{display:flex;flex:none;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--panel)}
+  .stats{display:none}
   .stats>div{height:34px;padding:0 12px;border-left:1px solid var(--line);white-space:nowrap;display:flex;flex-direction:column;justify-content:center}
   .stats>div:first-child{border-left:0}
   .stats small{display:block;font-size:9px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;font-weight:600;font-family:var(--font-body);margin-bottom:1px;line-height:1}
@@ -215,28 +230,31 @@
   .share.signed{background:var(--panel);color:var(--text);border:1px solid var(--line2);font-family:var(--font-mono);font-weight:700}
   .share:hover{filter:brightness(1.08)}
   /* ---------- main ---------- */
-  .main{position:relative;padding:14px 14px 14px 20px;display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0}
-  .tank{position:relative;flex:1;overflow:hidden;border:2px solid var(--text);box-shadow:inset 0 0 80px rgba(0,0,0,.45);background:#061426;min-height:0}
-  .tank::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:var(--teal);z-index:2}
-  .tankid{position:absolute;right:12px;bottom:10px;z-index:3;font:500 9.5px var(--font-mono);letter-spacing:.14em;color:rgba(255,255,255,.55);text-transform:uppercase}
-  .tierkey{position:absolute;left:12px;bottom:10px;z-index:3;display:flex;gap:10px;font:500 9.5px var(--font-mono);color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.06em}
+  .main{position:relative;padding:16px 16px 16px 20px;display:flex;flex-direction:column;gap:12px;min-width:0;min-height:0}
+  .tank{position:relative;flex:1;overflow:hidden;border:0;box-shadow:inset 0 0 80px rgba(0,0,0,.45);background:#061426;min-height:0}
+  .tankid{position:absolute;right:14px;top:56px;z-index:3;font:900 12px var(--font-pixel);letter-spacing:.06em;color:rgba(255,255,255,.7);text-transform:uppercase}
+  .tierkey{position:absolute;left:12px;bottom:10px;z-index:3;display:none;gap:10px;font:500 9.5px var(--font-mono);color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.06em}
   .tierkey i{display:inline-block;width:7px;height:7px;margin-right:4px}
-  .ambnote{position:absolute;left:12px;bottom:28px;z-index:3;font:500 9px var(--font-mono);color:rgba(255,255,255,.45);letter-spacing:.05em}
+  .ambnote{display:none;position:absolute;left:12px;bottom:28px;z-index:3;font:500 9px var(--font-mono);color:rgba(255,255,255,.45);letter-spacing:.05em}
   .tank canvas{display:block;width:100%;height:100%}
   .tank .glass{position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,rgba(255,255,255,.06),transparent 30%,transparent 70%,rgba(255,255,255,.03));border-radius:0}
-  .chip{position:absolute;top:12px;left:12px;display:flex;gap:6px;z-index:3}
+  .chip{display:none}
   .chip span{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;border-radius:var(--r-sm);background:var(--glass);color:#fff;font-family:var(--font-mono);border:1px solid var(--glass-line);backdrop-filter:blur(6px)}
-  .zoom{position:absolute;right:12px;top:12px;z-index:3;display:flex;flex-direction:column;gap:4px}
-  .webtog{position:absolute;right:52px;top:12px;z-index:3;display:flex;gap:7px;align-items:center;background:var(--glass);backdrop-filter:blur(10px);border-radius:var(--r-sm);color:#fff;border:1px solid var(--glass-line);padding:8px 11px;font-size:10.5px;font-weight:800;letter-spacing:.5px;cursor:pointer;backdrop-filter:blur(6px)}
-  .webtog input{accent-color:var(--teal);margin:0;cursor:pointer}
-  #refBtn{background:none;border:0;border-left:1px solid rgba(255,255,255,.25);color:#9db4ff;font:700 10.5px var(--font-mono);letter-spacing:.5px;padding:0 2px 0 9px;cursor:pointer}
-  #refBtn:hover{color:#fff}
-  #shareBtn{background:var(--glass);border:1px solid var(--glass-line);color:#fff;font:700 10.5px var(--font-mono);letter-spacing:.5px;padding:0 10px;cursor:pointer;backdrop-filter:blur(6px)}
-  #shareBtn:hover{background:var(--teal);border-color:var(--teal)}
-  .dist li{cursor:pointer;padding:2px 4px;margin:0 -4px}.dist li:hover,.dist li.hot{background:var(--panel2)}.dist li.on{box-shadow:inset 3px 0 0 var(--teal)}
+  .zoom{position:absolute;right:12px;top:12px;z-index:3;display:flex;flex-direction:row;gap:4px;align-items:center}
+  .webtog{position:static;display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:var(--glass);color:#fff;border:0;cursor:pointer;backdrop-filter:blur(6px)}
+  .webtog input{position:absolute;opacity:0;width:0;height:0;margin:0}
+  .webtog svg{width:14px;height:14px;fill:currentColor;shape-rendering:crispEdges}
+  .webtog.on{background:var(--accent)}
+  .zoom button,.webtog{position:relative}
+  .zoom [title]:hover::after{content:attr(title);position:absolute;top:100%;right:0;margin-top:6px;background:var(--panel);color:var(--text);font:600 11px var(--font-body);padding:4px 8px;white-space:nowrap;z-index:5;box-shadow:0 4px 14px rgba(10,11,13,.18)}
+  #refBtn,#shareBtn{width:32px;height:32px;background:var(--glass);color:#fff;border:0;cursor:pointer;backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center}
+  #refBtn svg,#shareBtn svg{width:14px;height:14px;fill:currentColor;shape-rendering:crispEdges}
+  #refBtn:hover,#shareBtn:hover{background:var(--accent)}
+  .zoom .gap{width:6px}
+  .dist li{cursor:pointer}.dist li:hover,.dist li.hot{background:var(--panel2)}.dist li.on{background:var(--panel2);box-shadow:inset 2px 0 0 var(--accent)}
   .dist canvas{cursor:pointer}
-  #refBtn:disabled{color:#667;cursor:default}
-  .zoom button{width:32px;height:32px;border-radius:var(--r-sm);background:var(--glass);color:#fff;border:1px solid var(--glass-line);font-weight:700;font-size:15px;backdrop-filter:blur(10px)}
+  #refBtn:disabled{opacity:.5;cursor:default}
+  .zoom button{width:32px;height:32px;background:var(--glass);color:#fff;border:0;font-weight:700;font-size:15px;backdrop-filter:blur(10px)}
   .zoom button:hover{background:var(--accent)}
   .toast{position:absolute;left:12px;bottom:12px;z-index:3;display:flex;flex-direction:column;gap:6px;pointer-events:none}
   .toast div{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--r);background:var(--glass);color:#fff;border:1px solid var(--glass-line);font-size:13px;backdrop-filter:blur(6px);animation:rise .35s ease-out}
@@ -265,35 +283,42 @@
   .card .acts button:hover{filter:brightness(1.1)}
   .card .lbls{margin-bottom:8px}
   /* legend bar */
-  .bar{display:flex;align-items:center;gap:18px;padding:10px 16px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel)}
-  .bar .t{font-weight:600;text-transform:uppercase;font-size:10.5px;letter-spacing:.08em;color:var(--muted)} .bar .t small{display:block;color:var(--dim);font-weight:400;font-size:11px;text-transform:none;letter-spacing:0;opacity:.85}
-  .bar .sz{display:flex;align-items:center;gap:8px;color:var(--dim);font-size:11px}
-  .bar .sz b{display:block;color:var(--text);font-weight:700;font-family:var(--font-mono);font-size:12px;white-space:nowrap}
-  .bar .sz canvas{width:44px;height:26px}
-  .bar .about{margin-left:auto;color:var(--muted);font-weight:700;border:1px solid var(--line2);padding:0 12px;height:30px;border-radius:var(--r-sm);font-size:12px}
-  .bar .about:hover{color:var(--text)}
+  .bar{position:absolute;left:0;right:0;bottom:0;z-index:3;display:flex;align-items:center;gap:18px;padding:26px 16px 10px;background:linear-gradient(to top,rgba(3,9,22,.85),rgba(3,9,22,0));pointer-events:none}
+  .bar>*{pointer-events:auto}
+  .bar .t{font-weight:600;font-size:11px;color:rgba(255,255,255,.75)} .bar .t small{display:block;color:rgba(255,255,255,.45);font-weight:400;font-size:10.5px}
+  .bar .sz{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.7);font-size:11px}
+  .bar .sz i{width:7px;height:7px;flex:none;display:inline-block}
+  .bar .sz b{display:block;color:#fff;font-weight:700;font-family:var(--font-mono);font-size:11.5px;white-space:nowrap}
+  .bar .sz canvas{width:40px;height:24px}
+  .bar .about{margin-left:auto;color:#fff;font-weight:600;background:var(--glass);padding:0 12px;height:28px;font-size:12px;white-space:nowrap}
+  .bar .t{white-space:nowrap}
+  .bar .about:hover{background:var(--accent)}
   /* ---------- right rail ---------- */
-  .rail{border-left:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:12px;overflow:auto;min-height:0;max-height:100%}
+  .rail{border-left:0;padding:16px 16px 16px 4px;display:flex;flex-direction:column;gap:24px;overflow:auto;min-height:0;max-height:100%}
   .app.noRail{grid-template-columns:212px 1fr 0}
   .app.noRail .rail{display:none}
   .app.noRail .bar{display:none}
-  .box{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);padding:14px}
-  .box h3{font:600 10.5px var(--font-body);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px;display:flex;align-items:center;justify-content:space-between}
+  .app.noRail .rail{display:none}
+  .box{border:0;background:var(--panel);padding:0}
+  .box h3{font:600 12px var(--font-body);color:var(--muted);margin:0 0 8px;display:flex;align-items:center;justify-content:space-between}
   .box h3 a{font:700 12px var(--font-mono);color:var(--accent);cursor:pointer;text-transform:none;letter-spacing:0}
-  .hold{display:flex;flex-direction:column;gap:3px;max-height:400px;overflow:auto;scrollbar-width:thin;margin:0 -4px;padding:0 4px}
-  .hold button{display:grid;grid-template-columns:16px 24px 1fr auto;align-items:center;gap:8px;padding:6px 6px;border-radius:var(--r-sm);text-align:left}
-  .hold button:hover,.hold button.sel{background:var(--panel2)}
+  .hold{display:flex;flex-direction:column;gap:0;max-height:420px;overflow:auto;scrollbar-width:thin;margin:0 -8px;padding:0}
+  .hold button{display:grid;grid-template-columns:8px 20px 1fr auto;align-items:center;gap:8px;padding:6px 8px;text-align:left;box-shadow:inset 2px 0 0 transparent}
+  .hold button:hover,.hold button.sel,.hold button.hot{background:var(--panel2);box-shadow:inset 2px 0 0 var(--accent)}
+  .hold .td{width:7px;height:7px;display:inline-block}
   .hold .n{color:var(--dim);font-size:10.5px;font-weight:600;font-family:var(--font-mono)}
   .hold .a{font-family:var(--font-mono);font-size:12px;font-weight:500}
   .hold .p{text-align:right;font-weight:700;font-size:13px;font-family:var(--font-mono);font-variant-numeric:tabular-nums}
   .hold .p small{display:block;color:var(--dim);font-weight:400;font-size:10.5px}
-  .hold .bar2{height:3px;border-radius:0;background:var(--panel2);margin-top:3px;overflow:hidden}
-  .hold .bar2 i{display:block;height:100%;background:var(--teal)}
-  .dist{display:grid;grid-template-columns:110px 1fr;gap:10px;align-items:center}
-  .dist canvas{width:110px;height:110px}
+  .hold .bar2{display:none}
+  .dist{display:block}
+  .dist canvas{display:none}
+  .sbar{display:flex;height:10px;width:100%;margin:2px 0 10px;background:var(--panel2)}
+  .sbar i{display:block;height:100%;transition:opacity .15s}
+  .sbar i.dim{opacity:.3}
   .dist ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
-  .dist li{display:grid;grid-template-columns:10px 1fr auto;gap:7px;align-items:center;font-size:12px;color:var(--muted)}
-  .dist li i{width:10px;height:10px;border-radius:0}
+  .dist li{display:grid;grid-template-columns:8px 1fr auto;gap:8px;align-items:center;font-size:12px;color:var(--muted);padding:3px 4px;margin:0 -4px;box-shadow:inset 2px 0 0 transparent}
+  .dist li i{width:8px;height:8px;border-radius:0}
   .dist li b{color:var(--text);font-weight:600}.dist li>b.mono{font-weight:700}
   .dist li small{display:block;font-size:10px;color:var(--dim);opacity:.85}
   .feed{display:flex;flex-direction:column;gap:6px;font-size:12.5px}
@@ -349,11 +374,11 @@
   .wp .addr .ico:hover{border-color:var(--accent);color:var(--accent)}.wp .addr .ico svg{width:12px;height:12px}.wp .addr .ico img{width:14px;height:14px;border-radius:50%}
   .wp .wgrid{display:grid;grid-template-columns:1fr 1.2fr;gap:14px;padding:16px 20px}
   @media (max-width:1250px){.wp .wgrid{grid-template-columns:1fr}}
-  .wp .wbox{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);overflow:hidden}
+  .wp .wbox{border:0;background:var(--panel2);overflow:hidden}
   .wp .wbox>h5{font:700 11px var(--font-body);letter-spacing:.09em;text-transform:uppercase;color:var(--dim);margin:0;padding:12px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
   .wp .wbox>h5 small{color:var(--dim);text-transform:none;letter-spacing:0;font-weight:500}
   .wp table{width:100%;border-collapse:collapse;font-size:13px}
-  .wp th{text-align:left;font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--dim);padding:8px 14px;border-bottom:1px solid var(--line)}
+  .wp th{text-align:left;font-size:11.5px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--dim);padding:8px 14px;border-bottom:1px solid var(--line)}
   .wp td{padding:8px 14px;border-bottom:1px solid var(--line)}
   .wp tr:last-child td{border-bottom:0}
   .wp td.r,.wp th.r{text-align:right}
@@ -373,7 +398,7 @@
   @media (prefers-reduced-motion:reduce){.st i.dots b{animation:none;opacity:.6}}
   .wp canvas.hist{display:block;width:100%;height:190px}
   /* ---------- footer ---------- */
-  .foot{grid-column:1/4;border-top:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 20px;font-size:12px;color:var(--dim)}
+  .foot{grid-column:1/4;border-top:0;display:flex;align-items:center;gap:14px;padding:0 20px;font-size:11.5px;color:var(--dim)}
   .foot b{color:var(--muted);font-weight:600}
   .foot .r{margin-left:auto}
   /* ---------- holders table view ---------- */
@@ -383,7 +408,7 @@
   .view{display:none;flex:1;min-height:0;overflow:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--panel)}
   .view.show{display:block}
   .view table{width:100%;border-collapse:collapse}
-  .view th{position:sticky;top:0;z-index:1;background:var(--panel);text-align:left;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);padding:10px 12px;white-space:nowrap;border-bottom:1px solid var(--line2)}
+  .view th{position:sticky;top:0;z-index:1;background:var(--panel);text-align:left;font-size:11.5px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--dim);padding:10px 12px;white-space:nowrap;border-bottom:1px solid var(--line2)}
   .view td{padding:8px 12px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}
   .view td:nth-child(4){max-width:520px}
   .view td.r.mono{font-variant-numeric:tabular-nums}
@@ -403,7 +428,7 @@
   .sigrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
   .sib{display:flex;align-items:center;justify-content:center;gap:7px;height:38px;border:1px solid var(--line2);font-weight:700;font-size:12.5px;background:var(--panel)}.sib:hover{border-color:var(--accent);color:var(--accent)}
   .sib .sig{font:900 15px var(--font-display);color:#4285F4}
-  .nav button.acctbtn{margin-top:8px;border-top:1px solid var(--line);padding-top:12px}
+  .nav button.acctbtn{display:none}
   @media (prefers-reduced-motion:reduce){.live i{animation:none}.toast div,.card.show{animation:none}}
   @media (max-width:1100px){.app{grid-template-columns:64px 1fr 280px}.brand h1,.brand small,.nav button span,.tracked,.disclaimer{display:none}.nav button{justify-content:center}}
   /* basic mobile pass — must come after the 1100px query so it wins */
@@ -416,7 +441,7 @@
     .foot{grid-column:1;flex-wrap:wrap;height:auto;padding:8px 14px}
     aside.side{flex-direction:row;align-items:center;overflow-x:auto;padding:8px 10px;border-right:0;border-bottom:1px solid var(--line)}
     .nav{flex-direction:row;margin:0;display:flex}
-    .tracked,.disclaimer,.brand h1,.brand small,.stats,.rail,.bar{display:none}
+    .tracked,.disclaimer,.brand h1,.brand small,.status,.rail,.bar{display:none}
     .head{flex-wrap:wrap;height:auto;row-gap:8px;padding:10px}
     .head>*{min-width:0}
     .tokpick{overflow-x:auto;max-width:100%;margin-left:0}
@@ -434,8 +459,8 @@
     .wp .whead{flex-wrap:wrap}
     .wp .wbtns{flex-wrap:wrap}
     .card{left:8px;right:8px;width:auto;max-width:none}
-    .nav button.subitem{padding-left:10px}.nav button.subitem::before{display:none}.nav button.subitem svg{display:block}
-    .chip{flex-wrap:wrap;max-width:calc(100% - 60px)}#shareBtn{display:none}
+    .nav .grp{display:none}
+    #shareBtn{display:none}
   }
 </style>
 
@@ -444,15 +469,13 @@
     <svg style="display:none" aria-hidden="true"><symbol id="reefmark" viewBox="0 0 1024 1024"><path fill="currentColor" fill-rule="evenodd" d="M384 988 C370 981 415 957 458 949 C466 947 477 945 482 943 C486 942 494 939 499 938 C516 933 531 927 538 923 C540 921 544 919 546 918 C550 916 562 907 568 901 C574 896 585 882 596 865 C627 819 651 803 704 793 C715 791 727 788 738 786 C790 775 838 736 853 692 C856 684 856 659 853 653 C848 642 837 634 823 632 C815 630 813 631 810 638 C800 656 781 676 758 689 C755 691 750 694 747 695 C728 706 692 718 657 723 C653 724 648 724 645 725 C642 725 637 726 633 727 C619 729 615 730 603 733 C570 741 552 750 526 774 C483 814 464 826 432 835 C428 836 422 838 420 839 C407 843 377 847 344 849 C337 850 326 851 320 851 C299 853 289 854 284 855 C281 856 278 857 276 857 C270 857 253 861 235 868 C191 885 153 916 123 961 C109 982 100 985 80 975 C49 961 30 940 16 905 C15 902 14 899 13 899 C12 898 12 866 12 680 C12 463 12 463 18 462 C63 457 81 457 102 460 C106 460 111 461 114 462 C141 465 159 469 189 477 C229 488 235 488 292 488 C354 488 378 484 417 464 C445 450 465 445 516 441 C569 437 573 437 593 427 C622 412 651 382 652 367 C652 352 638 346 601 344 C562 342 344 338 171 335 C41 334 18 333 14 330 C12 328 11 124 13 123 C14 123 16 118 18 113 C28 87 41 71 62 57 C73 49 79 46 106 36 C109 35 166 35 514 35 C963 35 920 34 952 50 C975 61 999 89 1006 113 C1008 117 1009 122 1010 125 C1013 132 1013 888 1011 894 C1010 896 1008 901 1006 906 C993 945 968 967 915 988 C910 990 388 990 384 988 Z M172 717 C175 716 181 716 184 715 C188 715 194 714 198 713 C203 713 210 712 215 712 C229 710 245 710 261 713 C274 716 287 716 319 716 C354 716 363 716 376 713 C379 712 384 711 388 710 C428 702 455 687 487 658 C506 641 519 632 539 625 C544 623 550 621 551 621 C561 617 590 613 622 611 C651 609 667 608 676 605 C679 605 686 603 690 602 C715 596 736 587 752 575 C757 572 763 568 766 566 C794 552 811 535 818 516 C819 511 819 511 818 505 C815 491 810 489 772 487 C748 486 645 485 643 486 C642 487 638 492 634 498 C618 521 606 530 577 540 C555 548 535 551 503 554 C471 557 449 567 413 594 C377 621 363 626 308 629 C300 629 286 630 278 630 C242 632 236 634 219 642 C195 654 172 678 164 698 C159 710 159 714 161 716 C163 718 163 718 172 717 Z"/></symbol><symbol id="reefword" viewBox="0 0 197.8 64"><path fill="currentColor" d="M3.6080536912751677 64.0V0.0H29.981208053691272Q37.19731543624161 0.0 42.43758389261745 2.5986577181208084Q47.677852348993284 5.197315436241617 50.53422818791946 9.986577181208059Q53.39060402684564 14.775838926174501 53.39060402684564 21.30469798657718Q53.39060402684564 27.962416107382552 50.51275167785234 32.6013422818792Q47.59194630872483 37.19731543624161 42.26577181208054 39.64563758389262L55.58120805369127 64.0H38.65771812080537L26.9744966442953 42.09395973154362H19.028187919463086V64.0ZM19.028187919463086 29.89530201342282H26.673825503355705Q30.153020134228186 29.89530201342282 32.536912751677846 28.993288590604028Q34.920805369127514 28.091275167785234 36.14496644295302 26.179865771812082Q37.36912751677852 24.26845637583893 37.36912751677852 21.304697986577185Q37.36912751677852 18.34093959731544 36.14496644295302 16.386577181208057Q34.920805369127514 14.432214765100674 32.536912751677846 13.46577181208054Q30.153020134228186 12.499328859060405 26.630872483221474 12.499328859060405H19.028187919463086Z M55.885315436241605 64.0V0.0H100.5135033557047V12.58523489932886H71.30544966442952V25.514093959731547H98.19404026845638V37.79865771812081H71.30544966442952V51.41476510067114H100.47055033557046V64.0Z M104.16794630872484 64.0V0.0H148.79613422818792V12.58523489932886H119.58808053691274V25.514093959731547H146.4766711409396V37.79865771812081H119.58808053691274V51.41476510067114H148.7531812080537V64.0Z M152.45057718120805 64.0V0.0H196.1337986577181V12.58523489932886H167.87071140939597V28.606711409395977H193.34185234899329V40.89127516778524H167.87071140939597V64.0Z"/></symbol></svg>
     <div class="brand"><span class="bmark" aria-hidden="true"><svg><use href="#reefmark"/></svg></span><div><h1><span class="bword" role="img" aria-label="REEF"><svg><use href="#reefword"/></svg></span></h1><small>Base · on-chain</small></div></div>
     <nav class="nav" id="nav">
+      <div class="grp">Map</div>
       <button class="on" data-view="aquarium"><svg viewBox="0 0 16 16"><rect x="1" y="5" width="2" height="2"/><rect x="1" y="9" width="2" height="2"/><rect x="3" y="7" width="2" height="2"/><rect x="5" y="5" width="8" height="6"/><rect x="13" y="7" width="2" height="2"/><rect x="7" y="3" width="4" height="2"/></svg><span>Reef</span></button>
-      <button data-view="holders" class="subitem"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="2" height="2"/><rect x="6" y="3" width="8" height="2"/><rect x="2" y="7" width="2" height="2"/><rect x="6" y="7" width="8" height="2"/><rect x="2" y="11" width="2" height="2"/><rect x="6" y="11" width="8" height="2"/></svg><span>Top holders</span></button>
       <button data-view="wallets"><svg viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="2"/><rect x="2" y="12" width="12" height="2"/><rect x="2" y="6" width="2" height="6"/><rect x="12" y="6" width="2" height="6"/><rect x="9" y="8" width="3" height="2"/></svg><span>Ecosystem Whales</span></button>
       <button data-view="flows"><svg viewBox="0 0 16 16"><rect x="2" y="4" width="8" height="2"/><rect x="10" y="2" width="2" height="2"/><rect x="12" y="4" width="2" height="2"/><rect x="10" y="6" width="2" height="2"/><rect x="6" y="10" width="8" height="2"/><rect x="4" y="8" width="2" height="2"/><rect x="2" y="10" width="2" height="2"/><rect x="4" y="12" width="2" height="2"/></svg><span>Flows</span></button>
+      <div class="grp">Signals</div>
       <button data-view="alerts"><svg viewBox="0 0 16 16"><rect x="6" y="2" width="4" height="2"/><rect x="5" y="4" width="6" height="2"/><rect x="4" y="6" width="8" height="4"/><rect x="3" y="10" width="10" height="2"/><rect x="7" y="13" width="2" height="2"/></svg><span>Alerts</span><em class="navbadge" id="alertBadge" style="display:none"></em></button>
-      <button data-view="alerts" data-atab="global" class="subitem"><span>Global</span></button>
-      <button data-view="alerts" data-atab="mine" class="subitem"><span>Personal</span></button>
       <button data-view="watch"><svg viewBox="0 0 16 16"><rect x="7" y="2" width="2" height="3"/><rect x="2" y="7" width="3" height="2"/><rect x="11" y="7" width="3" height="2"/><rect x="6" y="5" width="4" height="2"/><rect x="5" y="7" width="6" height="2"/><rect x="6" y="9" width="4" height="2"/><rect x="4" y="11" width="2" height="2"/><rect x="10" y="11" width="2" height="2"/><rect x="7" y="9" width="2" height="3"/></svg><span>Watchlist</span></button>
-      <button data-view="profile" class="acctbtn"><svg viewBox="0 0 16 16"><rect x="5" y="2" width="6" height="6"/><rect x="3" y="9" width="10" height="5"/></svg><span>Sign in</span></button>
     </nav>
     <div class="tracked">
       <div class="lbl">Tracked token</div>
@@ -469,31 +492,41 @@
   </aside>
 
   <header class="head">
-    <div class="htitle"><h2 id="viewTitle">Reef</h2><div class="sub" id="viewSub">Every wallet is a fish. Top 100, live from Base.</div></div>
     <div class="tokpick" id="tokpick"></div>
-    <div class="tokall" id="tokall" style="display:none"><button id="tokallBtn">ALL TOKENS ▾</button><div class="tokmenu" id="tokmenu"></div></div>
-    <div class="stats">
-      <div id="stHoldersTile"><small>Holders</small><b class="mono" id="stHolders">—</b></div>
-      <div><small>Top 100 hold</small><b class="mono" id="stTop">—</b></div>
-      <div><small>Whales</small><b class="mono" id="stWhales">—</b></div>
-      <div><small>Updated</small><b class="live"><i></i><span id="stUpd">just now</span></b></div>
-    </div>
+    <div class="tokall" id="tokall"><button id="tokallBtn">$BRETT <span class="caret">▾</span></button><div class="tokmenu" id="tokmenu"></div></div>
+    <div class="status" id="status"><b id="stTop">—</b> in top 100<span class="sep">·</span><b id="stWhales">—</b> whales<span class="sep">·</span><span class="live">snapshot <span id="stUpd">just now</span></span><span class="stats"><span id="stHoldersTile"><b id="stHolders"></b></span></span></div>
     <div class="hsearch"><svg class="hsi" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2" width="8" height="2"/><rect x="2" y="8" width="8" height="2"/><rect x="2" y="2" width="2" height="8"/><rect x="8" y="2" width="2" height="8"/><rect x="10" y="10" width="2" height="2"/><rect x="12" y="12" width="2" height="2"/></svg><input id="hq" placeholder="Paste a contract address, or search a token / wallet" autocomplete="off" spellcheck="false"><kbd class="hsk">/</kbd><div id="hqDrop"></div></div>
     <button class="share" id="acctBtn" onclick="ACCT.user?setView('profile'):openSignIn('login')">Sign in</button>
   </header>
 
   <main class="main">
+    <div class="ptitle" id="ptitle"><h2 id="viewTitle">Top 100 holders</h2><div class="sub" id="viewSub">ranked by balance</div><div class="seg" id="mapseg"><button data-view="aquarium" class="on"><svg viewBox="0 0 16 16"><rect x="1" y="5" width="2" height="2"/><rect x="1" y="9" width="2" height="2"/><rect x="3" y="7" width="2" height="2"/><rect x="5" y="5" width="8" height="6"/><rect x="13" y="7" width="2" height="2"/></svg>Map</button><button data-view="holders"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="2"/><rect x="2" y="7" width="12" height="2"/><rect x="2" y="11" width="12" height="2"/></svg>Table</button></div></div>
     <div class="tank" id="tank">
       <canvas id="cv"></canvas>
       <div class="glass"></div>
-      <div class="chip"><span id="chipFresh"><span style="color:#4D6BFF">■</span> Snapshot</span><span id="chipTok">$BRETT</span><span>Top 100</span><button id="refBtn" onclick="refreshNow(this)" title="Run a data refresh now (takes ~3 min end to end)">⟳ REFRESH</button><button id="shareBtn" title="Copy a link to this aquarium">SHARE ↗</button></div>
+      <div class="chip"><span id="chipFresh"></span><span id="chipTok"></span></div>
       <div class="tierkey"><span><i style="background:#3B6BFF"></i>whale · deep</span><span><i style="background:#F2C14E"></i>large</span><span><i style="background:#53C7F0"></i>medium</span><span><i style="background:#AFCBE8"></i>small · shallow</span></div>
       <div class="ambnote">background schools = holders 101+ · ambient, not clickable</div>
-      <div class="zoom"><button id="zin" title="Zoom in">+</button><button id="zout" title="Zoom out">−</button><button id="zfit" title="Reset" style="font-size:11px">⟲</button></div>
-      <label class="webtog" style="right:196px" title="Show exchanges, liquidity pools, bridges and contracts in the tank (they are excluded from the ranking)"><input type="checkbox" id="infraTogT"> SHOW INFRA</label>
-      <label class="webtog" title="Highlight wallet clusters our evidence links together"><input type="checkbox" id="websTog"> SHOW SCHOOLS</label>
+      <div class="zoom">
+        <button id="refBtn" onclick="refreshNow(this)" title="Refresh the snapshot"><svg viewBox="0 0 16 16"><rect x="3" y="3" width="8" height="2"/><rect x="2" y="5" width="2" height="6"/><rect x="3" y="11" width="8" height="2"/><rect x="11" y="9" width="2" height="2"/><rect x="12" y="5" width="2" height="2"/><rect x="10" y="7" width="6" height="2"/></svg></button>
+        <button id="shareBtn" title="Copy a link to this tank"><svg viewBox="0 0 16 16"><rect x="9" y="2" width="5" height="2"/><rect x="12" y="4" width="2" height="3"/><rect x="7" y="7" width="7" height="2"/><rect x="2" y="7" width="2" height="7"/><rect x="4" y="12" width="8" height="2"/><rect x="2" y="7" width="6" height="2"/></svg></button>
+        <span class="gap"></span>
+        <label class="webtog" title="Show infrastructure: exchanges, pools, bridges, contracts"><input type="checkbox" id="infraTogT"><svg viewBox="0 0 16 16"><rect x="2" y="9" width="12" height="5"/><rect x="4" y="5" width="3" height="4"/><rect x="9" y="3" width="3" height="6"/></svg></label>
+        <label class="webtog" title="Highlight linked wallets (schools)"><input type="checkbox" id="websTog"><svg viewBox="0 0 16 16"><rect x="2" y="2" width="4" height="4"/><rect x="10" y="2" width="4" height="4"/><rect x="6" y="10" width="4" height="4"/><rect x="6" y="5" width="2" height="2"/><rect x="8" y="7" width="2" height="2"/><rect x="5" y="7" width="2" height="2"/></svg></label>
+        <span class="gap"></span>
+        <button id="zin" title="Zoom in">+</button><button id="zout" title="Zoom out">−</button><button id="zfit" title="Reset zoom" style="font-size:11px">⟲</button>
+      </div>
       <div class="toast" id="toast"></div>
-      <div class="tankid" id="tankid">TANK 01</div>
+      <div class="tankid" id="tankid"></div>
+    <div class="bar">
+      <div class="t">Fish size<small>= wallet size</small></div>
+      <div class="sz"><canvas data-tier="small"></canvas><i style="background:#AFCBE8"></i><div>Small<b id="thSmall">&lt; $10K</b></div></div>
+      <div class="sz"><canvas data-tier="medium"></canvas><i style="background:#53C7F0"></i><div>Medium<b id="thMed">$10K – $100K</b></div></div>
+      <div class="sz"><canvas data-tier="large"></canvas><i style="background:#F2C14E"></i><div>Large<b id="thLarge">$100K – $1M</b></div></div>
+      <div class="sz"><canvas data-tier="whale"></canvas><i style="background:#3B6BFF"></i><div>Whale<b id="thWhale">&gt; $1M</b></div></div>
+      <button class="about" id="aboutBtn">About the map</button>
+    </div>
+
       <div class="tip" id="tip"></div>
       <div class="card" id="card"></div>
     </div>
@@ -506,19 +539,11 @@
     <div class="wp" id="walletPage"></div>
     <div class="view" id="profileView"></div>
     <div class="view" id="avatarView"></div>
-    <div class="bar">
-      <div class="t">Fish size = wallet size<small>tiers are relative to this tank</small></div>
-      <div class="sz"><canvas data-tier="small"></canvas><div>Small<b id="thSmall">&lt; $10K</b></div></div>
-      <div class="sz"><canvas data-tier="medium"></canvas><div>Medium<b id="thMed">$10K – $100K</b></div></div>
-      <div class="sz"><canvas data-tier="large"></canvas><div>Large<b id="thLarge">$100K – $1M</b></div></div>
-      <div class="sz"><canvas data-tier="whale"></canvas><div>Whale<b id="thWhale">&gt; $1M</b></div></div>
-      <button class="about" id="aboutBtn">ⓘ About the map</button>
-    </div>
   </main>
 
   <aside class="rail">
     <div class="box"><h3>Top 100 <a id="viewAll" title="Share of the total supply held by these 100 wallets · click for the full table"><span id="railTop">—</span> of supply</a></h3><div class="hold" id="holdList"></div></div>
-    <div class="box"><h3>Top-100 supply split</h3><div class="dist"><canvas id="donut"></canvas><ul id="distList"></ul></div></div>
+    <div class="box"><h3>Top-100 supply split</h3><div class="dist"><canvas id="donut"></canvas><div class="sbar" id="sbar"></div><ul id="distList"></ul></div></div>
     <div class="box"><h3>Live activity <a style="color:var(--dim)">on-chain</a></h3><div class="feed" id="feed"></div></div>
     <div class="box"><h3>Legend</h3><div class="leg">
       <div><img src="assets/tank/medium.webp" alt="">Each fish is one wallet. Top 100 only.</div>
@@ -536,7 +561,7 @@
 <div class="drawer" id="drawer"></div>
 <div class="modal" id="modal"><div class="in">
   <h4>About the map · methodology</h4>
-  <p>Every fish is one of the top 100 wallets holding this token. Size = USD value of the position <b>in this token</b> (not total net worth), tiers relative to this tank. Depth mirrors size: whales swim deep, small fish stay shallow. Positions are stable — the same wallet holds the same spot every visit.</p>
+  <p>Every fish is one of the top 100 wallets holding this token. The small background schools are holders 101+ — ambient, not clickable. Size = USD value of the position <b>in this token</b> (not total net worth), tiers relative to this tank. Depth mirrors size: whales swim deep, small fish stay shallow. Positions are stable — the same wallet holds the same spot every visit.</p>
   <p><b>Data.</b> Holder balances via Moralis, prices & volume via CoinGecko, wallet intelligence (labels, portfolios, transfers) via Arkham, X identities & trader tags via Frontrun, names via Basenames. Snapshots refresh roughly every 2 hours — the chip in the tank shows the exact capture time, and turns red if a refresh failed.</p>
   <p><b>What's filtered.</b> Burn addresses, exchange hot wallets, bridges and known pools are excluded from the top 100 upstream. Remaining contracts and exchange-deposit wallets are hidden by default in the tables (toggle to show); ranks never renumber. The header holder count comes from Moralis and can differ slightly from Basescan.</p>
   <p><b>Change columns</b> compare against the snapshot closest to 24h old — the header of that column states the actual window. Holders 101+ swim in the background schools; they're ambience, not data.</p>
@@ -925,10 +950,11 @@ let LBL_PLACED=[]; // label boxes drawn this frame — later labels dodge earlie
 function drawFishes(t){
   LBL_PLACED=[];
   const order=fish.filter(fishVisible).sort((a,b)=>a.size-b.size);
-  order.forEach(f=>{if(f!==selected)drawOneFish(f,t)});
+  const dimFor=hovered&&!selected&&!showWebs&&!tierFocus?hovered:null;
+  order.forEach(f=>{if(f===selected)return;if(dimFor&&f!==dimFor){ctx.save();ctx.globalAlpha=.28;drawOneFish(f,t);ctx.restore()}else drawOneFish(f,t)});
   if(sprReady)drawEnv(t,false);
   // labels render above every sprite: persistent for the top 6, on hover for the rest
-  order.forEach(f=>{if(tierFocus&&f.h.tier!==tierFocus&&f!==selected)return;if(f!==selected&&(f.h.rank<=6||f.h.infra||f.glow>.2||(tierFocus&&f.h.tier===tierFocus)))fishLabel(f,t,f.h.infra&&f.glow<.2?'soft':false)});
+  order.forEach(f=>{if(tierFocus&&f.h.tier!==tierFocus&&f!==selected)return;if(dimFor&&f!==dimFor)return;const named=!!(f.h.claim||f.h.entity||f.h.basename);if(f!==selected&&(f.h.rank<=6||named||f.h.infra||f.glow>.2||(tierFocus&&f.h.tier===tierFocus)))fishLabel(f,t,f.h.infra&&f.glow<.2?'soft':false)});
   if(showWebs&&!selected){ // resting overlay: dim the tank, whisper-thin webs per cluster
     ctx.save();ctx.fillStyle='rgba(3,9,22,.62)';ctx.fillRect(0,0,W,H);ctx.restore();
     const groups=new Map();
@@ -992,6 +1018,9 @@ const tip=document.getElementById('tip'),card=document.getElementById('card');
   card.addEventListener('pointerup',end);card.addEventListener('pointercancel',end);
 })();
 function hit(mx,my){let best=null,bd=1e9;fish.forEach(f=>{if(!fishVisible(f))return;const d=Math.hypot(f.x-mx,f.y-my);const r=f.size*zoom*.6+8;if(d<r&&d<bd){bd=d;best=f}});return best}
+let HOTROW=null;
+function syncHotRow(){const a=hovered?hovered.h.addr.toLowerCase():null;if(a===HOTROW)return;HOTROW=a;document.querySelectorAll('#holdList button.hot').forEach(b=>b.classList.remove('hot'));if(a){const b=document.querySelector(`#holdList button[data-addr="${a}"]`);if(b){b.classList.add('hot');b.scrollIntoView({block:'nearest'})}}}
+setInterval(syncHotRow,80);
 tank.addEventListener('mousemove',e=>{const r=tank.getBoundingClientRect();const mx=e.clientX-r.left,my=e.clientY-r.top;hovered=hit(mx,my);tank.style.cursor=hovered?'pointer':'default';
   if(hovered&&hovered!==selected){tip.style.display='block';tip.innerHTML=`<b>${esc(hovered.h.entity||hovered.h.label||short(hovered.h.addr))}</b> · ${hovered.h.pct.toFixed(2)}% · ${usd(hovered.h.value)}`;tip.style.left=Math.min(W-220,mx+14)+'px';tip.style.top=(my-34)+'px'}else tip.style.display='none'});
 tank.addEventListener('mouseleave',()=>{hovered=null;tip.style.display='none'});
@@ -1031,8 +1060,8 @@ document.getElementById('zfit').onclick=()=>zoom=1;
 /* ============ chrome ============ */
 function renderChrome(){
   const t=cur,L=data.list;
-  document.getElementById('chipTok').textContent='$'+t.sym;
-  const ti=document.getElementById('tankid');if(ti)ti.textContent=`TANK ${String(TOKENS.findIndex(x=>x.sym===t.sym)+1).padStart(2,'0')} · $${t.sym} · TOP 100`;
+  {const tb=document.getElementById('tokallBtn');if(tb)tb.innerHTML=`${t.logo?`<img src="${t.logo}" onerror="this.style.display='none'">`:`<i style="background:${t.color}"></i>`}$${esc(t.sym)} <span class="caret">▾</span>`}
+  try{const rc=JSON.parse(localStorage.getItem('reef.recent')||'[]').filter(x=>x!==t.sym);rc.unshift(t.sym);localStorage.setItem('reef.recent',JSON.stringify(rc.slice(0,5)))}catch{}
   document.getElementById('tkSym').textContent='$'+t.sym;document.getElementById('tkName').textContent=t.name;
   const ic=document.getElementById('tkIc');
   if(t.logo){ic.innerHTML=`<img src="${t.logo}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentNode.textContent='${t.sym.slice(0,2)}'">`;ic.style.background='var(--panel2)';ic.style.overflow='hidden'}
@@ -1052,7 +1081,8 @@ function renderChrome(){
   document.getElementById('stTop').textContent=(data.topShare*100).toFixed(1)+'%';{const r=document.getElementById('railTop');if(r)r.textContent=(data.topShare*100).toFixed(1)+'%'}
   document.getElementById('stWhales').textContent=L.filter(h=>h.tier==='whale').length;
   const th=t.th;document.getElementById('thSmall').textContent='< '+usd(th[0]);document.getElementById('thMed').textContent=usd(th[0])+' – '+usd(th[1]);document.getElementById('thLarge').textContent=usd(th[1])+' – '+usd(th[2]);document.getElementById('thWhale').textContent='> '+usd(th[2]);
-  document.getElementById('holdList').innerHTML=L.map((h,i)=>`<button data-i="${i}"><span class="n">${h.rank}</span><span style="width:26px;height:19px;flex:none"><img src="assets/tank/${h.rank===1?'king':h.tier}.webp" style="width:26px;height:19px;object-fit:contain" onerror="this.style.display='none'"></span><span><div class="a">${short(h.addr)}</div>${(h.entity||h.label)?`<div style="font-size:10px;font-weight:600;color:${cexOf(h.entity)?cexOf(h.entity)[1]:'var(--muted)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc((h.entity||h.label).slice(0,26))}</div>`:''}<div class="bar2"><i style="width:${Math.min(100,h.pct/L[0].pct*100)}%"></i></div></span><span class="p mono">${h.pct.toFixed(2)}%<small>${usd(h.value)}</small></span></button>`).join('');
+  document.getElementById('holdList').innerHTML=L.map((h,i)=>`<button data-i="${i}" data-addr="${h.addr.toLowerCase()}" title="${TIER[h.tier].n}"><i class="td" style="background:${TIER[h.tier].c}"></i><span class="n">${h.rank}</span><span style="min-width:0"><div class="a">${short(h.addr)}</div>${(h.entity||h.label)?`<div style="font-size:10.5px;font-weight:500;color:${cexOf(h.entity)?cexOf(h.entity)[1]:'var(--dim)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc((h.entity||h.label).slice(0,26))}</div>`:''}</span><span class="p mono">${h.pct.toFixed(2)}%<small>${usd(h.value)}</small></span></button>`).join('');
+  document.querySelectorAll('#holdList button').forEach(b=>{b.onmouseenter=()=>{if(view==='aquarium'){hovered=fish[+b.dataset.i]||null}};b.onmouseleave=()=>{if(hovered===fish[+b.dataset.i])hovered=null}});
   document.querySelectorAll('#holdList button').forEach(b=>b.onclick=()=>{setView('aquarium');select(fish[+b.dataset.i])});
   drawMinis();drawDonut();renderTable();freshTick();if(view==='flows')renderFlows();
   buildPicker();
@@ -1088,8 +1118,8 @@ function drawDonut(){
   const cnt=t=>data.list.filter(h=>h.tier===t).length;
   const segs=[['Whales','top 6',shr('whale'),TIER.whale.c,'whale'],['Large','7–24',shr('large'),TIER.large.c,'large'],['Medium','25–60',shr('medium'),TIER.medium.c,'medium'],['Small','61–100',shr('small'),TIER.small.c,'small']];
   DONUT_SEGS=segs;
-  let a=-Math.PI/2;segs.forEach(s=>{const act=tierHot===s[4]||tierFocus===s[4];const dim=(tierFocus&&tierFocus!==s[4])||(tierHot&&tierHot!==s[4]);const R=act?98:92,r=62;s.a0=a;s.a1=a+s[2]*6.283;
-    x.beginPath();x.arc(110,110,R,a,a+s[2]*6.283);x.arc(110,110,r,a+s[2]*6.283,a,true);x.closePath();x.fillStyle=s[3];x.globalAlpha=dim?.35:1;x.fill();x.globalAlpha=1;a+=s[2]*6.283});
+  {const sb=document.getElementById('sbar');if(sb)sb.innerHTML=segs.map(s=>{const dim=(tierFocus&&tierFocus!==s[4])||(tierHot&&tierHot!==s[4]);return `<i data-tier="${s[4]}" class="${dim?'dim':''}" style="width:${(s[2]*100).toFixed(2)}%;background:${s[3]}" title="${s[0]} · ${(s[2]*100).toFixed(1)}%"></i>`}).join('');sb.querySelectorAll('i').forEach(i=>{i.onmouseenter=()=>{tierHot=i.dataset.tier;drawDonut()};i.onmouseleave=()=>{tierHot=null;drawDonut()};i.onclick=()=>setTierFocus(i.dataset.tier)})}
+  let a=-Math.PI/2;segs.forEach(s=>{s.a0=a;s.a1=a+s[2]*6.283;a+=s[2]*6.283});
   const foc=segs.find(s=>s[4]===(tierHot||tierFocus));
   x.fillStyle=CH.text;x.textAlign='center';x.font='900 24px Inter Tight, sans-serif';x.fillText(foc?(foc[2]*100).toFixed(1)+'%':(data.topShare*100).toFixed(1)+'%',110,108);x.font='500 12px Inter Tight, sans-serif';x.fillStyle='#5B616E';x.fillText(foc?`${cnt(foc[4])} ${foc[0].toLowerCase()} · ${usd(data.list.filter(h=>h.tier===foc[4]).reduce((q,h)=>q+h.value,0))}`:'of supply in top 100',110,128);
   const wsh=segs[0][2]*100;
@@ -1191,27 +1221,30 @@ function renderTable(){
 /* token picker */
 function renderTokMenu(q){
   const m=document.getElementById('tokmenu');const ql=q.trim().toLowerCase();
+  let recent=[];try{recent=JSON.parse(localStorage.getItem('reef.recent')||'[]').map(sy=>TOKENS.find(t=>t.sym===sy)).filter(Boolean)}catch{}
+  if(ql)recent=[];
   const list=[...TOKENS].sort((a,b)=>(b.mcap||0)-(a.mcap||0)).filter(t=>!ql||t.sym.toLowerCase().includes(ql)||(t.name||'').toLowerCase().includes(ql));
   // your fetched tokens first (from the account's fetch log) — that is how you find a CA you fetched earlier
   const mine=(ACCT.user&&ACCT.user.fetched||[]).map(f=>({...f,t:TOKENS.find(t=>(t.contract||'').toLowerCase()===f.ca)})).filter(f=>!ql||(f.t&&(f.t.sym.toLowerCase().includes(ql)||(f.t.name||'').toLowerCase().includes(ql)))||(f.sym||'').toLowerCase().includes(ql));
   const mineHtml=mine.length?`<div class="tmh">Your fetched tokens <small>· ${mine.length}</small></div>`+mine.map(f=>f.t?`<button class="trow" data-sym="${f.t.sym}">${f.t.logo?`<img src="${f.t.logo}" onerror="this.style.display='none'">`:`<i style="background:${f.t.color}"></i>`}<b>$${esc(f.t.sym)}</b><span style="color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.t.name||'')}</span><small>${f.t.mcap?usd(f.t.mcap):''} · fetched ${agoStr(f.ts)} ago</small></button>`:`<button class="trow" data-ca="${f.ca}"><i style="background:var(--dim)"></i><b>$${esc(f.sym||'TOKEN')}</b><span style="color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" class="mono">${short(f.ca)}</span><small>building… · fetched ${agoStr(f.ts)} ago</small></button>`).join('')+`<div class="tmh">All tokens</div>`:'';
-  m.innerHTML=`<input placeholder="filter ${TOKENS.length} tokens…" value="${esc(q)}">`+mineHtml+list.map(t=>`<button class="trow" data-sym="${t.sym}">${t.logo?`<img src="${t.logo}" onerror="this.style.display='none'">`:`<i style="background:${t.color}"></i>`}<b>$${esc(t.sym)}</b><span style="color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.name||'')}</span>${t.trending?'<span class="pill" style="background:#F9731622;color:#F76B15;border:1px solid #F76B1555">trending</span>':''}<small>${t.mcap?usd(t.mcap):''}${t.stale?' · daily':''}</small></button>`).join('')+(list.length?'':'<div style="padding:12px;color:var(--dim);font-size:12px">no match — paste a contract address in the search box to add a token</div>');
+  const recentHtml=recent.length?`<div class="tmh">Recent</div>`+recent.map(t=>`<button class="trow" data-sym="${t.sym}">${t.logo?`<img src="${t.logo}" onerror="this.style.display='none'">`:`<i style="background:${t.color}"></i>`}<b>$${esc(t.sym)}</b><span style="color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.name||'')}</span><small>${t.mcap?usd(t.mcap):''}</small></button>`).join('')+(mineHtml?'':`<div class="tmh">All tokens · ${TOKENS.length}</div>`):'';
+  m.innerHTML=`<input placeholder="filter ${TOKENS.length} tokens…" value="${esc(q)}">`+recentHtml+mineHtml+list.map(t=>`<button class="trow" data-sym="${t.sym}">${t.logo?`<img src="${t.logo}" onerror="this.style.display='none'">`:`<i style="background:${t.color}"></i>`}<b>$${esc(t.sym)}</b><span style="color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.name||'')}</span>${t.trending?'<span class="pill" style="background:#F9731622;color:#F76B15;border:1px solid #F76B1555">trending</span>':''}<small>${t.mcap?usd(t.mcap):''}${t.stale?' · daily':''}</small></button>`).join('')+(list.length?'':'<div style="padding:12px;color:var(--dim);font-size:12px">no match — paste a contract address in the search box to add a token</div>');
   const inp=m.querySelector('input');inp.oninput=()=>{const v=inp.value;const pos=inp.selectionStart;renderTokMenu(v);const i2=m.querySelector('input');i2.focus();i2.setSelectionRange(pos,pos)};inp.onclick=e=>e.stopPropagation();
   m.querySelectorAll('.trow').forEach(b=>b.onclick=()=>{m.classList.remove('open');closeCard();if(b.dataset.ca){openMini(b.dataset.ca,null);return}loadToken(TOKENS.find(t=>t.sym===b.dataset.sym));toastMsg(`Aquarium switched to <b>$${b.dataset.sym}</b>`,'var(--muted)')});
 }
 function buildPicker(){
-  const many=TOKENS.length>6;const extra=cur&&!TOKENS.slice(0,4).some(t=>t.sym===cur.sym)?TOKENS.filter(t=>t.sym===cur.sym):[];const top=TOKENS.slice(0,extra.length?3:4);
+  const many=true;const extra=cur&&!TOKENS.slice(0,4).some(t=>t.sym===cur.sym)?TOKENS.filter(t=>t.sym===cur.sym):[];const top=TOKENS.slice(0,extra.length?3:4);
   const inline=many?[...extra,...top]:TOKENS; // the selected token goes first when it isn't one of the top 4, so it is never clipped off the end of the row
   document.getElementById('tokall').style.display=many?'':'none';
-  if(many){const ta=document.getElementById('tokallBtn');ta.textContent=`All ${TOKENS.length} tokens ▾`;ta.onclick=e=>{e.stopPropagation();const m=document.getElementById('tokmenu');m.classList.toggle('open');if(m.classList.contains('open')){renderTokMenu('');const i=m.querySelector('input');if(i){i.value='';i.focus()}}};
+  if(many){const ta=document.getElementById('tokallBtn');ta.onclick=e=>{e.stopPropagation();const m=document.getElementById('tokmenu');m.classList.toggle('open');if(m.classList.contains('open')){renderTokMenu('');const i=m.querySelector('input');if(i){i.value='';i.focus()}}};
     if(!buildPicker.bound){buildPicker.bound=true;document.addEventListener('click',e=>{if(!e.target.closest('.tokall'))document.getElementById('tokmenu').classList.remove('open')})}}
   document.getElementById('tokpick').innerHTML=inline.map(t=>`<button data-sym="${t.sym}" title="${esc(t.name||t.sym)}">${t.logo?`<img src="${t.logo}" onerror="this.style.display='none'">`:`<i style="background:${t.color}"></i>`}${t.sym}</button>`).join('');
   document.querySelectorAll('#tokpick button').forEach(b=>b.onclick=()=>{closeCard();loadToken(TOKENS.find(t=>t.sym===b.dataset.sym));toastMsg(`Aquarium switched to <b>$${cur.sym}</b>`,'var(--muted)')});
 }
 /* views */
-const VIEW_T={aquarium:['Reef','Every wallet is a fish. Top 100, live from Base.'],holders:['Top holders','The top 100 wallets of this token, ranked by balance.'],wallets:['Ecosystem Whales','Every wallet that sits in a top 100, across all tracked tokens.'],flows:['Flows','Are the biggest wallets buying or selling?'],alerts:['Alerts','What the biggest wallets just did.'],watch:['Watchlist','Wallets you follow.'],wallet:['Wallet','One wallet, across every tracked token.'],mini:['Token lookup','Any Base token by contract address.'],profile:['Account','Your accounts, plan, shark and claimed wallets.'],avatar:['Account · Avatar','Build your shark — a layered PFP, yours to mint.']};
+const VIEW_T={aquarium:['Top 100 holders','ranked by balance · every fish is a wallet'],holders:['Top 100 holders','ranked by balance'],wallets:['Ecosystem Whales','Every wallet that sits in a top 100, across all tracked tokens.'],flows:['Flows','Are the biggest wallets buying or selling?'],alerts:['Alerts','What the biggest wallets just did.'],watch:['Watchlist','Wallets you follow.'],wallet:['Wallet','One wallet, across every tracked token.'],mini:['Token lookup','Any Base token by contract address.'],profile:['Account','Your accounts, plan, shark and claimed wallets.'],avatar:['Account · Avatar','Build your shark — a layered PFP, yours to mint.']};
 function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>{const sub=b.dataset.atab;b.classList.toggle('on',b.dataset.view===v&&(!sub||sub===alertTab));b.classList.toggle('parent-on',(b.dataset.view==='aquarium'&&v==='holders')||(b.dataset.view==='alerts'&&!sub&&v==='alerts')||(b.dataset.view==='profile'&&v==='avatar'))});
-  {const t=VIEW_T[v]||VIEW_T.aquarium;const a=document.getElementById('viewTitle'),b=document.getElementById('viewSub');if(a)a.textContent=t[0];if(b)b.textContent=t[1];}
+  {const t=VIEW_T[v]||VIEW_T.aquarium;const a=document.getElementById('viewTitle'),b=document.getElementById('viewSub');if(a)a.textContent=t[0];if(b)b.textContent=t[1];const sg=document.getElementById('mapseg');if(sg){sg.style.display=(v==='aquarium'||v==='holders')?'':'none';sg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.view===v))}const pt=document.getElementById('ptitle');if(pt)pt.style.display=(v==='wallet'||v==='avatar')?'none':''}
   document.querySelector('.app').classList.toggle('noRail',v!=='aquarium');
   document.querySelector('.app').classList.toggle('wview',v==='wallets'||v==='watch');
   document.querySelector('.app').classList.toggle('tankview',v==='aquarium');
@@ -1383,6 +1416,9 @@ document.addEventListener('keydown',e=>{if(e.key==='/'&&!/input|textarea|select/
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{if(b.querySelector('.soon'))return toastMsg(`<b>${b.querySelector('span').textContent}</b> isn't ready. The prophecy says soon.`,'var(--dim)');closeCard();if(b.dataset.atab)alertTab=b.dataset.atab;else if(b.dataset.view==='alerts')alertTab='global';setView(b.dataset.view)});
 document.getElementById('viewAll').onclick=()=>setView('holders');
 document.getElementById('aboutBtn').onclick=()=>document.getElementById('modal').classList.add('show');
+document.querySelectorAll('#mapseg button').forEach(b=>b.onclick=()=>{closeCard();setView(b.dataset.view)});
+// toggles in the tank toolbar show their state
+['infraTogT','websTog'].forEach(id=>{const i=document.getElementById(id);if(i)i.addEventListener('change',()=>i.closest('.webtog').classList.toggle('on',i.checked))});
 document.getElementById('modalClose').onclick=()=>document.getElementById('modal').classList.remove('show');
 document.getElementById('modal').onclick=e=>{if(e.target.id==='modal')e.target.classList.remove('show')};
 document.getElementById('shareBtn').onclick=()=>{const u=location.origin+location.pathname+'?token='+cur.sym.toLowerCase();if(navigator.clipboard)navigator.clipboard.writeText(u);toastMsg(`Link copied: <b>${u.replace(/^https?:\/\//,'')}</b>`,'var(--teal)')};
@@ -1421,10 +1457,11 @@ function freshTick(){
   if(REAL&&data&&data.generated_at){
     const d=new Date(data.generated_at),ageH=(Date.now()-d.getTime())/36e5;
     const utc=d.toISOString().slice(11,16)+' UTC';
-    el.textContent=agoStr(data.generated_at)+' ago';el.title='snapshot captured '+d.toISOString().replace('T',' ').slice(0,16)+' UTC';
+    el.textContent=agoStr(data.generated_at)+' ago';el.parentNode.title='captured '+d.toISOString().replace('T',' ').slice(0,16)+' UTC';
     const stale=ageH>3; // cadence is ~2h — older than 3h means a refresh job failed
-    el.style.color=stale?'var(--coral)':'';
-    if(chip)chip.innerHTML=stale?`<span style="color:#E5484D">■</span> Stale · ${utc}`:`<span style="color:#4D6BFF">■</span> Snapshot · ${utc}`;
+    el.parentNode.classList.toggle('stale',stale);
+    {const ti=document.getElementById('tankid');if(ti)ti.textContent=(stale?'STALE · ':'SNAPSHOT · ')+utc}
+    if(chip)chip.innerHTML='';
   }
 }
 let upd=0;setInterval(()=>{if(REAL&&data&&data.generated_at){freshTick()}else{upd+=5;document.getElementById('stUpd').textContent=upd<60?upd+'s ago':Math.floor(upd/60)+'m ago'}},5000);
