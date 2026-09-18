@@ -1,4 +1,4 @@
-/* WHALARIUM shark avatar — an NFT-style layered character.
+/* REEF shark avatar — an NFT-style layered character.
    One locked base shark (same pose, same framing, 1024×1024) + trait layers, every layer produced by editing that exact
    base image and cutting out only what changed, so any combination lines up. Layers stack in a fixed order, the way
    PFP collections are assembled: background → skin (full body) → clothes → chain → eyes → hat.

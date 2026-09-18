@@ -1,4 +1,4 @@
-// Shared helpers for Whalarium functions: GitHub-backed JSON store, Privy sessions, user records.
+// Shared helpers for REEF functions: GitHub-backed JSON store, Privy sessions, user records.
 // Users live in data/users.json (committed via the Contents API — same pattern as tg_subs.json;
 // netlify.toml skips builds for that file). Keep writes rare: sign-in, watch add/remove, hits.
 import crypto from 'node:crypto';

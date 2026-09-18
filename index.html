@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>WHALARIUM</title>
-<meta name="description" content="WHALARIUM — the top holders of every Base token, as a living sea of wallets. Whales, schools, flows and live alerts.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230000FF'/%3E%3C/svg%3E">
+<title>REEF</title>
+<meta name="description" content="REEF — institutional-grade on-chain data, for everyone. The top holders of every Base token as a living sea of wallets: whales, schools, flows and live alerts.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1024 1024'%3E%3Cpath fill='%230000FF' fill-rule='evenodd' d='M384 988 C370 981 415 957 458 949 C466 947 477 945 482 943 C486 942 494 939 499 938 C516 933 531 927 538 923 C540 921 544 919 546 918 C550 916 562 907 568 901 C574 896 585 882 596 865 C627 819 651 803 704 793 C715 791 727 788 738 786 C790 775 838 736 853 692 C856 684 856 659 853 653 C848 642 837 634 823 632 C815 630 813 631 810 638 C800 656 781 676 758 689 C755 691 750 694 747 695 C728 706 692 718 657 723 C653 724 648 724 645 725 C642 725 637 726 633 727 C619 729 615 730 603 733 C570 741 552 750 526 774 C483 814 464 826 432 835 C428 836 422 838 420 839 C407 843 377 847 344 849 C337 850 326 851 320 851 C299 853 289 854 284 855 C281 856 278 857 276 857 C270 857 253 861 235 868 C191 885 153 916 123 961 C109 982 100 985 80 975 C49 961 30 940 16 905 C15 902 14 899 13 899 C12 898 12 866 12 680 C12 463 12 463 18 462 C63 457 81 457 102 460 C106 460 111 461 114 462 C141 465 159 469 189 477 C229 488 235 488 292 488 C354 488 378 484 417 464 C445 450 465 445 516 441 C569 437 573 437 593 427 C622 412 651 382 652 367 C652 352 638 346 601 344 C562 342 344 338 171 335 C41 334 18 333 14 330 C12 328 11 124 13 123 C14 123 16 118 18 113 C28 87 41 71 62 57 C73 49 79 46 106 36 C109 35 166 35 514 35 C963 35 920 34 952 50 C975 61 999 89 1006 113 C1008 117 1009 122 1010 125 C1013 132 1013 888 1011 894 C1010 896 1008 901 1006 906 C993 945 968 967 915 988 C910 990 388 990 384 988 Z M172 717 C175 716 181 716 184 715 C188 715 194 714 198 713 C203 713 210 712 215 712 C229 710 245 710 261 713 C274 716 287 716 319 716 C354 716 363 716 376 713 C379 712 384 711 388 710 C428 702 455 687 487 658 C506 641 519 632 539 625 C544 623 550 621 551 621 C561 617 590 613 622 611 C651 609 667 608 676 605 C679 605 686 603 690 602 C715 596 736 587 752 575 C757 572 763 568 766 566 C794 552 811 535 818 516 C819 511 819 511 818 505 C815 491 810 489 772 487 C748 486 645 485 643 486 C642 487 638 492 634 498 C618 521 606 530 577 540 C555 548 535 551 503 554 C471 557 449 567 413 594 C377 621 363 626 308 629 C300 629 286 630 278 630 C242 632 236 634 219 642 C195 654 172 678 164 698 C159 710 159 714 161 716 C163 718 163 718 172 717 Z'/%3E%3C/svg%3E">
 <meta name="theme-color" content="#0000FF">
-<meta property="og:title" content="WHALARIUM — see who really holds the token">
+<meta property="og:title" content="REEF — see who really holds the token">
 <meta property="og:description" content="Top holders of Base tokens as a living sea: whales, schools, flows, instant alerts. Live on-chain. NFA.">
 <meta property="og:image" content="https://basefish.netlify.app/assets/og.png">
 <meta property="og:url" content="https://basefish.netlify.app">
@@ -18,7 +18,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Doto:wght@700;900&family=Inter+Tight:wght@400;500;600;700;800;900&family=Roboto+Mono:wght@400;500;700&display=swap">
 <style>
   :root{
-    /* Whalarium brand kit v1 — one blue, black/white/gray, square corners, hairline borders (unchanged) */
+    /* REEF brand kit v1 — one blue, ink, white, the greys between; radius 0 everywhere but the mark; Doto only inside the tank */
     --abyss:#FFFFFF; --panel:#FFFFFF; --panel2:#EEF0F3; --panel3:#DEE1E7;
     --line:#DEE1E7; --line2:#B1B7C3;
     --text:#0A0B0D; --muted:#5B616E; --dim:#8A91A0;
@@ -99,10 +99,11 @@
   .cexl{display:inline-block;vertical-align:middle;border-radius:50%;flex:none;background:#fff}
   .cexi{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:14px;padding:0 3px;margin-right:4px;font:800 8.5px/1 var(--font-mono);color:#fff;vertical-align:middle;letter-spacing:.3px;border-radius:0;font-style:normal}
   .cpa{cursor:copy;border-bottom:1px dotted var(--dim)}.cpa:hover{color:var(--teal);border-bottom-color:var(--teal)}
-  .brand{display:flex;align-items:center;gap:10px;padding:6px 8px 18px}
+  .brand{display:flex;align-items:center;gap:11px;padding:6px 8px 18px;color:var(--text)}
   .brand img{width:42px;height:42px;object-fit:contain}
-  .bmark{width:42px;height:42px;background:var(--brand);border-radius:var(--r);display:flex;align-items:center;justify-content:center;flex:0 0 42px}.bmark svg{width:26px;height:26px;fill:#fff}
-  .brand h1{font:900 19px/1 var(--font-pixel);margin:0;letter-spacing:.02em;text-transform:uppercase}
+  .bmark{width:40px;height:40px;display:block;flex:0 0 40px;color:var(--brand)}.bmark svg{width:40px;height:40px;display:block}
+  .bword{display:block;width:79px;height:26px;color:var(--text)}.bword svg{width:100%;height:100%;display:block}
+  .brand h1{margin:0;line-height:1}
   .brand small{display:block;color:var(--dim);font-size:10px;letter-spacing:.12em;text-transform:uppercase;margin-top:3px;font-weight:600}
   .nav button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border-radius:0;color:var(--muted);font-weight:600;text-align:left;font-size:13px}
   .nav button svg{width:15px;height:15px;flex:none;fill:currentColor;shape-rendering:crispEdges}
@@ -129,7 +130,7 @@
   /* header: title · token picker · stats · search · share — one row, the search is the CA entry point */
   .head{grid-column:2/4;display:flex;align-items:center;gap:14px;padding:0 20px;border-bottom:1px solid var(--line)}
   .htitle{flex:none;min-width:150px}
-  .head h2{font:900 20px/1 var(--font-pixel);margin:0;letter-spacing:.02em;white-space:nowrap;text-transform:uppercase}
+  .head h2{font:800 20px/1 var(--font-display);margin:0;letter-spacing:-.02em;white-space:nowrap}
   .head h2 em{font-style:normal;color:var(--accent)}
   .head .sub{color:var(--dim);font-size:11.5px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
   @media (max-width:1600px){.head .sub{display:none}}
@@ -440,9 +441,10 @@
 
 <div class="app tankview">
   <aside class="side">
-    <div class="brand"><span class="bmark" aria-hidden="true"><svg viewBox="0 0 16 16"><rect x="1" y="9" width="3" height="2"/><rect x="4" y="7" width="3" height="2"/><rect x="7" y="9" width="3" height="2"/><rect x="10" y="7" width="3" height="2"/><rect x="13" y="9" width="2" height="2"/><rect x="5" y="3" width="6" height="3"/><rect x="4" y="5" width="8" height="2"/></svg></span><div><h1>Whalarium</h1><small>Base · on-chain</small></div></div>
+    <svg style="display:none" aria-hidden="true"><symbol id="reefmark" viewBox="0 0 1024 1024"><path fill="currentColor" fill-rule="evenodd" d="M384 988 C370 981 415 957 458 949 C466 947 477 945 482 943 C486 942 494 939 499 938 C516 933 531 927 538 923 C540 921 544 919 546 918 C550 916 562 907 568 901 C574 896 585 882 596 865 C627 819 651 803 704 793 C715 791 727 788 738 786 C790 775 838 736 853 692 C856 684 856 659 853 653 C848 642 837 634 823 632 C815 630 813 631 810 638 C800 656 781 676 758 689 C755 691 750 694 747 695 C728 706 692 718 657 723 C653 724 648 724 645 725 C642 725 637 726 633 727 C619 729 615 730 603 733 C570 741 552 750 526 774 C483 814 464 826 432 835 C428 836 422 838 420 839 C407 843 377 847 344 849 C337 850 326 851 320 851 C299 853 289 854 284 855 C281 856 278 857 276 857 C270 857 253 861 235 868 C191 885 153 916 123 961 C109 982 100 985 80 975 C49 961 30 940 16 905 C15 902 14 899 13 899 C12 898 12 866 12 680 C12 463 12 463 18 462 C63 457 81 457 102 460 C106 460 111 461 114 462 C141 465 159 469 189 477 C229 488 235 488 292 488 C354 488 378 484 417 464 C445 450 465 445 516 441 C569 437 573 437 593 427 C622 412 651 382 652 367 C652 352 638 346 601 344 C562 342 344 338 171 335 C41 334 18 333 14 330 C12 328 11 124 13 123 C14 123 16 118 18 113 C28 87 41 71 62 57 C73 49 79 46 106 36 C109 35 166 35 514 35 C963 35 920 34 952 50 C975 61 999 89 1006 113 C1008 117 1009 122 1010 125 C1013 132 1013 888 1011 894 C1010 896 1008 901 1006 906 C993 945 968 967 915 988 C910 990 388 990 384 988 Z M172 717 C175 716 181 716 184 715 C188 715 194 714 198 713 C203 713 210 712 215 712 C229 710 245 710 261 713 C274 716 287 716 319 716 C354 716 363 716 376 713 C379 712 384 711 388 710 C428 702 455 687 487 658 C506 641 519 632 539 625 C544 623 550 621 551 621 C561 617 590 613 622 611 C651 609 667 608 676 605 C679 605 686 603 690 602 C715 596 736 587 752 575 C757 572 763 568 766 566 C794 552 811 535 818 516 C819 511 819 511 818 505 C815 491 810 489 772 487 C748 486 645 485 643 486 C642 487 638 492 634 498 C618 521 606 530 577 540 C555 548 535 551 503 554 C471 557 449 567 413 594 C377 621 363 626 308 629 C300 629 286 630 278 630 C242 632 236 634 219 642 C195 654 172 678 164 698 C159 710 159 714 161 716 C163 718 163 718 172 717 Z"/></symbol><symbol id="reefword" viewBox="0 0 197.8 64"><path fill="currentColor" d="M3.6080536912751677 64.0V0.0H29.981208053691272Q37.19731543624161 0.0 42.43758389261745 2.5986577181208084Q47.677852348993284 5.197315436241617 50.53422818791946 9.986577181208059Q53.39060402684564 14.775838926174501 53.39060402684564 21.30469798657718Q53.39060402684564 27.962416107382552 50.51275167785234 32.6013422818792Q47.59194630872483 37.19731543624161 42.26577181208054 39.64563758389262L55.58120805369127 64.0H38.65771812080537L26.9744966442953 42.09395973154362H19.028187919463086V64.0ZM19.028187919463086 29.89530201342282H26.673825503355705Q30.153020134228186 29.89530201342282 32.536912751677846 28.993288590604028Q34.920805369127514 28.091275167785234 36.14496644295302 26.179865771812082Q37.36912751677852 24.26845637583893 37.36912751677852 21.304697986577185Q37.36912751677852 18.34093959731544 36.14496644295302 16.386577181208057Q34.920805369127514 14.432214765100674 32.536912751677846 13.46577181208054Q30.153020134228186 12.499328859060405 26.630872483221474 12.499328859060405H19.028187919463086Z M55.885315436241605 64.0V0.0H100.5135033557047V12.58523489932886H71.30544966442952V25.514093959731547H98.19404026845638V37.79865771812081H71.30544966442952V51.41476510067114H100.47055033557046V64.0Z M104.16794630872484 64.0V0.0H148.79613422818792V12.58523489932886H119.58808053691274V25.514093959731547H146.4766711409396V37.79865771812081H119.58808053691274V51.41476510067114H148.7531812080537V64.0Z M152.45057718120805 64.0V0.0H196.1337986577181V12.58523489932886H167.87071140939597V28.606711409395977H193.34185234899329V40.89127516778524H167.87071140939597V64.0Z"/></symbol></svg>
+    <div class="brand"><span class="bmark" aria-hidden="true"><svg><use href="#reefmark"/></svg></span><div><h1><span class="bword" role="img" aria-label="REEF"><svg><use href="#reefword"/></svg></span></h1><small>Base · on-chain</small></div></div>
     <nav class="nav" id="nav">
-      <button class="on" data-view="aquarium"><svg viewBox="0 0 16 16"><rect x="1" y="5" width="2" height="2"/><rect x="1" y="9" width="2" height="2"/><rect x="3" y="7" width="2" height="2"/><rect x="5" y="5" width="8" height="6"/><rect x="13" y="7" width="2" height="2"/><rect x="7" y="3" width="4" height="2"/></svg><span>Whalarium</span></button>
+      <button class="on" data-view="aquarium"><svg viewBox="0 0 16 16"><rect x="1" y="5" width="2" height="2"/><rect x="1" y="9" width="2" height="2"/><rect x="3" y="7" width="2" height="2"/><rect x="5" y="5" width="8" height="6"/><rect x="13" y="7" width="2" height="2"/><rect x="7" y="3" width="4" height="2"/></svg><span>Reef</span></button>
       <button data-view="holders" class="subitem"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="2" height="2"/><rect x="6" y="3" width="8" height="2"/><rect x="2" y="7" width="2" height="2"/><rect x="6" y="7" width="8" height="2"/><rect x="2" y="11" width="2" height="2"/><rect x="6" y="11" width="8" height="2"/></svg><span>Top holders</span></button>
       <button data-view="wallets"><svg viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="2"/><rect x="2" y="12" width="12" height="2"/><rect x="2" y="6" width="2" height="6"/><rect x="12" y="6" width="2" height="6"/><rect x="9" y="8" width="3" height="2"/></svg><span>Ecosystem Whales</span></button>
       <button data-view="flows"><svg viewBox="0 0 16 16"><rect x="2" y="4" width="8" height="2"/><rect x="10" y="2" width="2" height="2"/><rect x="12" y="4" width="2" height="2"/><rect x="10" y="6" width="2" height="2"/><rect x="6" y="10" width="8" height="2"/><rect x="4" y="8" width="2" height="2"/><rect x="2" y="10" width="2" height="2"/><rect x="4" y="12" width="2" height="2"/></svg><span>Flows</span></button>
@@ -467,7 +469,7 @@
   </aside>
 
   <header class="head">
-    <div class="htitle"><h2 id="viewTitle">Whalarium</h2><div class="sub" id="viewSub">Every wallet is a fish. Top 100, live from Base.</div></div>
+    <div class="htitle"><h2 id="viewTitle">Reef</h2><div class="sub" id="viewSub">Every wallet is a fish. Top 100, live from Base.</div></div>
     <div class="tokpick" id="tokpick"></div>
     <div class="tokall" id="tokall" style="display:none"><button id="tokallBtn">ALL TOKENS ▾</button><div class="tokmenu" id="tokmenu"></div></div>
     <div class="stats">
@@ -528,7 +530,7 @@
   </aside>
 
   <div class="modal" id="signin" onclick="if(event.target===this)closeSignIn()"><div class="in" id="signinIn" style="width:440px;max-width:94vw"></div></div>
-  <footer class="foot"><span><span style="color:var(--teal)">■</span> <b>WHALARIUM</b> · the Base ecosystem, as a sea of wallets.</span><span>·</span><span id="modeNote">Data shown here is <b>simulated</b> for the prototype</span><span class="r">There's always a bigger whale · NFA</span></footer>
+  <footer class="foot"><span><svg style="width:12px;height:12px;vertical-align:-2px;color:var(--brand)"><use href="#reefmark"/></svg> <b>REEF</b> · the Base ecosystem, as a sea of wallets.</span><span>·</span><span id="modeNote">Data shown here is <b>simulated</b> for the prototype</span><span class="r">There's always a bigger whale · NFA</span></footer>
 </div>
 
 <div class="drawer" id="drawer"></div>
@@ -583,7 +585,7 @@ function lblChips(h,max=3){
   const ty=h.entityType||h.type||null,tc=typeColor(ty),lk=lockTag(h);
   const type=lk||(ty?`<span style="color:${tc};border-color:${tc}55">${esc(ty)}</span>`:'');
   const all=wlabels(h).sort((x,y)=>labelRank(x)-labelRank(y)),prov=all.filter(l=>labelRank(l)===3),ls=all.filter(l=>labelRank(l)!==3),vis=ls.slice(0,max),hid=ls.slice(max),id='lb'+(++LBL_UID);
-  const claim=h.claim?`<span class="id" title="claimed by its owner on Whalarium">${avatarHtml(h.claim.avatar,14)}${esc(h.claim.name||'claimed')}${h.claim.x?' · @'+esc(h.claim.x):''}</span>`:'';
+  const claim=h.claim?`<span class="id" title="claimed by its owner on REEF">${avatarHtml(h.claim.avatar,14)}${esc(h.claim.name||'claimed')}${h.claim.x?' · @'+esc(h.claim.x):''}</span>`:'';
   const more=hid.length?`<span id="${id}" style="display:none;padding:0;border:0;background:none;height:auto;gap:inherit">${hid.map(labelChip).join('')}</span><button class="lblmore" title="Show all ${ls.length} labels" onclick="event.stopPropagation();document.getElementById('${id}').style.display='contents';this.remove()">+${hid.length}</button>`:'';
   return claim+type+vis.map(labelChip).join('')+more+(h.isContract?'<span>contract</span>':'')+(prov.length?`<span style="flex:1;border:0;padding:0;height:0;min-width:8px"></span>${prov.map(labelChip).join('')}`:'')}
 /* label priority — identity first and loud, provenance last and quiet:
@@ -1100,7 +1102,7 @@ function drawDonut(){
 }
 function setTierFocus(t){tierFocus=tierFocus===t?null:t;tierHot=null;drawDonut();if(tierFocus)toastMsg(`Spotlight: <b>${tierFocus}</b> fish · click again to clear`,'var(--muted)')}
 function rowPop(e,i){document.querySelectorAll('.rowpop').forEach(x=>x.remove());const f=fish[i];if(!f)return;const d=document.createElement('div');d.className='rowpop';
-  d.innerHTML=`<button onclick="setView('aquarium');select(fish[${i}])"><svg viewBox="0 0 16 16"><rect x="1" y="5" width="2" height="2"/><rect x="1" y="9" width="2" height="2"/><rect x="3" y="7" width="2" height="2"/><rect x="5" y="5" width="8" height="6"/><rect x="13" y="7" width="2" height="2"/><rect x="7" y="3" width="4" height="2"/></svg>See in Whalarium</button><button onclick="openProfile(fish[${i}].h)"><svg viewBox="0 0 16 16"><rect x="5" y="2" width="6" height="6"/><rect x="3" y="9" width="10" height="5"/></svg>Open wallet profile</button>`;
+  d.innerHTML=`<button onclick="setView('aquarium');select(fish[${i}])"><svg viewBox="0 0 16 16"><rect x="1" y="5" width="2" height="2"/><rect x="1" y="9" width="2" height="2"/><rect x="3" y="7" width="2" height="2"/><rect x="5" y="5" width="8" height="6"/><rect x="13" y="7" width="2" height="2"/><rect x="7" y="3" width="4" height="2"/></svg>See in Reef</button><button onclick="openProfile(fish[${i}].h)"><svg viewBox="0 0 16 16"><rect x="5" y="2" width="6" height="6"/><rect x="3" y="9" width="10" height="5"/></svg>Open wallet profile</button>`;
   document.body.appendChild(d);const w=210,h=84;let x=e.clientX+8,y=e.clientY+8;if(x+w>innerWidth-8)x=e.clientX-w-8;if(y+h>innerHeight-8)y=e.clientY-h-8;d.style.left=x+'px';d.style.top=y+'px';
   setTimeout(()=>document.addEventListener('click',()=>d.remove(),{once:true}),0)}
 /* infrastructure heuristic: CEX deposit wallets, LP pools, proxies, routers — not people */
@@ -1156,7 +1158,7 @@ function exportCSV(){
   const rows=[['rank','address','entity','label','tier','type','amount','pct_supply','value_usd','rank_change','usd_change','labels']];
   data.list.forEach(h=>rows.push([h.rank,h.addr,h.entity||'',h.label||'',h.tier,typeOf(h),h.amount,h.pct,Math.round(h.value),h.rankChange??'',h.usdChange??'',(h.labels||[]).join('; ')]));
   const csv=rows.map(r=>r.map(c=>/[",\n]/.test(String(c))?'"'+String(c).replace(/"/g,'""')+'"':c).join(',')).join('\n');
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`whalarium_${cur.sym.toLowerCase()}_top100.csv`;a.click();
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`reef_${cur.sym.toLowerCase()}_top100.csv`;a.click();
 }
 function renderTable(){
   let rows=data.list.filter(h=>!(REAL&&hideInfra&&isInfra(h)));
@@ -1207,7 +1209,7 @@ function buildPicker(){
   document.querySelectorAll('#tokpick button').forEach(b=>b.onclick=()=>{closeCard();loadToken(TOKENS.find(t=>t.sym===b.dataset.sym));toastMsg(`Aquarium switched to <b>$${cur.sym}</b>`,'var(--muted)')});
 }
 /* views */
-const VIEW_T={aquarium:['Whalarium','Every wallet is a fish. Top 100, live from Base.'],holders:['Top holders','The top 100 wallets of this token, ranked by balance.'],wallets:['Ecosystem Whales','Every wallet that sits in a top 100, across all tracked tokens.'],flows:['Flows','Are the biggest wallets buying or selling?'],alerts:['Alerts','What the biggest wallets just did.'],watch:['Watchlist','Wallets you follow.'],wallet:['Wallet','One wallet, across every tracked token.'],mini:['Token lookup','Any Base token by contract address.'],profile:['Account','Your accounts, plan, shark and claimed wallets.'],avatar:['Account · Avatar','Build your shark — a layered PFP, yours to mint.']};
+const VIEW_T={aquarium:['Reef','Every wallet is a fish. Top 100, live from Base.'],holders:['Top holders','The top 100 wallets of this token, ranked by balance.'],wallets:['Ecosystem Whales','Every wallet that sits in a top 100, across all tracked tokens.'],flows:['Flows','Are the biggest wallets buying or selling?'],alerts:['Alerts','What the biggest wallets just did.'],watch:['Watchlist','Wallets you follow.'],wallet:['Wallet','One wallet, across every tracked token.'],mini:['Token lookup','Any Base token by contract address.'],profile:['Account','Your accounts, plan, shark and claimed wallets.'],avatar:['Account · Avatar','Build your shark — a layered PFP, yours to mint.']};
 function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>{const sub=b.dataset.atab;b.classList.toggle('on',b.dataset.view===v&&(!sub||sub===alertTab));b.classList.toggle('parent-on',(b.dataset.view==='aquarium'&&v==='holders')||(b.dataset.view==='alerts'&&!sub&&v==='alerts')||(b.dataset.view==='profile'&&v==='avatar'))});
   {const t=VIEW_T[v]||VIEW_T.aquarium;const a=document.getElementById('viewTitle'),b=document.getElementById('viewSub');if(a)a.textContent=t[0];if(b)b.textContent=t[1];}
   document.querySelector('.app').classList.toggle('noRail',v!=='aquarium');
@@ -1605,7 +1607,7 @@ function renderSignIn(){const link=SI.mode==='link';const el=document.getElement
     <div class="sigrid" style="grid-template-columns:1fr">${btn('Verify with wallet ownership',"siWallet()",'<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" shape-rendering="crispEdges"><rect x="1" y="3" width="14" height="10"/><rect x="10" y="7" width="3" height="2" fill="#fff"/></svg>')}</div>
     <div id="siMsg" style="min-height:16px;color:var(--coral);font-size:11.5px;margin-top:8px"></div>
     <div style="color:var(--dim);font-size:11px;margin-top:6px">In your wallet, select the account ${short(SI.addr)} before signing. We never ask for a transaction. Powered by Privy.</div>`;return}
-  el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline"><h4 style="margin:0">${link?'Link another account':'Sign in to Whalarium'}</h4><button onclick="closeSignIn()" style="color:var(--dim);font-weight:800">✕</button></div>
+  el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline"><h4 style="margin:0">${link?'Link another account':'Sign in to REEF'}</h4><button onclick="closeSignIn()" style="color:var(--dim);font-weight:800">✕</button></div>
     <p>${link?'Prove you own another wallet, or attach an email / X handle to this account.':'One account for your watches, alerts, claimed wallets and token fetches. Free.'}</p>
     ${SI.step==='code'?`<div class="sirow"><input id="siCode" placeholder="6-digit code from your email" inputmode="numeric" autocomplete="one-time-code" onkeydown="if(event.key==='Enter')siEmailCode()"><button class="btn primary" onclick="siEmailCode()">${link?'Link email':'Sign in'}</button></div><div style="color:var(--dim);font-size:11.5px;margin:-4px 0 10px">Code sent to <b>${esc(SI.email)}</b> · <button onclick="SI.step='start';renderSignIn()" style="color:var(--teal);font-weight:700">change</button></div>`
     :`<div class="sirow"><input id="siEmail" type="email" placeholder="you@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')siEmailSend()"><button class="btn primary" onclick="siEmailSend()">${link?'Link email':'Continue'}</button></div>`}
@@ -1734,7 +1736,7 @@ function proposeUI(addr){const el=document.getElementById('wpPropose');if(!el)re
     <b style="font-size:12px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)">Propose a tag or an identity</b>
     <div style="display:flex;gap:6px;flex-wrap:wrap"><select id="ppTag" style="padding:6px"><option>CT</option><option>DEV</option><option>MM</option><option>CEX</option><option>INSIDER</option><option>SCAM</option><option>OG</option><option>DIAMOND</option><option>SNIPE</option><option>WHALE</option></select><input id="ppNote" placeholder="why? (optional, 140 chars)" style="flex:1;min-width:200px;padding:6px"><button class="btn" onclick="propose('${addr}','tag')">Propose tag</button></div>
     <div style="display:flex;gap:6px;flex-wrap:wrap"><input id="ppX" placeholder="@xhandle" style="width:140px;padding:6px"><input id="ppName" placeholder="or a name" style="width:160px;padding:6px"><input id="ppEv" placeholder="evidence link (tweet, ENS, site…)" style="flex:1;min-width:200px;padding:6px"><button class="btn" onclick="propose('${addr}','identity')">Propose identity</button></div>
-    <div style="color:var(--dim);font-size:11px">Proposals are reviewed by the Whalarium team before they show on the wallet. Approved ones credit you.</div></div>`}
+    <div style="color:var(--dim);font-size:11px">Proposals are reviewed by the REEF team before they show on the wallet. Approved ones credit you.</div></div>`}
 async function propose(addr,kind){if(!requireAuth())return;const g=id=>(document.getElementById(id)||{}).value||'';
   try{await acctApi('/api/propose',kind==='tag'?{kind,addr,tag:g('ppTag'),note:g('ppNote')}:{kind,addr,x:g('ppX'),name:g('ppName'),evidence:g('ppEv')});toastMsg('Proposal sent — thanks. We review these by hand.','var(--teal)');proposeUI(addr)}catch(e){toastMsg(esc(e.message),'var(--coral)')}}
 /* ---- profile view ---- */
@@ -1770,7 +1772,7 @@ function avCat(cat){avbTraits();AVB.cat=cat;renderAvatarView()}
 function avShuffle(){avbTraits();AVB.traits=SHARK.randomTraits();renderAvatarView()}
 function avReset(){avbTraits();AVB.traits={...SHARK.DEFAULT};renderAvatarView()}
 async function avSave(){const t=avbTraits();requireAuth(async()=>{const u=await acctOp('avatar',{avatar:{v:2,...t}});if(u){toastMsg('Shark saved — it shows on your claimed wallets after the next refresh (~2h).','var(--teal)');renderAvatarView()}})}
-async function avDownload(){const t=avbTraits();toastMsg('Rendering 1024×1024 PNG…','var(--muted)');const u=await SHARK.exportPng(t);const a=document.createElement('a');a.href=u;a.download=`whalarium-shark-${SHARK.id(t).replace(/\./g,'-')}.png`;document.body.appendChild(a);a.click();a.remove()}
+async function avDownload(){const t=avbTraits();toastMsg('Rendering 1024×1024 PNG…','var(--muted)');const u=await SHARK.exportPng(t);const a=document.createElement('a');a.href=u;a.download=`reef-shark-${SHARK.id(t).replace(/\./g,'-')}.png`;document.body.appendChild(a);a.click();a.remove()}
 function avSavedEq(t){const u=ACCT.user&&ACCT.user.avatar;return !!(u&&u.v===2&&SHARK.id(u)===SHARK.id(t))}
 async function renderAvatarView(){
   const el=document.getElementById('avatarView');if(!el)return;const t=avbTraits(),cat=AVB.cat;
@@ -1783,7 +1785,7 @@ async function renderAvatarView(){
     <div class="avL">
       <div class="avprev"><canvas id="avCanvas" width="512" height="512"></canvas></div>
       <div class="avmeta">
-        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><b style="font-size:15px">Whalarium Shark</b><span class="mono t3">#${SHARK.id(t)}</span>${saved?'<span class="pill" style="color:var(--teal);border:1px solid var(--teal)">saved</span>':ACCT.user?'<span class="pill ctx">unsaved changes</span>':''}</div>
+        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><b style="font-size:15px">Reef Shark</b><span class="mono t3">#${SHARK.id(t)}</span>${saved?'<span class="pill" style="color:var(--teal);border:1px solid var(--teal)">saved</span>':ACCT.user?'<span class="pill ctx">unsaved changes</span>':''}</div>
         <div class="kv2" style="margin-top:8px"><span>rarity score<b>${score}</b></span><span>tier<b style="color:${R[tier].c}">${R[tier].n}</b></span><span class="t3" style="border:0;background:none">Σ 1/probability over the 6 traits · legendary = the top 2% of random rolls</span></div>
         <div class="avattrs">${attrs.map(a=>`<button class="avattr" onclick="avCat('${SHARK.ORDER.find(k=>SHARK.LABEL[k]===a.trait_type)}')"><span class="t2">${a.trait_type}</span><b>${esc(a.value)}</b><small style="color:${R[a.rarity].c}">${R[a.rarity].n} · ${a.pct}%</small></button>`).join('')}</div>
         <div class="avbtns">
@@ -1819,7 +1821,7 @@ async function openMini(ca,info){
     <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">${info.logo?`<img src="${info.logo}" style="width:34px;height:34px;border:1px solid var(--line)" onerror="this.style.display='none'">`:''}<div><h3 style="margin:0;font-size:18px">$${sym} <span style="color:var(--muted);font-weight:500;font-size:13px">${esc(info.name)}</span></h3><div class="mono" style="font-size:11px;color:var(--dim)">${cpa(ca,ca)}</div></div>
       <span class="pill" style="background:var(--panel2);color:var(--muted);border:1px solid var(--line)">PREVIEW · not tracked yet</span>
       <span style="margin-left:auto;display:flex;gap:8px;align-items:center">
-        <button onclick="trackMini('${ca}')" title="${canTrack?'Add this token to Whalarium: full aquarium, flows, alerts, schools':'Sign in to add tokens'}" style="border:1px solid var(--teal);background:var(--teal);color:#fff;padding:8px 14px;font-weight:800;font-size:12px">Fetch full data</button><span style="color:var(--dim);font-size:11px;white-space:nowrap">${fqTxt}</span>
+        <button onclick="trackMini('${ca}')" title="${canTrack?'Add this token to REEF: full aquarium, flows, alerts, schools':'Sign in to add tokens'}" style="border:1px solid var(--teal);background:var(--teal);color:#fff;padding:8px 14px;font-weight:800;font-size:12px">Fetch full data</button><span style="color:var(--dim);font-size:11px;white-space:nowrap">${fqTxt}</span>
         <a href="https://basescan.org/token/${ca}" target="_blank" rel="noopener" style="color:var(--muted);font-weight:700;font-size:11px">Basescan ↗</a><a href="https://dexscreener.com/base/${ca}" target="_blank" rel="noopener" style="color:var(--muted);font-weight:700;font-size:11px">Dexscreener ↗</a></span></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <div style="flex:1;min-width:150px;border:1px solid var(--line);padding:12px 14px;background:var(--panel)"><div style="color:var(--dim);font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;font-weight:700">Price</div><div class="mono" style="font-size:19px;font-weight:800;margin-top:4px">${fmtP(price)}</div><div style="color:${(info.chg||0)>=0?'var(--teal)':'var(--coral)'};font-size:11px;margin-top:3px">${info.chg!=null?(info.chg>=0?'+':'')+info.chg.toFixed(2)+'% 24h':'no 24h data'}</div></div>
@@ -1827,7 +1829,7 @@ async function openMini(ca,info){
       <div style="flex:1;min-width:150px;border:1px solid var(--line);padding:12px 14px;background:var(--panel)"><div style="color:var(--dim);font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;font-weight:700">Top ${H.length} hold</div><div class="mono" style="font-size:19px;font-weight:800;margin-top:4px">${info.topShare!=null?info.topShare.toFixed(1)+'%':'—'}</div><div style="color:var(--muted);font-size:11px;margin-top:3px">of supply · includes pools &amp; exchanges (unfiltered preview)</div></div>
       <div style="flex:1;min-width:150px;border:1px solid var(--line);padding:12px 14px;background:var(--panel)"><div style="color:var(--dim);font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;font-weight:700">Balances as of</div><div class="mono" style="font-size:19px;font-weight:800;margin-top:4px">${esc(info.asOf||'—')}</div><div style="color:var(--muted);font-size:11px;margin-top:3px">daily snapshot · live data once tracked</div></div>
     </div>
-    <div style="border:1px solid var(--line);background:var(--panel2);padding:10px 14px;font-size:12px"><b>Fetch full data</b> adds $${sym} to Whalarium: live top-100 with exchange/pool filtering, labels &amp; X identities, schools, flows history, instant alerts and the fish tank. Takes ~10 minutes after you click. ${canTrack?'':'<button onclick="openSignIn(\'login\')" style="color:var(--teal);font-weight:800">Sign in</button> to use one of your 5 free fetches.'}</div>
+    <div style="border:1px solid var(--line);background:var(--panel2);padding:10px 14px;font-size:12px"><b>Fetch full data</b> adds $${sym} to REEF: live top-100 with exchange/pool filtering, labels &amp; X identities, schools, flows history, instant alerts and the fish tank. Takes ~10 minutes after you click. ${canTrack?'':'<button onclick="openSignIn(\'login\')" style="color:var(--teal);font-weight:800">Sign in</button> to use one of your 5 free fetches.'}</div>
     ${H.length?`<div style="border:1px solid var(--line);background:var(--panel);overflow-x:auto"><table style="min-width:640px"><thead><tr><th>#</th><th>Wallet</th><th class="r">Amount</th><th class="r">% supply</th><th class="r">Value</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`:`<div style="padding:26px;color:var(--dim);border:1px solid var(--line)">No holder snapshot available for this token yet${info.holdersError?': <small>'+esc(info.holdersError)+'</small>':''}.</div>`}
   </div>`;
 }
@@ -2130,7 +2132,7 @@ async function openProfile(h){
       <div class="lbls" id="wplbls" style="margin-top:6px">${[tagPills(h),h.rank?`<span><i class="tg" style="background:${t.c};width:7px;height:7px"></i>rank #${h.rank} in $${h.tokSym||cur.sym} · ${t.n.toLowerCase()}</span>`:`<span class="ctx">free swimmer · not in a tracked top 100</span>`,lblChips(h,5)].join('')}</div>
       <div class="t3" style="margin-top:6px"><button onclick="requireAuth(()=>proposeUI('${h.addr.toLowerCase()}'))" style="color:var(--teal);font-weight:700;font-size:11px">Suggest a tag or identity for this wallet →</button></div></div>
     <div class="val"><small id="wpvlabel">Tracked positions · Base</small><b class="mono" id="wpval">—</b></div>
-    <div class="wbtns"><button class="wb" onclick="setView('aquarium')" title="Back to the tank">← Whalarium</button>
+    <div class="wbtns"><button class="wb" onclick="setView('aquarium')" title="Back to the tank">← Reef</button>
       <span class="wrel"><button class="wb" id="wpwatch"></button><button class="wb" id="wpalert" onclick="acctWatchPrefill('${h.addr.toLowerCase()}')" title="Get an alert on every transfer of this wallet"><svg viewBox="0 0 16 16"><rect x="6" y="2" width="4" height="2"/><rect x="5" y="4" width="6" height="2"/><rect x="4" y="6" width="8" height="4"/><rect x="3" y="10" width="10" height="2"/><rect x="7" y="13" width="2" height="2"/></svg>Alert me</button><span id="wpclaim" style="display:contents"></span></span>
       <span id="wpsocials" style="display:contents"></span>
       <button class="wb share" id="wpshare" style="margin-left:auto"><svg viewBox="0 0 16 16"><rect x="2" y="7" width="2" height="7"/><rect x="12" y="7" width="2" height="7"/><rect x="2" y="12" width="12" height="2"/><rect x="7" y="1" width="2" height="8"/><rect x="5" y="3" width="2" height="2"/><rect x="9" y="3" width="2" height="2"/></svg>Share</button></div></div>
@@ -2191,7 +2193,7 @@ async function openProfile(h){
   const cpBox=`<div class="wbox"><h5>Top counterparties <small>from recent transfers</small></h5>${flowLine}${cplist.length?cplist.map(c=>`<div class="cprow" ${c.addr?`style="cursor:pointer" onclick="openProfileByAddr('${c.addr}')" title="Open wallet page"`:''}><div><b style="${c.label?'color:var(--teal)':''}">${c.k}</b> <span style="color:var(--dim);font-size:11px">· ${c.n} transfer${c.n>1?'s':''}</span><div class="bar3"><i style="width:${(c.inU/cpmax*100)}%;background:var(--teal)"></i><i style="width:${(c.outU/cpmax*100)}%;background:var(--coral)"></i></div></div><b class="mono">${usd(c.inU+c.outU)}</b></div>`).join('')+'<div class="empty2" style="padding-top:8px"><span style="color:var(--teal)">■</span> received&nbsp;&nbsp;<span style="color:var(--coral)">■</span> sent</div>':'<div class="empty2">No transfer data yet. Still waters.</div>'}</div>`;
   grid.innerHTML=`
     <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
-      <div class="wbox"><h5>Positions across Whalarium tokens</h5>${positions.length?`<table><thead><tr><th>Token</th><th class="r">Rank</th><th class="r">Amount</th><th class="r">% supply</th><th class="r">Value</th></tr></thead><tbody>${positions.map(x=>`<tr style="cursor:pointer" onclick="jumpToken('${x.sym}')"><td style="white-space:nowrap">${tokLogo(x.sym,18)} <b style="vertical-align:middle">${x.sym}</b></td><td class="r mono">#${x.rank}</td><td class="r mono">${num(x.amount)}</td><td class="r mono">${x.pct.toFixed(2)}%</td><td class="r mono">${usd(x.usd)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty2">Not in any tracked top 100. A free swimmer.</div>'}</div>
+      <div class="wbox"><h5>Positions across Reef tokens</h5>${positions.length?`<table><thead><tr><th>Token</th><th class="r">Rank</th><th class="r">Amount</th><th class="r">% supply</th><th class="r">Value</th></tr></thead><tbody>${positions.map(x=>`<tr style="cursor:pointer" onclick="jumpToken('${x.sym}')"><td style="white-space:nowrap">${tokLogo(x.sym,18)} <b style="vertical-align:middle">${x.sym}</b></td><td class="r mono">#${x.rank}</td><td class="r mono">${num(x.amount)}</td><td class="r mono">${x.pct.toFixed(2)}%</td><td class="r mono">${usd(x.usd)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty2">Not in any tracked top 100. A free swimmer.</div>'}</div>
       ${(()=>{ // funding — where did this wallet's money come from?
         const fd=h.funding;
         if(!fd)return `<div class="wbox"><h5>Funding</h5><div class="empty2">${REAL?'Origin not traced yet — the funding pass reaches this wallet on an upcoming refresh.':'Needs live mode.'}</div></div>`;

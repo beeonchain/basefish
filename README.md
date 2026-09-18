@@ -1,4 +1,4 @@
-# WHALARIUM 🌊
+# REEF 🌊
 
 The top holders of Base tokens as a living sea of wallets — whales, schools, flows, instant alerts.
 Live at https://basefish.netlify.app (domain pending). Not affiliated with Base, Coinbase, or any token team.

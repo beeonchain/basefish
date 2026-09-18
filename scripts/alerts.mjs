@@ -1,4 +1,4 @@
-// Whalarium alert engine — runs inside fetch.mjs each refresh.
+// REEF alert engine — runs inside fetch.mjs each refresh.
 // Detects events from snapshot deltas + cached wallet transfers, writes the public
 // feed (data/alerts.json) for the site, and pushes to Telegram subscribers
 // (data/tg_subs.json, maintained by the bot webhook at netlify/functions/tg.mjs).
@@ -188,7 +188,7 @@ export async function sendTelegram(publicAlerts, watchAlerts, siteUrl = 'https:/
   const subs = jread(SUBS, { chats: {} });
   const send = async (chat, a) => {
     const link = a.hash ? `https://basescan.org/tx/${a.hash}` : a.addr ? `${siteUrl}/#w=${a.addr}` : siteUrl;
-    const text = `${ICON[a.kind] || '🔔'} <b>${a.title.replace(/</g, '&lt;')}</b>\n${(a.sub || '').replace(/</g, '&lt;')}\n<a href="${link}">${a.hash ? 'view tx' : 'open in Whalarium'}</a>`;
+    const text = `${ICON[a.kind] || '🔔'} <b>${a.title.replace(/</g, '&lt;')}</b>\n${(a.sub || '').replace(/</g, '&lt;')}\n<a href="${link}">${a.hash ? 'view tx' : 'open in REEF'}</a>`;
     try {
       const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
         method: 'POST', headers: { 'content-type': 'application/json' },
