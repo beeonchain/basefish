@@ -1,153 +1,139 @@
 {
- "started": "2026-09-18T04:17:24.387Z",
- "tier": "hot",
+ "started": "2026-09-18T05:16:05.096Z",
+ "tier": "all",
  "tokens": {
   "BRETT": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 44,
-   "price": 0.00486158
+   "price": 0.00490412
   },
   "TOSHI": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 68,
-   "price": 0.00011111
+   "price": 0.00011091
   },
   "BASECAT": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 9,
-   "price": 0.01706711
+   "price": 0.01703962
   },
   "AERO": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 85,
-   "price": 0.600369
+   "price": 0.609046
   },
   "VIRTUAL": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 83,
-   "price": 0.640848
+   "price": 0.639903
   },
   "SR": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 4,
-   "price": 0.0011484
+   "price": 0.00114537
   },
   "BPAD": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 2,
-   "price": 0.0001375
+   "price": 0.000151
+  },
+  "EDEL": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 6,
+   "price": 0.02304119
   },
   "VVV": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 75,
-   "price": 25.27
+   "price": 24.8
   },
   "DRV": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 11,
-   "price": 0.234593
+   "price": 0.235276
   },
   "TIBBIR": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 7,
-   "price": 0.200419
+   "price": 0.198533
   },
   "AWE": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 47,
-   "price": 0.064649
+   "price": 0.064405
   },
   "NOCK": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 9,
-   "price": 0.04207723
-  },
-  "MAG7SSI": {
-   "ok": true,
-   "src": "bq-holders+live",
-   "top": 100,
-   "infra": 14,
-   "price": 0.516799
+   "price": 0.04334009
   },
   "O": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 22,
-   "price": 0.559632
+   "price": 0.563122
+  },
+  "CHIP": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 23,
+   "price": 0.04384932
+  },
+  "MAG7SSI": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 14,
+   "price": 0.519545
   },
   "DIEM": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 30,
-   "price": 1948.35
-  },
-  "OMI": {
-   "ok": true,
-   "src": "bq-holders+live",
-   "top": 100,
-   "infra": 18,
-   "price": 0.00019794
-  },
-  "KOTAEMON": {
-   "ok": true,
-   "src": "bq-holders+live",
-   "top": 100,
-   "infra": 0,
-   "price": 0.04673
+   "price": 1921.62
   },
   "KTA": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 32,
-   "price": 0.090016
+   "price": 0.090362
   },
-  "CX": {
+  "OMI": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
-   "infra": 6,
-   "price": 0.03198506
-  },
-  "MSETH": {
-   "ok": true,
-   "src": "bq-holders+live",
-   "top": 100,
-   "infra": 14,
-   "price": 2112.56
-  },
-  "LAPTOP": {
-   "ok": true,
-   "src": "bq-holders+live",
-   "top": 100,
-   "infra": 31,
-   "price": 0.130916
+   "infra": 18,
+   "price": 0.00019953
   },
   "BIM": {
    "ok": true,
@@ -156,62 +142,76 @@
    "infra": 8,
    "price": 1.62
   },
-  "RALLY": {
+  "CX": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
-   "infra": 1,
-   "price": 0.00054442
+   "infra": 6,
+   "price": 0.03159295
+  },
+  "LAPTOP": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 31,
+   "price": 0.130323
+  },
+  "MSETH": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 14,
+   "price": 2132.52
+  },
+  "SPLEETER": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 0,
+   "price": 0.0392
+  },
+  "CP": {
+   "ok": true,
+   "src": "bq-holders+live",
+   "top": 100,
+   "infra": 50,
+   "price": 0.01267752
   },
   "BLUECHIP": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 5,
-   "price": 0.0173235
-  },
-  "BNKR": {
-   "ok": true,
-   "src": "bq-holders+live",
-   "top": 100,
-   "infra": 24,
-   "price": 0.00024013
-  },
-  "EDEL": {
-   "ok": true,
-   "src": "bq-holders+live",
-   "top": 100,
-   "infra": 6,
-   "price": 0.02283894
+   "price": 0.01867853
   }
  },
  "errors": [],
  "tags": {
-  "WHALE": 541,
-  "OG": 312,
-  "CT": 24,
+  "WHALE": 531,
+  "OG": 311,
+  "CT": 22,
   "SNIPE": 22,
-  "DIAMOND": 221
+  "DIAMOND": 233
  },
- "finished": "2026-09-18T05:11:16.087Z",
+ "finished": "2026-09-18T07:18:58.583Z",
  "budgets": {
-  "arkham": 0,
-  "profile": 58,
-  "frontrun": 150,
-  "rpc": 392,
+  "arkham": 424,
+  "profile": 7,
+  "frontrun": 400,
+  "rpc": 1007,
   "funding": 0
  },
  "webhook": {
   "have": 309,
   "want": 309,
-  "added": 0,
-  "removed": 0,
-  "audited": 308,
-  "evicted": 0,
-  "noisy": 109
+  "added": 33,
+  "removed": 33,
+  "audited": 310,
+  "evicted": 2,
+  "noisy": 111
  },
  "alertTx": {
-  "looked": 5,
-  "found": 5
+  "looked": 18,
+  "found": 18
  }
 }
