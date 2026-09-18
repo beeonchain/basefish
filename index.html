@@ -210,8 +210,8 @@
   .app.wview .status{display:none}
   .ptitle{display:flex;align-items:baseline;gap:10px;min-height:28px}
   .ptitle h2{font:800 20px/1 var(--font-display);margin:0;letter-spacing:-.02em;white-space:nowrap}
-  .ptitle .sub{color:var(--dim);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-  .seg{margin-left:auto;display:inline-flex;background:var(--panel2);padding:2px;align-self:center}
+  .ptitle .sub{display:none}
+  .seg{margin-left:16px;display:inline-flex;background:var(--panel2);padding:2px;align-self:center}
   .seg button{height:26px;padding:0 12px;font-weight:600;font-size:12px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
   .seg button svg{width:12px;height:12px;fill:currentColor;shape-rendering:crispEdges}
   .seg button.on{background:var(--text);color:#fff}
@@ -1246,7 +1246,7 @@ function buildPicker(){
 /* views */
 const VIEW_T={aquarium:['Top 100 holders','ranked by balance · every fish is a wallet'],holders:['Top 100 holders','ranked by balance'],wallets:['Ecosystem Whales','Every wallet that sits in a top 100, across all tracked tokens.'],flows:['Flows','Are the biggest wallets buying or selling?'],alerts:['Alerts','What the biggest wallets just did.'],watch:['Watchlist','Wallets you follow.'],wallet:['Wallet','One wallet, across every tracked token.'],mini:['Token lookup','Any Base token by contract address.'],profile:['Account','Your accounts, plan, shark and claimed wallets.'],avatar:['Account · Avatar','Build your shark — a layered PFP, yours to mint.']};
 function setView(v){view=v;document.querySelectorAll('#nav button').forEach(b=>{const sub=b.dataset.atab;b.classList.toggle('on',b.dataset.view===v&&(!sub||sub===alertTab));b.classList.toggle('parent-on',(b.dataset.view==='aquarium'&&v==='holders')||(b.dataset.view==='alerts'&&!sub&&v==='alerts')||(b.dataset.view==='profile'&&v==='avatar'))});
-  {const t=VIEW_T[v]||VIEW_T.aquarium;const a=document.getElementById('viewTitle'),b=document.getElementById('viewSub');if(a)a.textContent=t[0];if(b)b.textContent=t[1];const sg=document.getElementById('mapseg');if(sg){sg.style.display=v==='aquarium'?'':'none';sg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.view===v))}const ta=document.getElementById('toAquarium');if(ta)ta.style.display=v==='holders'?'':'none';document.querySelector('.app').classList.toggle('reefctx',v==='aquarium'||v==='holders');const pt=document.getElementById('ptitle');if(pt)pt.style.display=(v==='wallet'||v==='avatar')?'none':''}
+  {const t=VIEW_T[v]||VIEW_T.aquarium;const a=document.getElementById('viewTitle'),b=document.getElementById('viewSub');if(a)a.textContent=t[0];if(b)b.textContent=t[1];const sg=document.getElementById('mapseg');if(sg){sg.style.display=(v==='aquarium'||v==='holders')?'':'none';sg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.view===v))}const ta=document.getElementById('toAquarium');if(ta)ta.style.display='none';document.querySelector('.app').classList.toggle('reefctx',v==='aquarium'||v==='holders');const pt=document.getElementById('ptitle');if(pt)pt.style.display=(v==='wallet'||v==='avatar')?'none':''}
   document.querySelector('.app').classList.toggle('noRail',v!=='aquarium');
   document.querySelector('.app').classList.toggle('wview',v==='wallets'||v==='watch');
   document.querySelector('.app').classList.toggle('tankview',v==='aquarium');
