@@ -1,5 +1,5 @@
 {
- "started": "2026-09-17T22:17:25.881Z",
+ "started": "2026-09-18T00:17:23.164Z",
  "tier": "hot",
  "tokens": {
   "BRETT": {
@@ -7,147 +7,147 @@
    "src": "bq-holders+live",
    "top": 100,
    "infra": 44,
-   "price": 0.00472824
+   "price": 0.00476341
   },
   "TOSHI": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 68,
-   "price": 0.00010831
+   "price": 0.00010872
   },
   "BASECAT": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 9,
-   "price": 0.01743264
+   "price": 0.01686247
   },
   "AERO": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
-   "infra": 79,
-   "price": 0.579743
+   "infra": 85,
+   "price": 0.582481
   },
   "VIRTUAL": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
-   "infra": 84,
-   "price": 0.606736
+   "infra": 83,
+   "price": 0.612547
   },
   "SR": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 4,
-   "price": 0.00097393
+   "price": 0.00098982
   },
   "BPAD": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 2,
-   "price": 0.0001304
+   "price": 0.0001382
   },
   "VVV": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
-   "infra": 74,
-   "price": 25.09
+   "infra": 75,
+   "price": 25.47
   },
   "DRV": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 11,
-   "price": 0.249672
+   "price": 0.270915
   },
   "TIBBIR": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 7,
-   "price": 0.202417
+   "price": 0.200237
   },
   "AWE": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
-   "infra": 46,
-   "price": 0.064206
+   "infra": 47,
+   "price": 0.064406
   },
   "NOCK": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 9,
-   "price": 0.03837328
+   "price": 0.04016025
   },
   "MAG7SSI": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 14,
-   "price": 0.510435
+   "price": 0.5107
   },
   "O": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
-   "infra": 21,
-   "price": 0.546249
+   "infra": 22,
+   "price": 0.558081
   },
   "DIEM": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 30,
-   "price": 1983.79
+   "price": 2012.29
   },
   "OMI": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 18,
-   "price": 0.00019629
+   "price": 0.00019519
   },
   "KOTAEMON": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 0,
-   "price": 0.04809
+   "price": 0.05064
   },
   "KTA": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
-   "infra": 31,
-   "price": 0.089675
+   "infra": 32,
+   "price": 0.090839
   },
   "CX": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 6,
-   "price": 0.0338606
+   "price": 0.03490101
   },
   "MSETH": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 14,
-   "price": 2129.46
+   "price": 2090.68
   },
   "LAPTOP": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 31,
-   "price": 0.131839
+   "price": 0.133104
   },
   "BIM": {
    "ok": true,
@@ -161,57 +161,57 @@
    "src": "bq-holders+live",
    "top": 100,
    "infra": 1,
-   "price": 0.00052492
+   "price": 0.00053552
   },
   "BLUECHIP": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 5,
-   "price": 0.01859311
+   "price": 0.01824392
   },
   "BNKR": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 24,
-   "price": 0.00023661
+   "price": 0.00023618
   },
   "EDEL": {
    "ok": true,
    "src": "bq-holders+live",
    "top": 100,
    "infra": 6,
-   "price": 0.02196284
+   "price": 0.02297396
   }
  },
  "errors": [],
  "tags": {
-  "WHALE": 535,
-  "OG": 308,
+  "WHALE": 544,
+  "OG": 313,
   "CT": 24,
   "SNIPE": 22,
-  "DIAMOND": 218
+  "DIAMOND": 219
  },
- "finished": "2026-09-17T23:15:11.334Z",
+ "finished": "2026-09-18T01:12:09.279Z",
  "budgets": {
   "arkham": 0,
-  "profile": 54,
+  "profile": 55,
   "frontrun": 150,
-  "rpc": 387,
+  "rpc": 319,
   "funding": 0
  },
  "webhook": {
   "have": 308,
-  "want": 309,
-  "added": 2,
-  "removed": 1,
+  "want": 308,
+  "added": 6,
+  "removed": 6,
   "audited": 308,
-  "evicted": 0,
-  "noisy": 108
+  "evicted": 1,
+  "noisy": 109
  },
  "alertTx": {
-  "looked": 7,
-  "found": 7
+  "looked": 13,
+  "found": 6
  }
 }
