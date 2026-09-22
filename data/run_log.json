@@ -1,5 +1,5 @@
 {
- "started": "2026-09-22T01:22:53.444Z",
+ "started": "2026-09-22T02:29:35.722Z",
  "tier": "hot",
  "tokens": {
   "BRETT": {
@@ -7,42 +7,42 @@
    "src": "bitquery",
    "top": 100,
    "infra": 0,
-   "price": 0.00578576
+   "price": 0.00582046
   },
   "TOSHI": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 0,
-   "price": 0.00012702
+   "price": 0.00012663
   },
   "BASECAT": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 6,
-   "price": 0.01895654
+   "price": 0.01821463
   },
   "AERO": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 0,
-   "price": 0.686252
+   "price": 0.689918
   },
   "VIRTUAL": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 0,
-   "price": 0.71823
+   "price": 0.721448
   },
   "SR": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 4,
-   "price": 0.00117946
+   "price": 0.0011935
   },
   "BPAD": {
    "ok": true,
@@ -56,98 +56,98 @@
    "src": "bitquery",
    "top": 100,
    "infra": 4,
-   "price": 0.03027979
+   "price": 0.0305322
   },
   "VVV": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
-   "infra": 3,
-   "price": 31.57
+   "infra": 2,
+   "price": 31.03
   },
   "DRV": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 8,
-   "price": 0.422887
+   "price": 0.440793
   },
   "TIBBIR": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 1,
-   "price": 0.257136
+   "price": 0.25883
   },
   "AWE": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 35,
-   "price": 0.063797
+   "price": 0.06404
   },
   "NOCK": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 6,
-   "price": 0.03987584
+   "price": 0.0399132
   },
   "MAG7SSI": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 9,
-   "price": 0.57311
+   "price": 0.573006
   },
   "O": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
-   "infra": 15,
-   "price": 0.560913
+   "infra": 16,
+   "price": 0.554224
   },
   "CHIP": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
-   "infra": 19,
-   "price": 0.04620081
+   "infra": 20,
+   "price": 0.0478423
   },
   "DIEM": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 23,
-   "price": 2087.49
+   "price": 2062.16
   },
   "CODEFORMER": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 0,
-   "price": 0.05935
+   "price": 0.06085
   },
   "CX": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 4,
-   "price": 0.04310854
+   "price": 0.04252639
   },
   "OMI": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 19,
-   "price": 0.00021446
+   "price": 0.00021051
   },
   "KTA": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 0,
-   "price": 0.086432
+   "price": 0.086646
   },
   "BIM": {
    "ok": true,
@@ -161,57 +161,57 @@
    "src": "bitquery",
    "top": 100,
    "infra": 12,
-   "price": 2384.93
+   "price": 2385.33
   },
   "MOCA": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 20,
-   "price": 0.01035116
+   "price": 0.01030672
   },
   "GITLAWB": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 27,
-   "price": 0.00006091
+   "price": 0.00005943
   },
   "BLUECHIP": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 1,
-   "price": 0.01270974
+   "price": 0.01259742
   }
  },
  "errors": [],
  "tags": {
-  "WHALE": 1152,
-  "OG": 74,
-  "CT": 12,
+  "WHALE": 1153,
+  "OG": 73,
+  "CT": 13,
   "SNIPE": 3,
   "DIAMOND": 151
  },
- "finished": "2026-09-22T02:28:42.267Z",
+ "finished": "2026-09-22T03:37:05.535Z",
  "budgets": {
   "arkham": 0,
-  "profile": 9,
+  "profile": 6,
   "frontrun": 150,
   "rpc": 0,
   "funding": 0
  },
  "webhook": {
-  "have": 314,
+  "have": 313,
   "want": 313,
-  "added": 97,
-  "removed": 98,
-  "audited": 313,
+  "added": 103,
+  "removed": 103,
+  "audited": 312,
   "evicted": 1,
   "noisy": 138
  },
  "alertTx": {
-  "looked": 25,
-  "found": 21
+  "looked": 23,
+  "found": 16
  }
 }
