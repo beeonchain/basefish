@@ -909,8 +909,9 @@ async function histBackfillSnapshots() {
             const dec0 = await alchBatch([{ to: c, data: '0x313ce567', block: 'latest' }]);
             const dec = dec0[0] ? parseInt(dec0[0], 16) : 18;
             const res = await alchBatch(wallets.map(a => ({ to: c, data: '0x70a08231' + '0'.repeat(24) + a.slice(2), block: blk })));
-            rows = wallets.map((a, i3) => ({ addr: a, amount: res[i3] ? Number(BigInt(res[i3])) / Math.pow(10, dec) : 0 }))
-              .filter(x => x.amount > 0).sort((a, b) => b.amount - a.amount);
+            rows = wallets.map((a, i3) => ({ addr: a, amount: res[i3] && !/^0x0*f{64}$/i.test(res[i3]) ? Number(BigInt(res[i3])) / Math.pow(10, dec) : 0 }))
+              .filter(x => x.amount > 0 && Number.isFinite(x.amount) && !(supply && x.amount > supply * 1.001)).sort((a, b) => b.amount - a.amount);
+            if (rows.length < 20) rows = null; // a garbage RPC reply must not become a snapshot
           }
         }
         if (!rows || !rows.length) { await new Promise(s => setTimeout(s, 700)); continue; }
@@ -1014,7 +1015,7 @@ for (const t of RUN_TOKENS) {
     }
     if (!supply) { // total supply straight from the contract (public RPC)
       try { const hex = await rpc('eth_call', [{ to: c, data: '0x18160ddd' }, 'latest']); const dec = await rpc('eth_call', [{ to: c, data: '0x313ce567' }, 'latest']);
-        if (hex && hex !== '0x') { const dd = dec && dec !== '0x' ? parseInt(dec, 16) : 18; supply = Number(BigInt(hex)) / 10 ** dd; if (!mcap) mcap = usd * supply; } } catch (e) {}
+        if (hex && hex !== '0x' && !/^0x0*f{64}$/i.test(hex)) { const dd = dec && dec !== '0x' ? parseInt(dec, 16) : 18; supply = Number(BigInt(hex)) / 10 ** dd; if (!mcap) mcap = usd * supply; } } catch (e) {}
     }
     if (!usd) throw new Error('no price source available');
 
@@ -1091,11 +1092,27 @@ for (const t of RUN_TOKENS) {
         if (!(dec >= 0 && dec <= 36)) dec = 18;
         const rows = [...kept, ...infra];
         const calls = rows.map(h => ({ to: c, data: '0x70a08231' + h.addr.toLowerCase().slice(2).padStart(64, '0'), block: 'latest' }));
-        let got = 0;
+        // Sanity: 2026-09-21 18:39 UTC the RPC began answering every balanceOf with 0xff…ff (uint256 max) for hours —
+        // the chain itself was fine. Any reply that is all-ones, wider than a uint256, or larger than the token's
+        // supply is garbage; if more than a tenth of the batch is garbage the whole live step is discarded and the
+        // Bitquery balances stay (stale beats absurd).
+        const MAXU = 'f'.repeat(64), cap = supply ? supply * 1.001 : Infinity;
+        const live = [];
+        let bad = 0, sample = null;
         for (let i = 0; i < calls.length; i += 100) {
           const res = await alchBatch(calls.slice(i, i + 100));
-          res.forEach((hex, j) => { if (!hex || hex === '0x') return; const h = rows[i + j]; const amt = Number(BigInt(hex)) / 10 ** dec; if (!Number.isFinite(amt)) return; h.amount = amt; h.usd = amt * usd; h.pct = supply ? amt / supply * 100 : h.pct; got++; });
+          res.forEach((hex, j) => {
+            if (!hex || hex === '0x') return;
+            const raw = String(hex).slice(2).replace(/^0+/, '');
+            const amt = raw.length > 64 ? NaN : Number(BigInt(hex)) / 10 ** dec;
+            if (raw === MAXU || !Number.isFinite(amt) || amt > cap) { bad++; if (!sample) sample = hex; return; }
+            live.push([rows[i + j], amt]);
+          });
         }
+        if (bad && bad * 10 > rows.length) { throw new Error(`rpc returned ${bad}/${rows.length} implausible balances (e.g. ${String(sample).slice(0, 20)}…) — keeping Bitquery balances`); }
+        if (bad) console.log(`  live balances: ${bad} implausible replies ignored (e.g. ${String(sample).slice(0, 20)}…)`);
+        let got = 0;
+        for (const [h, amt] of live) { h.amount = amt; h.usd = amt * usd; h.pct = supply ? amt / supply * 100 : h.pct; got++; }
         if (got) { HOLDERS_SRC[t.sym] = 'bq-holders+live'; console.log(`  live balances: ${got}/${rows.length} wallets re-read on-chain`); }
       } catch (e) { console.log('  live balances skipped:', e.message.slice(0, 80)); }
     }
