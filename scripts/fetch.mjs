@@ -702,7 +702,7 @@ async function bqHolders(t, limit = 220) {
   const q = `query { EVM(dataset: archive, network: base) {
     TokenHolders(date: "${today}", tokenSmartContract: "${t.contract}",
       limit: { count: ${limit} }, orderBy: { descendingByField: "Balance_Amount" },
-      where: { Balance: { Amount: { gt: "0" } } }) {
+      where: { Balance: { Amount: { gt: "0", lt: "1000000000000000000000000000" } } }) {
       Holder { Address }
       Balance { Amount }
     } } }`;
@@ -715,7 +715,19 @@ async function bqHolders(t, limit = 220) {
       const d = await r.json();
       if (d.errors) { console.log('  bitquery errors:', JSON.stringify(d.errors).slice(0, 200)); continue; }
       const rows = d.data && d.data.EVM && d.data.EVM.TokenHolders;
-      if (rows && rows.length) return rows.map(x => ({ addr: x.Holder.Address, amount: Number(x.Balance.Amount) || 0 }));
+      if (rows && rows.length) {
+        const out = rows.map(x => ({ addr: x.Holder.Address, amount: Number(x.Balance.Amount) || 0 }));
+        // 2026-09-21 19:11 UTC: the Holders cube began returning 2^256/1e18 (uint256 max) as the balance of EVERY
+        // wallet for 16 tokens, so the "top 220" was a random sample with 1e51% shares. A page of holders whose
+        // balances are astronomically large, or all identical, is not data — treat the source as down.
+        const amts = out.map(o => o.amount);
+        const absurd = amts.filter(a => a >= 1e30).length, same = new Set(amts.map(a => a.toPrecision(12))).size;
+        if (absurd > out.length / 10 || (out.length >= 20 && same <= 2)) {
+          console.log(`  bitquery holders rejected: ${absurd} absurd balances, ${same} distinct values in ${out.length} rows (e.g. ${amts[0]})`);
+          return null;
+        }
+        return out;
+      }
     } catch (e) { console.log('  bitquery fail:', e.message.slice(0, 80)); }
   }
   return null;
