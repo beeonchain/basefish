@@ -1,5 +1,5 @@
 {
- "started": "2026-09-22T23:21:17.386Z",
+ "started": "2026-09-23T00:21:56.694Z",
  "tier": "hot",
  "tokens": {
   "BRETT": {
@@ -7,147 +7,147 @@
    "src": "bitquery",
    "top": 100,
    "infra": 35,
-   "price": 0.00600405
+   "price": 0.00589651
   },
   "TOSHI": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 46,
-   "price": 0.00013578
+   "price": 0.00013588
   },
   "BASECAT": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 6,
-   "price": 0.01756585
+   "price": 0.01761525
   },
   "AERO": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
-   "infra": 60,
-   "price": 0.687133
+   "infra": 59,
+   "price": 0.68809
   },
   "VIRTUAL": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
-   "infra": 55,
-   "price": 0.755059
+   "infra": 54,
+   "price": 0.756933
   },
   "SR": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 2,
-   "price": 0.00177059
+   "price": 0.00184654
   },
   "BPAD": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 1,
-   "price": 0.00008127
+   "price": 0.00009501
   },
   "EDEL": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 4,
-   "price": 0.02992327
+   "price": 0.02958078
   },
   "VVV": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 57,
-   "price": 31.88
+   "price": 32.31
   },
   "DRV": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
-   "infra": 6,
-   "price": 0.431981
+   "infra": 7,
+   "price": 0.495456
   },
   "TIBBIR": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 4,
-   "price": 0.265044
+   "price": 0.266379
   },
   "AWE": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 38,
-   "price": 0.064613
+   "price": 0.064587
   },
   "NOCK": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 6,
-   "price": 0.03622584
+   "price": 0.03727689
   },
   "MAG7SSI": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 10,
-   "price": 0.57874
+   "price": 0.578885
   },
   "O": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
-   "infra": 15,
-   "price": 0.561807
+   "infra": 16,
+   "price": 0.559981
   },
   "CHIP": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 20,
-   "price": 0.04694745
+   "price": 0.04661129
   },
   "DIEM": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 23,
-   "price": 2100.11
+   "price": 2113.62
   },
   "CODEFORMER": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 0,
-   "price": 0.04714
+   "price": 0.04732
   },
   "CX": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 4,
-   "price": 0.04211361
+   "price": 0.04267332
   },
   "OMI": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 18,
-   "price": 0.0002156
+   "price": 0.00021605
   },
   "KTA": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 25,
-   "price": 0.086037
+   "price": 0.085515
   },
   "BIM": {
    "ok": true,
@@ -161,44 +161,44 @@
    "src": "bitquery",
    "top": 100,
    "infra": 13,
-   "price": 2371.19
+   "price": 2368.4
   },
   "MOCA": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 20,
-   "price": 0.01048892
+   "price": 0.01049113
   },
   "GITLAWB": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
-   "infra": 27,
-   "price": 0.00007248
+   "infra": 28,
+   "price": 0.000071
   },
   "BLUECHIP": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 1,
-   "price": 0.01201208
+   "price": 0.01286745
   }
  },
  "errors": [],
  "tags": {
-  "WHALE": 593,
-  "OG": 322,
+  "WHALE": 597,
+  "OG": 323,
   "CT": 24,
   "SNIPE": 21,
-  "DIAMOND": 261
+  "DIAMOND": 287
  },
- "finished": "2026-09-23T00:20:39.669Z",
+ "finished": "2026-09-23T01:31:00.198Z",
  "budgets": {
   "arkham": 0,
   "profile": 52,
   "frontrun": 150,
-  "rpc": 55,
+  "rpc": 54,
   "funding": 0
  },
  "webhook": {
@@ -212,6 +212,6 @@
  },
  "alertTx": {
   "looked": 40,
-  "found": 31
+  "found": 34
  }
 }
