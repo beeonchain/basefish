@@ -101,7 +101,7 @@ export function buildAlerts(ctx, schools, { CEX_RX, WALLET_DIR }) {
         push({ kind: 'cex', sym, addr: h.addr, usd: -(tr.usd || 0), hash: tr.hash, title: `${nameFor(h)} sent ${musd(tr.usd)} of $${sym} to ${tr.cpLabel}`, sub: 'exchange inflow — possible sell pressure' });
       }
     }
-    // school combined position swings ≥10% since the previous snapshot
+    // cluster (internal key: school) combined position swings ≥10% since the previous snapshot
     if (prev) for (const s of schools || []) {
       const mem = (s.members || []).map((m) => m.addr);
       const price = c.price || 0;
@@ -112,7 +112,7 @@ export function buildAlerts(ctx, schools, { CEX_RX, WALLET_DIR }) {
         const k = s.id + ':' + sym, lastPct = state.school[k] || 0, pct = Math.round(((cur - was) / was) * 100);
         if (Math.sign(pct) !== Math.sign(lastPct) || Math.abs(pct) > Math.abs(lastPct) + 5) {
           state.school[k] = pct;
-          push2({ kind: 'school', sym, school: s.id, usd: Math.round(cur - was), title: `A ${mem.length}-wallet school moved ${pct > 0 ? '+' : ''}${pct}% on $${sym}`, sub: `combined position now ${musd(cur)}` });
+          push2({ kind: 'school', sym, school: s.id, usd: Math.round(cur - was), title: `A ${mem.length}-wallet cluster moved ${pct > 0 ? '+' : ''}${pct}% on $${sym}`, sub: `combined position now ${musd(cur)}` });
         }
       }
     }

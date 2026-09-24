@@ -42,7 +42,7 @@ Alerts arrive with each data refresh (~every 2h).
 /stop — unsubscribe
 /tokens BRETT,AERO — only these tokens (/tokens all resets)
 /events whale,cex — only these kinds (/events all resets)
-   kinds: whale · entry · exit · cex · school
+   kinds: whale · entry · exit · cex · cluster
 /watch 0x… TOKEN — custom: every tx of that wallet in that token (max ${MAX_WATCHES})
 /unwatch 0x… — remove a watch
 /list — your current setup
@@ -69,7 +69,7 @@ const pauseLine = (subs) => (subs.pause && subs.pause.on) ? `⏸ <b>Global pause
 function fmtPrefs(p) {
   return `<b>Your setup</b>
 tokens: ${p.tokens && p.tokens.length ? p.tokens.join(', ') : 'all'}
-events: ${p.events && p.events.length ? p.events.join(', ') : 'all'}
+events: ${p.events && p.events.length ? p.events.map((x) => (x === 'school' ? 'cluster' : x)).join(', ') : 'all'}
 watches: ${(p.watches || []).length ? p.watches.map((w) => `${w.w.slice(0, 8)}… → $${w.t}`).join('\n         ') : 'none'}
 status: ${p.muted ? 'paused (/start to resume)' : 'active'}`;
 }
@@ -119,8 +119,8 @@ export default async (req) => {
       dirty = true; break; }
     case '/events': {
       if (!arg || arg.toLowerCase() === 'all') { p.events = []; out = 'Events: all.'; }
-      else { const want = arg.toLowerCase().split(/[\s,]+/).filter((x) => EVENTS.includes(x));
-        if (!want.length) { out = `None recognized. Kinds: ${EVENTS.join(', ')}`; break; }
+      else { const want = arg.toLowerCase().split(/[\s,]+/).map((x) => (x === 'cluster' || x === 'clusters' ? 'school' : x)).filter((x) => EVENTS.includes(x));
+        if (!want.length) { out = `None recognized. Kinds: ${EVENTS.map((x) => (x === 'school' ? 'cluster' : x)).join(', ')}`; break; }
         p.events = want; out = `Events: ${want.join(', ')}`; }
       dirty = true; break; }
     case '/watch': {

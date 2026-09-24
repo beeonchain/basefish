@@ -1,7 +1,7 @@
 // Instant alerts — Alchemy Address Activity webhook receiver.
 // Alchemy pushes every transfer touching a tracked wallet within seconds of the block;
 // this classifies it (custom watch / whale-sized / exchange inflow) and fires Telegram
-// + appends to the site feed immediately. Snapshot-based alerts (entries/exits/schools)
+// + appends to the site feed immediately. Snapshot-based alerts (entries/exits/clusters)
 // stay with the 2h pipeline — they only exist per-ranking.
 import crypto from 'node:crypto';
 import { updateJson, USERS_PATH, MAX_HITS, webhookAddresses } from '../lib/store.mjs';

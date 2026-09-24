@@ -1,6 +1,6 @@
 # REEF 🌊
 
-The top holders of Base tokens as a living sea of wallets — whales, schools, flows, instant alerts.
+The top holders of Base tokens as a living sea of wallets — whales, clusters, flows, instant alerts.
 Live at https://app.usereef.io (landing page at https://usereef.io). Not affiliated with Base, Coinbase, or any token team.
 
 ## How it works
