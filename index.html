@@ -1614,14 +1614,14 @@ async function renderAlerts(){
 const ACCT={token:null,user:null,cfg:null,busy:false,seenHits:null,privy:null,after:null};
 const AV={fish:['small','medium','large','whale'],color:{blue:{n:'Blue',f:'none',c:'#3B6BFF'},gold:{n:'Gold',f:'hue-rotate(185deg) saturate(1.9) brightness(1.12)',c:'#F2C14E'},coral:{n:'Coral',f:'hue-rotate(140deg) saturate(1.15)',c:'#E5484D'}},acc:{none:'None',crown:'Crown',chain:'Chain'}};
 async function loadPrivy(){if(window.PrivyCore)return;await new Promise((res,rej)=>{const s=document.createElement('script');s.src='assets/privy.js?v=1';s.onload=res;s.onerror=()=>rej(new Error('could not load the sign-in library'));document.head.appendChild(s)})}
-async function privyInit(){if(ACCT.privy)return ACCT.privy;if(!ACCT.cfg)try{ACCT.cfg=await fetch('/api/auth').then(r=>r.json())}catch{ACCT.cfg={privy:'cmtznydhb01760cl6wiylerak'}}
+async function privyInit(){if(ACCT.privy)return ACCT.privy;if(!ACCT.cfg)try{ACCT.cfg=await fetch('/api/auth').then(r=>r.json())}catch{ACCT.cfg={privy:'cmufe3hd302830cl63hh86zf4'}}
   await loadPrivy();const P=window.PrivyCore;ACCT.privy=new P.Privy({appId:ACCT.cfg.privy,storage:new P.LocalStorage()});await ACCT.privy.initialize();return ACCT.privy}
 async function acctToken(){if(!ACCT.privy)return ACCT.token;try{ACCT.token=await ACCT.privy.getAccessToken()}catch{ACCT.token=null}return ACCT.token}
 const acctH=()=>ACCT.token?{'content-type':'application/json',authorization:'Bearer '+ACCT.token}:{'content-type':'application/json'};
 async function acctApi(path,body){await acctToken();const r=await fetch(path,{method:body?'POST':'GET',headers:acctH(),body:body?JSON.stringify(body):undefined});const j=await r.json().catch(()=>({}));if(!r.ok){if(r.status===401&&path.startsWith('/api/me')&&!path.includes('sync')){acctSignOut(false)}throw new Error(j.error||('HTTP '+r.status))}return j}
 const hasPrivySession=()=>{try{return Object.keys(localStorage).some(k=>/^privy/i.test(k)&&/token|session|refresh/i.test(k))}catch{return false}};
 async function acctInit(){
-  try{ACCT.cfg=await fetch('/api/auth').then(r=>r.json())}catch{ACCT.cfg={privy:'cmtznydhb01760cl6wiylerak'}}
+  try{ACCT.cfg=await fetch('/api/auth').then(r=>r.json())}catch{ACCT.cfg={privy:'cmufe3hd302830cl63hh86zf4'}}
   const q=new URLSearchParams(location.search);
   if(q.get('privy_oauth_code')){ // back from Google / X
     try{const p=await privyInit();const mode=sessionStorage.getItem('pv_mode')||'login';sessionStorage.removeItem('pv_mode');

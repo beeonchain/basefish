@@ -52,7 +52,7 @@ export async function readRaw(path, fallback) {
 // ---- sessions: Privy access tokens (ES256 JWT, verified against the app's JWKS) ----
 // The browser signs in with Privy (email / Google / X / wallet) and sends privy.getAccessToken() as Bearer.
 // Users are keyed by their Privy DID. Linked accounts (wallets, email, X) are synced from Privy's API on demand.
-export const PRIVY_APP_ID = process.env.PRIVY_APP_ID || 'cmtznydhb01760cl6wiylerak';
+export const PRIVY_APP_ID = process.env.PRIVY_APP_ID || 'cmufe3hd302830cl63hh86zf4';
 let _jwks = null;
 const jwks = () => _jwks || (_jwks = createRemoteJWKSet(new URL(`https://auth.privy.io/api/v1/apps/${PRIVY_APP_ID}/jwks.json`)));
 export async function readSession(req) {
