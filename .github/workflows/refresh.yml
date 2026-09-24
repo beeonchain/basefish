@@ -51,6 +51,7 @@ jobs:
           ALCH_NOTIFY_TOKEN: ${{ secrets.ALCH_NOTIFY_TOKEN }}
           ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
           ALCH_WEBHOOK_ID: wh_n8pxw2vbek7lbt8v
+          SITE_URL: https://app.usereef.io
         run: node scripts/fetch.mjs
       - name: Token logos for holder labels
         run: node scripts/toklogos.mjs || echo "toklogos failed — keeping current cache"

@@ -1,7 +1,7 @@
 # REEF 🌊
 
 The top holders of Base tokens as a living sea of wallets — whales, schools, flows, instant alerts.
-Live at https://usereef.io. Not affiliated with Base, Coinbase, or any token team.
+Live at https://app.usereef.io (landing page at https://usereef.io). Not affiliated with Base, Coinbase, or any token team.
 
 ## How it works
 - `scripts/fetch.mjs` pulls top holders, prices and recent transfers from Moralis (every ~2h via GitHub Actions) and writes static JSON into `data/`.

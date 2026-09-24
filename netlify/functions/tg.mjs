@@ -46,7 +46,7 @@ Alerts arrive with each data refresh (~every 2h).
 /watch 0x… TOKEN — custom: every tx of that wallet in that token (max ${MAX_WATCHES})
 /unwatch 0x… — remove a watch
 /list — your current setup
-/link CODE — connect to your REEF account (usereef.io) (code from the Alerts tab); watches then sync both ways
+/link CODE — connect to your REEF account (app.usereef.io) (code from the Alerts tab); watches then sync both ways
 /unlink — disconnect
 /help — this message`;
 

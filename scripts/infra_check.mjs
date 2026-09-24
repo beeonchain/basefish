@@ -83,10 +83,10 @@ await run('bitquery_bounded', async () => { // exactly what scripts/fetch.mjs se
 });
 
 await run('site', async () => {
-  const r = await fetch('https://usereef.io/data/index.json', { headers: { 'cache-control': 'no-cache' } });
+  const r = await fetch('https://app.usereef.io/data/index.json', { headers: { 'cache-control': 'no-cache' } });
   if (!r.ok) throw new Error('HTTP ' + r.status);
   const j = await r.json();
-  const a = await fetch('https://usereef.io/api/auth');
+  const a = await fetch('https://app.usereef.io/api/auth');
   return { tokens: (j.tokens || []).length, generated_at: j.generated_at, api_auth: a.status };
 });
 
