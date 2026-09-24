@@ -113,7 +113,7 @@ export const json = (o, status = 200) => new Response(JSON.stringify(o), { statu
 // keep the Alchemy Address Activity webhook in sync with watched wallets (needs ALCH_NOTIFY_TOKEN — the
 // Notify auth token from the Alchemy dashboard, not the app API key). Best-effort, silent on failure.
 export async function webhookAddresses(add = [], remove = []) {
-  const tok = process.env.ALCH_NOTIFY_TOKEN, id = process.env.ALCH_WEBHOOK_ID || 'wh_1ailuvfsjb3deig0';
+  const tok = process.env.ALCH_NOTIFY_TOKEN, id = process.env.ALCH_WEBHOOK_ID || 'wh_n8pxw2vbek7lbt8v';
   if (!tok || (!add.length && !remove.length)) return false;
   try {
     const r = await fetch('https://dashboard.alchemy.com/api/update-webhook-addresses', {

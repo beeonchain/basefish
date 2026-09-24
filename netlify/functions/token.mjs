@@ -5,7 +5,7 @@ import { createPublicClient, http, parseAbi, formatUnits } from 'viem';
 import { base } from 'viem/chains';
 import { json } from '../lib/store.mjs';
 
-const RPC = process.env.ALCHEMY_RPC || 'https://base-mainnet.g.alchemy.com/v2/alch_XrAYuto21vrOGXzYZX9OP';
+const RPC = process.env.ALCHEMY_RPC || 'https://mainnet.base.org';
 const ERC20 = parseAbi(['function symbol() view returns (string)', 'function name() view returns (string)', 'function decimals() view returns (uint8)', 'function totalSupply() view returns (uint256)']);
 const BURN = new Set(['0x0000000000000000000000000000000000000000', '0x000000000000000000000000000000000000dead', '0x0000000000000000000000000000000000000001']);
 const CFG_RAW = 'https://raw.githubusercontent.com/beeonchain/basefish/main/tokens.config.json';

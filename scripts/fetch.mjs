@@ -777,7 +777,7 @@ let schoolsForAlerts = [];
 // Bitquery's Base archive tables don't exist server-side (ClickHouse UNKNOWN_TABLE, confirmed 2026-08-30
 // from the account's own IDE session), so instead we read exact historical balanceOf() from Base archive
 // state via Alchemy batched eth_call: 100 balances per HTTP request, ~26 CU each on the free tier.
-const ALCH_KEY = process.env.ALCHEMY_API_KEY || 'alch_XrAYuto21vrOGXzYZX9OP'; // app "audit-base" (same key the site's functions use)
+const ALCH_KEY = process.env.ALCHEMY_API_KEY || ''; // REEF Alchemy account (GitHub secret ALCHEMY_API_KEY); no key = on-chain steps are skipped
 const ALCH_URL = 'https://base-mainnet.g.alchemy.com/v2/' + ALCH_KEY;
 async function alchBatch(calls) { // [{to,data,block}] -> [hexResult|null] (order preserved)
   const body = calls.map((c2, i) => ({ jsonrpc: '2.0', id: i, method: 'eth_call', params: [{ to: c2.to, data: c2.data }, c2.block] }));
@@ -1427,7 +1427,7 @@ const WH_TOP = Number(process.env.WH_TOP || 12); // global instant alerts: the 1
 const WH_SKIP_RX = /market maker|\bmm\b|exchange|deposit|router|pool|bridge|vault|treasury|sablier|gauge|locker|staking|deployer|airdrop|distributor|launchpad|escrow|wintermute|gsr|flow traders|jump|cumberland|amber/i;
 if (process.env.ALCH_NOTIFY_TOKEN) {
   try {
-    const WH = process.env.ALCH_WEBHOOK_ID || 'wh_1ailuvfsjb3deig0', H = { 'X-Alchemy-Token': process.env.ALCH_NOTIFY_TOKEN, 'content-type': 'application/json' };
+    const WH = process.env.ALCH_WEBHOOK_ID || 'wh_n8pxw2vbek7lbt8v', H = { 'X-Alchemy-Token': process.env.ALCH_NOTIFY_TOKEN, 'content-type': 'application/json' };
     let noisy = {}; try { noisy = JSON.parse(fs.readFileSync('data/alerts_state.json', 'utf8')).noisy || {}; } catch {}
     const want = new Set();
     for (const top of Object.values(ALLTOPS)) {
