@@ -353,7 +353,8 @@
   .drawer .dh .ent{font:700 15px var(--font-display);color:var(--teal)}
   .drawer .body{flex:1;overflow:auto;padding:14px 16px;display:flex;flex-direction:column;gap:14px}
   .drawer .sec h5{font:700 11px var(--font-body);letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin:0 0 8px}
-  .drawer .hrow,.wp .hrow{display:grid;grid-template-columns:1fr auto auto;gap:12px;padding:7px 14px;border-top:1px solid var(--line);font-size:13px;align-items:center;color:var(--muted)}
+  .drawer .hrow{display:grid;grid-template-columns:1fr auto auto;gap:12px;padding:7px 14px;border-top:1px solid var(--line);font-size:13px;align-items:center;color:var(--muted)}
+  .wp .hrow{display:grid;grid-template-columns:1fr auto auto;gap:14px;padding:13px 20px;border-top:1px solid var(--line);font-size:13px;align-items:center;color:var(--muted)}
   .wp .hrow b,.wp .hrow>span:last-child{color:var(--text)}
   .drawer .hrow b{font-weight:600}
   .drawer .trow{display:grid;grid-template-columns:8px 1fr auto;gap:8px;padding:6px 0;border-top:1px solid var(--line);font-size:11.5px;align-items:center;cursor:pointer}
@@ -367,7 +368,7 @@
   /* wallet page */
   .wp{display:none;flex:1;min-height:0;overflow:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--panel)}
   .wp.show{display:block}
-  .wp .whead{display:flex;align-items:center;gap:18px;padding:18px 22px;border-bottom:1px solid var(--line2);flex-wrap:wrap;position:sticky;top:0;background:var(--panel);z-index:2}
+  .wp .whead{display:flex;align-items:center;gap:20px;padding:24px 26px;border-bottom:1px solid var(--line2);flex-wrap:wrap;position:sticky;top:0;background:var(--panel);z-index:2}
   .wp .whead .fishic{width:52px;height:52px;border-radius:var(--r);background:var(--panel2);display:grid;place-items:center;border:1px solid var(--line2)}
   .wp .whead h3{font:800 24px/1.1 var(--font-display);margin:0;letter-spacing:-.01em}
   .wp .whead .addr{font:500 13px var(--font-mono);color:var(--muted);word-break:break-all;margin-top:4px}
@@ -385,23 +386,24 @@
   #wpranges button.on{background:var(--text);color:#fff}
   .wp .addr .ico{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border:1px solid var(--line);vertical-align:middle;margin-left:4px;color:var(--muted);background:var(--panel)}
   .wp .addr .ico:hover{border-color:var(--accent);color:var(--accent)}.wp .addr .ico svg{width:12px;height:12px}.wp .addr .ico img{width:14px;height:14px;border-radius:50%}
-  .wp .wgrid{display:grid;grid-template-columns:1fr 1.2fr;gap:14px;padding:16px 20px}
+  .wp .wgrid{display:grid;grid-template-columns:1fr 1.2fr;gap:22px;padding:22px 26px 30px}
+  .wp .wcol{display:flex;flex-direction:column;gap:22px;min-width:0}
   @media (max-width:1250px){.wp .wgrid{grid-template-columns:1fr}}
-  .wp .wbox{border:0;background:var(--panel2);overflow:hidden}
-  .wp .wbox>h5{font:700 11px var(--font-body);letter-spacing:.09em;text-transform:uppercase;color:var(--dim);margin:0;padding:12px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
-  .wp .wbox>h5 small{color:var(--dim);text-transform:none;letter-spacing:0;font-weight:500}
+  .wp .wbox{border:0;background:var(--panel2);overflow:hidden;padding-bottom:6px}
+  .wp .wbox>h5{font:600 15px var(--font-body);letter-spacing:-.006em;text-transform:none;color:var(--text);margin:0;padding:18px 20px 14px;display:flex;justify-content:space-between;align-items:baseline;gap:4px 12px;flex-wrap:wrap}
+  .wp .wbox>h5 small{color:var(--dim);text-transform:none;letter-spacing:0;font-weight:500;font-size:12px;flex:none}
   .wp table{width:100%;border-collapse:collapse;font-size:13px}
-  .wp th{text-align:left;font-size:11.5px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--dim);padding:8px 14px;border-bottom:1px solid var(--line)}
-  .wp td{padding:8px 14px;border-bottom:1px solid var(--line)}
+  .wp th{text-align:left;font-size:12px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--dim);padding:6px 20px 10px;border-bottom:1px solid var(--line)}
+  .wp td{padding:13px 20px;border-bottom:1px solid var(--line)}
   .wp tr:last-child td{border-bottom:0}
   .wp td.r,.wp th.r{text-align:right}
-  .wp .chainpill{font-size:9.5px;padding:1px 6px;border-radius:0;background:var(--panel2);color:var(--muted);border:1px solid var(--line);text-transform:lowercase}
-  .wp .cprow{display:grid;grid-template-columns:1fr auto;gap:6px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:12.5px;align-items:center}
+  .wp .chainpill{font-size:12px;font-weight:500;padding:0;border-radius:0;background:transparent;color:var(--muted);border:0;text-transform:lowercase}
+  .wp .cprow{display:grid;grid-template-columns:1fr auto;gap:14px;padding:13px 20px;border-bottom:1px solid var(--line);font-size:13px;align-items:center}
   .wp .cprow:last-child{border-bottom:0}
-  .wp .cprow .bar3{height:4px;border-radius:0;background:var(--panel2);margin-top:5px;overflow:hidden;display:flex}
+  .wp .cprow .bar3{height:4px;border-radius:0;background:var(--panel3);margin-top:8px;overflow:hidden;display:flex}
   .wp .cprow .bar3 i{display:block;height:100%}
   .wp .txrow:hover td{background:var(--panel2);cursor:pointer}
-  .wp .empty2{padding:18px 14px;color:var(--dim);font-size:12px}
+  .wp .empty2{padding:16px 20px 20px;color:var(--dim);font-size:12px;line-height:1.55}
   /* micro-states: one loading / empty / error look everywhere */
   .st{display:flex;align-items:center;gap:10px;padding:26px 16px;color:var(--muted);font-size:12.5px}
   .st.err{color:var(--coral)}
@@ -409,7 +411,7 @@
   .st i.dots b:nth-child(2){animation-delay:.2s}.st i.dots b:nth-child(3){animation-delay:.4s}
   @keyframes dot{0%,80%,100%{opacity:.2}40%{opacity:1}}
   @media (prefers-reduced-motion:reduce){.st i.dots b{animation:none;opacity:.6}}
-  .wp canvas.hist{display:block;width:100%;height:190px}
+  .wp canvas.hist{display:block;width:100%;height:230px}
   /* ---------- footer ---------- */
   .foot{grid-column:1/4;border-top:0;display:flex;align-items:center;gap:14px;padding:0 20px;font-size:11.5px;color:var(--dim)}
   .foot b{color:var(--muted);font-weight:600}
@@ -2052,7 +2054,6 @@ async function annotateVia(container,sym,fromTs,toTs){ // rows carry data-via="a
    Shared funding is drawn once — the funder as a hub with one spoke per wallet it funded — instead of a line between every
    pair (a 7-wallet cluster with one funder used to be 21 crossing "same funder" lines). Funding flows top → bottom; direct
    transfers are coral arrows labelled with the dollar amount. */
-const CL_EDGE={fund:{c:'#0000FF',n:'first funded'},transfer:{c:'#E5484D',n:'sent directly'}};
 function clusterNames(sc){const m={};(sc.members||[]).forEach(x=>{if(x.name)m[x.addr]=x.name});if(data&&data.list)data.list.forEach(h=>{const a=h.addr.toLowerCase();if(!m[a]&&(h.entity||h.basename))m[a]=h.entity||h.basename});return m}
 function clusterCommonName(sc){const ns=(sc.members||[]).map(m=>m.name||'');return ns.length>1&&ns[0]&&ns.every(n=>n===ns[0])?ns[0]:''}
 function clusterGraph(sc){
@@ -2071,96 +2072,94 @@ function clusterSentences(sc,focus){
   const who=a=>{const n=names[a];return `<b class="mono" style="color:var(--accent);cursor:pointer" onclick="openProfileByAddr('${a}')">${esc(n&&!common?n.slice(0,22):short(a))}</b>`};
   const out=[];
   g.hubs.forEach(h=>{const n=h.kids.size,all=n===g.mem.length;
-    out.push({w:focus&&h.kids.has(focus)?2:0,t:`${all?`All ${n}`:`${n} of these`} wallets were first funded by the same private wallet <span class="mono">${esc(h.full?short(h.addr):h.addr+'…')}</span>.`})});
+    out.push({w:focus&&h.kids.has(focus)?2:0,t:`${all?`All ${n}`:`${n} of these`} wallets were first funded by the same private wallet <span class="mono">${esc(h.full?short(h.addr):h.addr+'…')}</span>${h.full?'.':''}`})});
   g.fund.forEach(f=>out.push({w:focus&&(f.from===focus||f.to===focus)?2:1,t:`${who(f.from)} first funded ${who(f.to)}.`}));
   g.tx.sort((a,b)=>b.usd-a.usd).forEach(x=>out.push({w:focus&&(x.from===focus||x.to===focus)?2:1,t:`${who(x.from)} sent <b class="mono">${usd(x.usd)}</b> to ${who(x.to)}.`}));
   return out.sort((a,b)=>b.w-a.w).slice(0,6).map(x=>x.t);
 }
+/* cluster map: the focus wallet in the middle, every other member and each shared funder on one evenly spaced ring.
+   links are ink hairlines that fade from 25% at the ends to 50% in the middle: solid where money moved between
+   members, dotted for funding links. a shared funder is one node with a line to each wallet it funded */
 function renderClusterSvg(sc,focus,opts={}){
-  const g=clusterGraph(sc);if(!g.mem.length)return'';
+  const g=clusterGraph(sc);const mem=g.mem;if(!mem.length)return'';
   const names=clusterNames(sc),common=clusterCommonName(sc);
-  const W=opts.w||600,small=W<420;
-  const NW=small?70:128,NH=small?38:52,GX=small?8:22,PADX=small?8:12;
+  const W=opts.w||560,small=W<420;
+  const fw=focus&&mem.includes(focus)?focus:null;
+  const hubOf=Object.fromEntries(g.hubs.map(h=>[h.id,h]));
+  // a funder behind most of the cluster takes the middle (a clean star, no crossing lines);
+  // otherwise the focus wallet sits in the middle and funders join the ring
+  const big=[...g.hubs].sort((a,b)=>b.kids.size-a.kids.size)[0];
+  const f0=big&&big.kids.size>=Math.max(3,Math.ceil(mem.length/2))?big.id:(fw||mem[0]);
+  const hubs=g.hubs.map(h=>h.id).filter(id=>id!==f0);
+  const ring=mem.filter(a=>a!==f0);
+  const spokes=[...ring,...hubs];
+  const Hh=small?(spokes.length<=2?200:Math.max(280,Math.min(380,230+spokes.length*18))):spokes.length<=2?300:Math.max(430,Math.min(700,370+spokes.length*46)),cx=W/2,cy=Hh/2;
+  const rx=Math.max(W*0.26,W/2-(small?46:72)),ry=Math.max(Hh*0.24,Hh/2-(small?46:64));
+  const a0=spokes.length<=2?0:-Math.PI/2;   // one or two neighbours sit left/right of the middle, not stacked on it
+  const lbl=!small||spokes.length<=5;       // the in-card version drops names once the ring gets crowded
+  const pos={[f0]:{x:cx,y:cy}};
+  spokes.forEach((a,i)=>{const ang=a0+i*2*Math.PI/Math.max(1,spokes.length);pos[a]={x:cx+rx*Math.cos(ang),y:cy+ry*Math.sin(ang)}});
   const holder=a=>(data&&data.list||[]).find(h=>h.addr.toLowerCase()===a)||null;
-  // rows: sources (shared funders + members that funded another member) on top, everyone else below
-  const funded=new Set(g.fund.map(f=>f.to));
-  const srcM=[...new Set(g.fund.map(f=>f.from))].filter(a=>!funded.has(a)&&g.mem.includes(a));
-  const top=[...g.hubs.map(h=>h.id),...srcM];
-  const rest=g.mem.filter(a=>!srcM.includes(a));
-  const P=Math.max(2,Math.floor((W-PADX*2+GX)/(NW+GX))),pitch=NW+GX;
-  // two member rows: brick pattern (P then P-1 slots) so each drop to row 2 falls through a gap of row 1.
-  // more rows: an aligned grid, and drops below row 1 run down the clear corridors between columns
-  const brick=rest.length<=P+Math.max(1,P-1);
-  const rows=[];if(top.length)rows.push({ids:top,m:top.length});
-  {let i=0,alt=0;while(i<rest.length){const m=Math.max(1,brick&&alt%2?P-1:P),k=Math.min(m,rest.length-i);rows.push({ids:rest.slice(i,i+k),m,mr:alt});i+=k;alt++}}
-  const sameRowTx=g.tx.length>0,RG=small?54:80,PADT=small?16:26;
-  const Hh=(PADT*2+rows.length*NH+(rows.length-1)*RG+(sameRowTx?(small?26:44):0));
-  const single=rows.filter(r=>r.mr!=null).length<=1;   // one member row: centre exactly under the funder
-  const pos={};rows.forEach((r,ri)=>{const k=r.ids.length,m=Math.max(r.m,k);
-    const st=single?(m-k)/2:Math.floor((m-k)/2),slots=r.ids.map((_,i)=>st+i);  // partial rows sit centred on the row's own grid
-    r.ids.forEach((id,i)=>{pos[id]={x:W/2+(slots[i]-(m-1)/2)*pitch,y:PADT+ri*(NH+RG)+NH/2,row:ri,mr:r.mr??-1}})});
-  const on=id=>!focus||id===focus;
-  const touches=(a,b)=>!focus||a===focus||b===focus;
-  const defs=`<defs>${Object.entries(CL_EDGE).map(([k,v])=>`<marker id="clA${k}" viewBox="0 0 8 8" refX="7" refY="4" ${k==='transfer'?'markerUnits="strokeWidth" markerWidth="3.4" markerHeight="3.4"':`markerUnits="userSpaceOnUse" markerWidth="${small?6:8}" markerHeight="${small?6:8}"`} orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 Z" fill="${v.c}"/></marker>`).join('')}</defs>`;
-  // funding: tree connectors from the bottom of the source to the top of the funded wallet
-  const fundPairs=[];g.hubs.forEach(h=>h.kids.forEach(k=>fundPairs.push({from:h.id,to:k,hub:h})));g.fund.forEach(f=>fundPairs.push(f));
-  const bySrc=new Map();fundPairs.filter(p=>pos[p.from]&&pos[p.to]).forEach(p=>{if(!bySrc.has(p.from))bySrc.set(p.from,[]);bySrc.get(p.from).push(p)});
-  const lineAt=(d,hi)=>`<path d="${d}" fill="none" stroke="${CL_EDGE.fund.c}" stroke-width="${hi?1.8:1.2}" opacity="${hi?.95:.28}" stroke-linejoin="miter"/>`;
-  const dropAt=(x,y1,y2,hi)=>`<path d="M${x.toFixed(1)},${y1.toFixed(1)} V${(y2-1).toFixed(1)}" fill="none" stroke="${CL_EDGE.fund.c}" stroke-width="${hi?1.8:1.2}" opacity="${hi?.95:.28}" marker-end="url(#clAfund)"/>`;
-  const corr=x=>x+pitch/2>W-PADX?x-pitch/2:x+pitch/2;
-  let si=0;const fundSvg=[...bySrc.entries()].map(([src,ps])=>{const A=pos[src];
-    const kids=ps.filter(p=>pos[p.to].row>A.row),other=ps.filter(p=>pos[p.to].row<=A.row);
-    const busY=A.y+NH/2+RG*0.42+(si++)*5;let out='';
-    const srcHi=!focus||src===focus||ps.some(p=>p.to===focus);
-    if(kids.length){const xs=kids.map(p=>pos[p.to].x);const x1=Math.min(A.x,...xs),x2=Math.max(A.x,...xs);
-      out+=lineAt(`M${A.x.toFixed(1)},${(A.y+NH/2).toFixed(1)} V${busY.toFixed(1)}`,srcHi)+lineAt(`M${x1.toFixed(1)},${busY.toFixed(1)} H${x2.toFixed(1)}`,srcHi);
-      kids.forEach(p=>{const B=pos[p.to],hi=!focus||p.to===focus||src===focus;
-        if(brick||B.row===A.row+1){out+=dropAt(B.x,busY,B.y-NH/2,hi);return}
-        const cx=corr(B.x),jy=B.y-NH/2-RG*0.35;   // corridor: down between columns, then across above the card
-        out+=lineAt(`M${cx.toFixed(1)},${busY.toFixed(1)} V${jy.toFixed(1)} H${B.x.toFixed(1)}`,hi)+dropAt(B.x,jy,B.y-NH/2,hi)})
-      if(!brick){const cs=kids.filter(p=>pos[p.to].row>A.row+1).map(p=>corr(pos[p.to].x));if(cs.length)out+=lineAt(`M${Math.min(x1,...cs).toFixed(1)},${busY.toFixed(1)} H${Math.max(x2,...cs).toFixed(1)}`,srcHi)}}
-    other.forEach(p=>{const B=pos[p.to];const hi=!focus||p.to===focus||src===focus;   // rare: a chain inside one row
-      out+=`<path d="M${A.x.toFixed(1)},${(A.y+NH/2).toFixed(1)} Q${((A.x+B.x)/2).toFixed(1)},${(A.y+NH/2+RG*.6).toFixed(1)} ${B.x.toFixed(1)},${(B.y+NH/2+2).toFixed(1)}" fill="none" stroke="${CL_EDGE.fund.c}" stroke-width="1.4" opacity="${hi?.95:.28}" marker-end="url(#clAfund)"/>`});
-    return out}).join('');
-  // transfers: coral arcs with the amount; same-row pairs arc below the cards so they never cross a card
-  const maxU=Math.max(1,...g.tx.map(x=>x.usd));
-  const txSvg=g.tx.filter(x=>pos[x.from]&&pos[x.to]).map((x,i)=>{const A=pos[x.from],B=pos[x.to];const same=Math.abs(A.y-B.y)<1;
-    const w=1.4+3.2*Math.sqrt(x.usd/maxU);const hi=touches(x.from,x.to);let d,lx,ly;
-    const bar=id=>id===focus?(small?11:14):0;   // the THIS WALLET bar hangs under the focused card
-    if(same){const dir=A.x<B.x?1:-1,sy=A.y+NH/2,sA=sy+bar(x.from),sB=sy+bar(x.to)+2,bend=Math.min(small?26:40,14+Math.abs(B.x-A.x)*0.18);
-      d=`M${(A.x+dir*NW*0.18).toFixed(1)},${sA} Q${((A.x+B.x)/2).toFixed(1)},${(sy+bend*2).toFixed(1)} ${(B.x-dir*NW*0.18).toFixed(1)},${sB.toFixed(1)}`;lx=(A.x+B.x)/2;ly=sy+bend}
-    else{const up=B.y<A.y,side=i%2?-1:1,dx=side*NW*0.3;   // leave/enter off-centre so the arc never sits on a funding drop
-      const sy=A.y+(up?-NH/2:NH/2+bar(x.from)),ty=B.y+(up?NH/2+3+bar(x.to):-NH/2-3),off=side*Math.max(22,NW*0.35);
-      d=`M${(A.x+dx).toFixed(1)},${sy.toFixed(1)} Q${((A.x+B.x)/2+dx+off).toFixed(1)},${((sy+ty)/2).toFixed(1)} ${(B.x+dx).toFixed(1)},${ty.toFixed(1)}`;lx=(A.x+B.x)/2+dx+off/2;ly=(sy+ty)/2}
-    const lab=usd(x.usd),lw=lab.length*6.3+10;
-    return `<g opacity="${hi?1:.3}"><path d="${d}" fill="none" stroke="${CL_EDGE.transfer.c}" stroke-width="${w.toFixed(1)}" marker-end="url(#clAtransfer)"><title>${esc(short(x.from))} sent ${lab} to ${esc(short(x.to))}</title></path>
-      <rect x="${(lx-lw/2).toFixed(1)}" y="${(ly-8).toFixed(1)}" width="${lw.toFixed(1)}" height="16" fill="${CH.panel}" stroke="${CL_EDGE.transfer.c}"/><text x="${lx.toFixed(1)}" y="${(ly+4).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="600" fill="${CL_EDGE.transfer.c}" font-family="Roboto Mono, monospace">${lab}</text></g>`}).join('');
-  const node=id=>{const p=pos[id];if(!p)return'';const x0=p.x-NW/2,y0=p.y-NH/2;
-    const hub=g.hubs.find(h=>h.id===id);
-    if(hub){const click=hub.full?` style="cursor:pointer" onclick="openProfileByAddr('${hub.addr}')"`:'';
-      return `<g${click}><rect x="${x0.toFixed(1)}" y="${y0.toFixed(1)}" width="${NW}" height="${NH}" fill="${CH.panel2}" stroke="${CH.line2}" stroke-dasharray="4 3"/>
-        <text x="${p.x.toFixed(1)}" y="${(p.y-(small?3:5)).toFixed(1)}" text-anchor="middle" font-size="${small?7.5:8.5}" font-weight="600" letter-spacing=".12em" fill="${CH.muted}" font-family="Roboto Mono, monospace">${small?'FUNDER':'SHARED FUNDER'}</text>
-        <text x="${p.x.toFixed(1)}" y="${(p.y+(small?9:12)).toFixed(1)}" text-anchor="middle" font-size="${small?9:10.5}" font-weight="600" fill="${CH.text}" font-family="Roboto Mono, monospace">${esc(hub.full?short(hub.addr):hub.addr.slice(0,8)+'…')}</text>
-        <title>Private wallet that sent the first funds to ${hub.kids.size} of these wallets${hub.full?'':' (not in any tracked top 100)'}</title></g>`}
-    const a=id,h=holder(a),isF=a===focus,nm=names[a]&&!common?names[a]:'';
+  const INK=CH.text,uid='cl'+Math.random().toString(36).slice(2,8);
+  const rOf=a=>small?(a===f0?24:hubOf[a]?16:20):(a===f0?(hubOf[a]?26:34):hubOf[a]?22:28);
+  // edges: money moved (member to member), first-funded (member to member), shared funder (hub to member)
+  const E=[];
+  // one line per pair of wallets: transfers and a first-funding between the same two wallets share it
+  const P=new Map(),pk=(a,b)=>[a,b].sort().join('|');
+  const pe=(a,b)=>{const k=pk(a,b);if(!P.has(k)){const e={a,b,moved:false,u:0,fund:false,t:[]};P.set(k,e);E.push(e)}return P.get(k)};
+  g.tx.forEach(x=>{const e=pe(x.from,x.to);e.moved=true;e.u+=x.usd;e.t.push(`${short(x.from)} sent ${usd(x.usd)} to ${short(x.to)}`)});
+  g.fund.forEach(f=>{const e=pe(f.from,f.to);e.fund=true;e.t.push(`${short(f.from)} first funded ${short(f.to)}`)});
+  E.forEach(e=>{e.lab=e.moved?usd(e.u):'first funded';e.sub=e.moved&&e.fund?'first funded':'';e.t=e.t.join(' · ')});
+  g.hubs.forEach(h=>h.kids.forEach(k=>E.push({a:h.id,b:k,moved:false,t:`first funded by ${h.full?short(h.addr):h.addr+'…'}`})));
+  const evs=E.filter(e=>pos[e.a]&&pos[e.b]);
+  const pairN={},pairI={};evs.forEach(e=>{const k=[e.a,e.b].sort().join('|');pairN[k]=(pairN[k]||0)+1});
+  const defs=[],ribbons=[],labels=[];
+  evs.forEach((e,ei)=>{
+    const w=e.moved?1+Math.min(1.7,Math.log10(Math.max(1,e.u))/3.2):1;
+    const A=pos[e.a],B=pos[e.b];
+    const k=[e.a,e.b].sort().join('|');const ki=(pairI[k]=(pairI[k]||0)+1)-1,kn=pairN[k];
+    const hub=(e.a===f0||e.b===f0),off=(ki-(kn-1)/2)*(hub?64:26);   // parallel links between one pair fan out far enough that their labels clear each other
+    const L=Math.hypot(B.x-A.x,B.y-A.y)||1,ux=(B.x-A.x)/L,uy=(B.y-A.y)/L;
+    const A2={x:A.x+ux*(rOf(e.a)+9),y:A.y+uy*(rOf(e.a)+9)},B2={x:B.x-ux*(rOf(e.b)+9),y:B.y-uy*(rOf(e.b)+9)};
+    const mx0=(A2.x+B2.x)/2,my0=(A2.y+B2.y)/2;let Cx,Cy;
+    if(hub){Cx=mx0-uy*off;Cy=my0+ux*off}
+    else{const dx=mx0-cx,dy=my0-cy,dl=Math.hypot(dx,dy)||1,push=(small?36:70)+Math.abs(off);Cx=mx0+dx/dl*push;Cy=my0+dy/dl*push}
+    const hi=!focus||e.a===focus||e.b===focus||(hubOf[e.a]&&hubOf[e.a].kids.has(focus));
+    // a label on a spoke sits nearer the middle when the outer wallet is level with or above it, clear of that wallet's name
+    const outer=e.a===f0?B:A,tt=hub&&outer.y<cy+ry*0.5?(e.a===f0?0.36:0.64):0.5;
+    const mid={x:(1-tt)*(1-tt)*A2.x+2*tt*(1-tt)*Cx+tt*tt*B2.x,y:(1-tt)*(1-tt)*A2.y+2*tt*(1-tt)*Cy+tt*tt*B2.y};
+    if(hub&&Math.abs(uy)<0.6)mid.y-=14;   // near-level spokes: label rides above the line, away from the names below the circles
+    const k2=hi?1:.6,gid=uid+'e'+ei;
+    defs.push(`<linearGradient id="${gid}" gradientUnits="userSpaceOnUse" x1="${A2.x.toFixed(1)}" y1="${A2.y.toFixed(1)}" x2="${B2.x.toFixed(1)}" y2="${B2.y.toFixed(1)}"><stop offset="0" stop-color="${INK}" stop-opacity="${(.25*k2).toFixed(3)}"/><stop offset=".5" stop-color="${INK}" stop-opacity="${(.5*k2).toFixed(3)}"/><stop offset="1" stop-color="${INK}" stop-opacity="${(.25*k2).toFixed(3)}"/></linearGradient>`);
+    ribbons.push(`<path d="M${A2.x.toFixed(1)} ${A2.y.toFixed(1)} Q${Cx.toFixed(1)} ${Cy.toFixed(1)} ${B2.x.toFixed(1)} ${B2.y.toFixed(1)}" fill="none" stroke="url(#${gid})" stroke-width="${w.toFixed(2)}"${e.moved?'':' stroke-dasharray="2 5"'} stroke-linecap="round"><title>${esc(e.t)}</title></path>`);
+    const lab=e.lab,dy=e.sub?-3:4;
+    if(lab&&!small&&e.sub)labels.push(`<text x="${mid.x.toFixed(1)}" y="${(mid.y+12).toFixed(1)}" text-anchor="middle" font-size="12" font-weight="400" fill="${CH.dim}" font-family="Roboto Mono, monospace" paint-order="stroke" stroke="${CH.panel}" stroke-width="5" stroke-linejoin="round" opacity="${hi?1:.6}">${e.sub}</text>`);
+    if(lab&&!small)labels.push(`<text x="${mid.x.toFixed(1)}" y="${(mid.y+dy).toFixed(1)}" text-anchor="middle" font-size="12" font-weight="${e.moved?600:400}" fill="${e.moved?INK:CH.dim}" font-family="Roboto Mono, monospace" paint-order="stroke" stroke="${CH.panel}" stroke-width="5" stroke-linejoin="round" opacity="${hi?1:.6}">${esc(lab)}</text>`)});
+  const txt=(x,y,t,o={})=>`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" font-size="12" font-weight="${o.wt||500}" fill="${o.c||INK}" font-family="${o.f||'Inter Tight, system-ui, sans-serif'}" paint-order="stroke" stroke="${CH.panel}" stroke-width="5" stroke-linejoin="round">${esc(t)}</text>`;
+  const node=a=>{const p=pos[a],r=rOf(a);
+    const hb=hubOf[a];
+    if(hb){const click=hb.full?` style="cursor:pointer" onclick="openProfileByAddr('${hb.addr}')"`:'';
+      return `<g${click}><circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${r}" fill="${CH.panel2}" stroke="${INK}" stroke-opacity=".28" stroke-width="1" stroke-dasharray="2 4"/>
+        <title>Shared funder: the private wallet that sent the first funds to ${hb.kids.size} of these wallets${hb.full?'':' (not in any tracked top 100)'}</title>
+        ${lbl?txt(p.x,p.y+r+20,'Shared funder',{wt:600}):''}${small?'':txt(p.x,p.y+r+36,hb.full?short(hb.addr):hb.addr.slice(0,8)+'…',{c:CH.dim,f:'Roboto Mono, monospace',wt:400})}</g>`}
+    const isF=a===focus,nm=(!common&&names[a])||short(a),h=holder(a);
     const tier=h?(h.claim&&h.claim.avatar?h.claim.avatar.fish:h.tier):'medium';
-    const l1=nm?(nm.length>(small?9:10)?nm.slice(0,small?8:9)+'…':nm):short(a),l2=h?`#${h.rank} · ${usd(h.value)}`:(nm?short(a):'rank >100');
-    const iw=small?0:32,ih=Math.round(iw*.72),tx0=small?x0+6:x0+9+iw+8;
-    const img=small?'':`<image href="assets/tank/${tier}.webp" x="${(x0+(small?6:9)).toFixed(1)}" y="${(p.y-ih/2).toFixed(1)}" width="${iw}" height="${ih}" preserveAspectRatio="xMidYMid meet"/>`;
-    return `<g style="cursor:pointer" onclick="openProfileByAddr('${a}')" opacity="${on(a)||!focus?1:.85}">
-      <rect x="${x0.toFixed(1)}" y="${y0.toFixed(1)}" width="${NW}" height="${NH}" fill="${isF?CH.accentFill:CH.panel}" stroke="${isF?CH.accent:CH.line2}" stroke-width="${isF?2:1}"/>
-      ${img}<text x="${tx0.toFixed(1)}" y="${(p.y-(small?2:3)).toFixed(1)}" font-size="${small?9:11}" font-weight="700" fill="${CH.text}" font-family="Roboto Mono, monospace">${esc(l1)}</text>
-      <text x="${tx0.toFixed(1)}" y="${(p.y+(small?10:13)).toFixed(1)}" font-size="${small?8:9.5}" fill="${CH.muted}" font-family="Roboto Mono, monospace">${esc(l2)}</text>
-      ${isF?`<rect x="${x0.toFixed(1)}" y="${(y0+NH).toFixed(1)}" width="${NW}" height="${small?11:14}" fill="${CH.accent}"/><text x="${p.x.toFixed(1)}" y="${(y0+NH+(small?8:10)).toFixed(1)}" text-anchor="middle" font-size="${small?7:8.5}" font-weight="600" letter-spacing=".12em" fill="#fff" font-family="Roboto Mono, monospace">THIS WALLET</text>`:''}
-      <title>${esc(names[a]||a)}${h?` · rank #${h.rank} in $${cur.sym} · ${usd(h.value)}`:''}</title></g>`};
-  const ids=[...top,...rest];
-  const hasTx=g.tx.length>0,hasFund=fundPairs.length>0,hasHub=g.hubs.length>0;
-  const legend=`<div style="display:flex;gap:16px;flex-wrap:wrap;padding:8px 2px 0;font-size:11px;color:var(--muted)">
-    ${hasFund?`<span><i style="display:inline-block;width:18px;border-top:2px solid ${CL_EDGE.fund.c};vertical-align:middle;margin-right:6px"></i>first funded</span>`:''}
-    ${hasTx?`<span><i style="display:inline-block;width:18px;border-top:2px solid ${CL_EDGE.transfer.c};vertical-align:middle;margin-right:6px"></i>sent directly</span>`:''}
-    ${hasHub?`<span><i style="display:inline-block;width:11px;height:9px;border:1px dashed ${CH.line2};background:${CH.panel2};vertical-align:middle;margin-right:6px"></i>shared funder (not in any tracked top 100)</span>`:''}</div>`;
-  const svg=`<svg viewBox="0 0 ${W} ${Hh}" style="width:100%;height:auto;display:block;background:var(--panel)" xmlns="http://www.w3.org/2000/svg">${defs}${fundSvg}${txSvg}${ids.map(node).join('')}</svg>`;
-  return small?svg:svg+legend;
+    const iw=Math.round(r*1.45),ih=Math.round(iw*0.72);
+    const face=/^0x|…/.test(nm)?'Roboto Mono, monospace':'Inter Tight, system-ui, sans-serif';
+    const flt=h&&h.claim&&h.claim.avatar&&AV.color[h.claim.avatar.color]&&AV.color[h.claim.avatar.color].f!=='none'?` style="filter:${AV.color[h.claim.avatar.color].f}"`:'';
+    return `<g class="snode" style="cursor:pointer" onclick="openProfileByAddr('${a}')">
+      <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${r}" fill="${CH.panel}" stroke="${isF?CH.accent:INK}" stroke-opacity="${isF?1:.1}" stroke-width="${isF?1.5:1}"/>
+      <image href="assets/tank/${tier}.webp" x="${(p.x-iw/2).toFixed(1)}" y="${(p.y-ih/2).toFixed(1)}" width="${iw}" height="${ih}" preserveAspectRatio="xMidYMid meet"${flt}/>
+      <title>${esc(nm)}${h?` · ${usd(h.value)} · rank #${h.rank} in $${cur.sym}`:''}</title>
+      ${lbl||isF?txt(p.x,p.y+r+20,nm.slice(0,small?14:22),{wt:isF?600:500,f:face}):''}
+      ${h&&h.value&&!small?txt(p.x,p.y+r+36,usd(h.value),{c:CH.dim,wt:400}):''}</g>`};
+  const nodes=[...hubs,...ring,f0];
+  const hasMoved=evs.some(e=>e.moved),hasLink=evs.some(e=>!e.moved);
+  const legend=small?'':`<div style="display:flex;gap:16px;flex-wrap:wrap;padding:12px 2px 0;font-size:12px;color:${CH.dim}">
+    ${hasMoved?`<span><i style="display:inline-block;width:22px;height:2px;background:linear-gradient(90deg,rgba(10,11,13,.25),rgba(10,11,13,.5),rgba(10,11,13,.25));vertical-align:middle;margin-right:7px"></i>money moved</span>`:''}
+    ${hasLink?`<span><i style="display:inline-block;width:22px;border-top:1.5px dotted rgba(10,11,13,.45);vertical-align:middle;margin-right:7px"></i>inferred link</span>`:''}
+    <span style="margin-left:auto">click a fish to open it</span></div>`;
+  return `<svg viewBox="0 0 ${W} ${Hh}" style="width:100%;height:auto;max-height:${Hh}px;display:block;background:${CH.panel}" xmlns="http://www.w3.org/2000/svg"><defs>${defs.join('')}</defs>${ribbons.join('')}${labels.join('')}${nodes.map(node).join('')}</svg>${legend}`;
 }
 const renderSchoolSvg=renderClusterSvg;
 const musd0=v=>{const x=Math.abs(v);return x>=1e6?'$'+(x/1e6).toFixed(1)+'M':x>=1e3?'$'+(x/1e3).toFixed(0)+'K':'$'+Math.round(x)};
@@ -2311,27 +2310,41 @@ function histSeries(){const R=histRanges().find(x=>x[0]===WH.range)||histRanges(
 function histSetRange(r){WH.range=r;WH.hover=null;drawHistory(document.getElementById('wphist'));const el=document.getElementById('wpranges');if(el)el.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.r===r))}
 function drawHistory(cv2){
   if(!cv2)return;const pts=histSeries();
-  const x=cv2.getContext('2d');const W2=cv2.width=cv2.clientWidth*2,H2=cv2.height=380;
-  x.clearRect(0,0,W2,H2);
-  if(!pts||pts.length<2){x.fillStyle=CH.dim;x.font='24px Inter Tight';x.textAlign='center';x.fillText(pts&&pts.length===1?'First snapshot recorded. The chart begins.':'History accumulates with every refresh.',W2/2,H2/2);return}
-  const vs=pts.map(p=>p.usd),mn=Math.min(...vs),mx=Math.max(...vs),pad=44,top=50,bot=40;
+  // drawn in CSS pixels at device resolution: no squashed type, one gutter on every side
+  const DP=Math.min(2,devicePixelRatio||1),w=cv2.clientWidth||600,h=cv2.clientHeight||230;
+  cv2.width=Math.round(w*DP);cv2.height=Math.round(h*DP);
+  const x=cv2.getContext('2d');x.setTransform(DP,0,0,DP,0,0);x.clearRect(0,0,w,h);
+  const FB='Inter Tight, system-ui, sans-serif',FM='Roboto Mono, monospace';
+  x.textBaseline='middle';
+  if(!pts||pts.length<2){x.fillStyle=CH.dim;x.font='13px '+FB;x.textAlign='center';
+    x.fillText(pts&&pts.length===1?'First snapshot recorded. The chart begins.':'History accumulates with every refresh.',w/2,h/2);return}
+  const vs=pts.map(p=>p.usd),mn=Math.min(...vs),mx=Math.max(...vs);
+  const L=74,R=16,T=50,B=30;
   const t0=pts[0].ts,t1=pts[pts.length-1].ts;
-  const X=p=>pad+(W2-pad*2)*((p.ts-t0)/((t1-t0)||1)), Y=v=>H2-bot-(H2-top-bot)*((v-mn)/((mx-mn)||1));
-  x.strokeStyle=CH.grid;x.lineWidth=1;
-  for(let g=0;g<4;g++){const y=top+g*(H2-top-bot)/3;x.beginPath();x.moveTo(pad,y);x.lineTo(W2-pad,y);x.stroke()}
-  x.beginPath();pts.forEach((p,i)=>i?x.lineTo(X(p),Y(p.usd)):x.moveTo(X(p),Y(p.usd)));
-  x.strokeStyle=CH.accent;x.lineWidth=3;x.stroke();
-  x.lineTo(X(pts[pts.length-1]),H2-bot);x.lineTo(X(pts[0]),H2-bot);x.closePath();x.fillStyle='rgba(0,0,255,.06)';x.fill();
+  const X=p=>L+(w-L-R)*((p.ts-t0)/((t1-t0)||1)),Y=v=>h-B-(h-T-B)*((v-mn)/((mx-mn)||1));
+  // grid, with the only value labels sitting on the top and bottom lines
+  x.strokeStyle=CH.grid;x.lineWidth=1;x.font='12px '+FM;x.textAlign='right';
+  for(let g=0;g<4;g++){const gy=Math.round(T+g*(h-T-B)/3)+.5;
+    x.beginPath();x.moveTo(L,gy);x.lineTo(w-R,gy);x.stroke();
+    if(g===0||g===3){x.fillStyle=CH.dim;x.fillText(usd(g===0?mx:mn),L-14,gy)}}
+  const trace=()=>{x.beginPath();pts.forEach((p,i)=>i?x.lineTo(X(p),Y(p.usd)):x.moveTo(X(p),Y(p.usd)))};
+  trace();x.lineTo(X(pts[pts.length-1]),h-B);x.lineTo(X(pts[0]),h-B);x.closePath();x.fillStyle='rgba(0,0,255,.06)';x.fill();
+  trace();x.strokeStyle=CH.accent;x.lineWidth=2;x.lineJoin='round';x.lineCap='round';x.stroke();
   const hp=WH.hover!=null?pts[WH.hover]:pts[pts.length-1];
-  x.fillStyle=CH.accent;x.beginPath();x.arc(X(hp),Y(hp.usd),6,0,6.28);x.fill();
-  if(WH.hover!=null){x.strokeStyle=CH.axis;x.setLineDash([6,6]);x.beginPath();x.moveTo(X(hp),top);x.lineTo(X(hp),H2-bot);x.stroke();x.setLineDash([])}
-  // readout: value + date of the hovered (or last) point, top-right; min/max on the left axis
-  x.fillStyle=CH.muted;x.font='18px Roboto Mono';x.textAlign='left';x.fillText(usd(mx),pad,40);x.fillText(usd(mn),pad,H2-bot+18);
-  x.textAlign='right';x.fillStyle=CH.text;x.font='700 22px Roboto Mono';x.fillText(usd(hp.usd),W2-pad,36);
-  x.fillStyle=CH.dim;x.font='16px Inter Tight';x.fillText(new Date(hp.ts).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})+(WH.hover!=null&&WH.hover>0?`  (${hp.usd-pts[WH.hover-1].usd>=0?'+':'−'}${usd(Math.abs(hp.usd-pts[WH.hover-1].usd))} vs prev)`:''),W2-pad,60);
-  x.textAlign='left';x.fillText(new Date(t0).toLocaleDateString(undefined,{month:'short',day:'numeric'}),pad+90,H2-bot+18);x.textAlign='right';x.fillText(new Date(t1).toLocaleDateString(undefined,{month:'short',day:'numeric'}),W2-pad,H2-bot+18);
-  const d0=pts[0].usd,dl=pts[pts.length-1].usd-d0;x.textAlign='center';x.fillStyle=dl>=0?CH.accent:CH.coral;x.font='700 17px Roboto Mono';x.fillText(`${dl>=0?'+':'−'}${usd(Math.abs(dl))} over this range`,W2/2,36);
-  cv2.onmousemove=e=>{const r=cv2.getBoundingClientRect();const fx=(e.clientX-r.left)/r.width*W2;let bi=0,bd=1e18;pts.forEach((p,i)=>{const d=Math.abs(X(p)-fx);if(d<bd){bd=d;bi=i}});if(bi!==WH.hover){WH.hover=bi;drawHistory(cv2)}};
+  if(WH.hover!=null){x.strokeStyle=CH.axis;x.lineWidth=1;x.setLineDash([4,4]);x.beginPath();x.moveTo(X(hp),T);x.lineTo(X(hp),h-B);x.stroke();x.setLineDash([])}
+  x.fillStyle=CH.accent;x.beginPath();x.arc(X(hp),Y(hp.usd),3.5,0,6.28);x.fill();
+  // one readout block, top left, instead of numbers scattered around the frame
+  const dl=pts[pts.length-1].usd-pts[0].usd;
+  x.textAlign='left';x.fillStyle=CH.text;x.font='700 15px '+FM;x.fillText(usd(hp.usd),L,18);
+  const vw=x.measureText(usd(hp.usd)).width;
+  x.font='600 12px '+FM;x.fillStyle=dl>=0?CH.accent:CH.coral;
+  x.fillText((dl>=0?'+':'−')+usd(Math.abs(dl)),L+vw+11,18);
+  x.font='12px '+FB;x.fillStyle=CH.dim;
+  x.fillText(new Date(hp.ts).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}),L,34);
+  // the range, on the base line
+  x.fillText(new Date(t0).toLocaleDateString(undefined,{month:'short',day:'numeric'}),L,h-13);
+  x.textAlign='right';x.fillText(new Date(t1).toLocaleDateString(undefined,{month:'short',day:'numeric'}),w-R,h-13);
+  cv2.onmousemove=e=>{const r=cv2.getBoundingClientRect();const fx=(e.clientX-r.left)/r.width*w;let bi=0,bd=1e18;pts.forEach((p,i)=>{const d=Math.abs(X(p)-fx);if(d<bd){bd=d;bi=i}});if(bi!==WH.hover){WH.hover=bi;drawHistory(cv2)}};
   cv2.onmouseleave=()=>{WH.hover=null;drawHistory(cv2)};
 }
 async function openProfile(h){
@@ -2404,13 +2417,13 @@ async function openProfile(h){
    if(transfers.length>=5){
      const top=cplist[0],topShare=top?(top.inU+top.outU)/Math.max(1,uIn+uOut):0;
      const via=top&&topShare>.5?` — mostly via <b style="color:var(--teal)">${esc(top.k)}</b>`:'';
-     if(uIn>uOut*3)flowLine=`<div style="padding:2px 0 10px;font-size:12.5px">Accumulating${via}. <span style="color:var(--muted)">${nIn} inbound / ${nOut} outbound in recent transfers.</span></div>`;
-     else if(uOut>uIn*3)flowLine=`<div style="padding:2px 0 10px;font-size:12.5px">Distributing${via}. <span style="color:var(--muted)">${nOut} outbound / ${nIn} inbound in recent transfers.</span></div>`;
+     if(uIn>uOut*3)flowLine=`<div style="padding:0 20px 12px;font-size:13px">Accumulating${via}. <span style="color:var(--muted)">${nIn} inbound / ${nOut} outbound in recent transfers.</span></div>`;
+     else if(uOut>uIn*3)flowLine=`<div style="padding:0 20px 12px;font-size:13px">Distributing${via}. <span style="color:var(--muted)">${nOut} outbound / ${nIn} inbound in recent transfers.</span></div>`;
    }}
-  const portfolioBox=`<div class="wbox"><h5>Portfolio <small>${holdings.length?holdings.length+' assets · by Arkham':''}</small></h5>${holdings.length?`<table><thead><tr><th>Asset</th><th>Chain</th><th class="r">Holdings</th><th class="r">Value</th></tr></thead><tbody>${holdings.map(x=>`<tr><td><b>${x.sym}</b>${x.name?` <span style="color:var(--dim);font-size:11px">${x.name}</span>`:''}</td><td>${x.chain?`<span class="chainpill">${x.chain}</span>`:''}</td><td class="r mono">${num(x.amount)}</td><td class="r mono">${usd(x.usd)}</td></tr>`).join('')}</tbody></table>`:`<div class="empty2">${REAL?'Not enriched yet. The fish keeps its secrets until the next refresh.':'Needs live mode.'}</div>`}</div>`;
-  const cpBox=`<div class="wbox"><h5>Top counterparties <small>from recent transfers</small></h5>${flowLine}${cplist.length?cplist.map(c=>`<div class="cprow" ${c.addr?`style="cursor:pointer" onclick="openProfileByAddr('${c.addr}')" title="Open wallet page"`:''}><div><b style="${c.label?'color:var(--teal)':''}">${c.k}</b> <span style="color:var(--dim);font-size:11px">· ${c.n} transfer${c.n>1?'s':''}</span><div class="bar3"><i style="width:${(c.inU/cpmax*100)}%;background:var(--teal)"></i><i style="width:${(c.outU/cpmax*100)}%;background:var(--coral)"></i></div></div><b class="mono">${usd(c.inU+c.outU)}</b></div>`).join('')+'<div class="empty2" style="padding-top:8px"><span style="color:var(--teal)">■</span> received&nbsp;&nbsp;<span style="color:var(--coral)">■</span> sent</div>':'<div class="empty2">No transfer data yet. Still waters.</div>'}</div>`;
+  const portfolioBox=`<div class="wbox"><h5>Portfolio <small>${holdings.length?holdings.length+(holdings.length===1?' asset':' assets')+' · by Arkham':''}</small></h5>${holdings.length?`<table><thead><tr><th>Asset</th><th>Chain</th><th class="r">Holdings</th><th class="r">Value</th></tr></thead><tbody>${holdings.map(x=>`<tr><td><b>${x.sym}</b>${x.name?` <span style="color:var(--dim);font-size:12px">${x.name}</span>`:''}</td><td>${x.chain?`<span class="chainpill">${x.chain}</span>`:''}</td><td class="r mono">${num(x.amount)}</td><td class="r mono">${usd(x.usd)}</td></tr>`).join('')}</tbody></table>`:`<div class="empty2">${REAL?'Not enriched yet. The fish keeps its secrets until the next refresh.':'Needs live mode.'}</div>`}</div>`;
+  const cpBox=`<div class="wbox"><h5>Top counterparties <small>from recent transfers</small></h5>${flowLine}${cplist.length?cplist.map(c=>`<div class="cprow" ${c.addr?`style="cursor:pointer" onclick="openProfileByAddr('${c.addr}')" title="Open wallet page"`:''}><div><b style="${c.label?'color:var(--teal)':''}">${c.k}</b> <span style="color:var(--dim);font-size:12px">· ${c.n} transfer${c.n>1?'s':''}</span><div class="bar3"><i style="width:${(c.inU/cpmax*100)}%;background:var(--teal)"></i><i style="width:${(c.outU/cpmax*100)}%;background:var(--coral)"></i></div></div><b class="mono">${usd(c.inU+c.outU)}</b></div>`).join('')+'<div class="empty2" style="padding:12px 20px 6px"><span style="color:var(--teal)">■</span> received&nbsp;&nbsp;<span style="color:var(--coral)">■</span> sent</div>':'<div class="empty2">No transfer data yet. Still waters.</div>'}</div>`;
   grid.innerHTML=`
-    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+    <div class="wcol">
       <div class="wbox"><h5>Positions across Reef tokens</h5>${positions.length?`<table><thead><tr><th>Token</th><th class="r">Rank</th><th class="r">Amount</th><th class="r">% supply</th><th class="r">Value</th></tr></thead><tbody>${positions.map(x=>`<tr style="cursor:pointer" onclick="jumpToken('${x.sym}')"><td style="white-space:nowrap">${tokLogo(x.sym,18)} <b style="vertical-align:middle">${x.sym}</b></td><td class="r mono">#${x.rank}</td><td class="r mono">${num(x.amount)}</td><td class="r mono">${x.pct.toFixed(2)}%</td><td class="r mono">${usd(x.usd)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty2">Not in any tracked top 100. A free swimmer.</div>'}</div>
       ${(()=>{ // funding — where did this wallet's money come from?
         const fd=h.funding;
@@ -2423,29 +2436,29 @@ async function openProfile(h){
         return `<div class="wbox"><h5>Funding <small>first inbound transfer · by Arkham</small></h5>
           <div class="hrow"><span>Origin</span><span></span><span style="text-align:right">${kindTxt}</span></div>
           ${age?`<div class="hrow"><span>First seen on-chain</span><span></span><b class="mono">${age}</b></div>`:''}
-          ${fd.hash?`<div class="hrow"><span>Funding TX</span><span></span><span style="text-align:right"><a href="https://basescan.org/tx/${fd.hash}" target="_blank" rel="noopener" class="mono" style="color:var(--teal);font-weight:700">${fd.hash.slice(0,10)}…${fd.hash.slice(-6)} ↗</a>${fd.usd?` <small style="color:var(--dim)">${usd(fd.usd)}${fd.token?' · '+esc(fd.token):''}</small>`:''}</span></div>`:(fd.hash===undefined&&REAL?`<div style="color:var(--dim);font-size:11px;padding-top:4px">Funding tx link arrives on an upcoming refresh.</div>`:'')}
-          ${fd.kind==='private'&&fd.funder?`<div style="color:var(--dim);font-size:11px;padding-top:6px">Funded by a private wallet rather than an exchange — worth a look at the funder.</div>`:''}</div>`})()}
-      ${(()=>{ // cluster — wallets the on-chain evidence connects, drawn as who-funded-whom plus direct transfers
+          ${fd.hash?`<div class="hrow"><span>Funding TX</span><span></span><span style="text-align:right"><a href="https://basescan.org/tx/${fd.hash}" target="_blank" rel="noopener" class="mono" style="color:var(--teal);font-weight:700">${fd.hash.slice(0,10)}…${fd.hash.slice(-6)} ↗</a>${fd.usd?` <small style="color:var(--dim);font-size:12px">${usd(fd.usd)}${fd.token?' · '+esc(fd.token):''}</small>`:''}</span></div>`:(fd.hash===undefined&&REAL?`<div style="color:var(--dim);font-size:12px;padding:10px 20px 2px">Funding tx link arrives on an upcoming refresh.</div>`:'')}
+          ${fd.kind==='private'&&fd.funder?`<div style="color:var(--dim);font-size:12px;line-height:1.55;padding:12px 20px 4px">Funded by a private wallet rather than an exchange — worth a look at the funder.</div>`:''}</div>`})()}
+      ${(()=>{ // cluster — wallets the on-chain evidence connects, with the evidence spelled out
         const sc=h.school?schoolOf(h.school):null;
         if(!sc)return '';
-        const me=h.addr.toLowerCase(),common=clusterCommonName(sc);
-        const why=clusterSentences(sc,me).map(t=>`<li style="padding:5px 0;border-top:1px solid var(--line);font-size:12.5px;color:var(--text);line-height:1.45">${t}</li>`).join('');
-        const pts=Object.entries(sc.perToken||{}).filter(([,v])=>v.members>1).sort((a,b)=>b[1].pct-a[1].pct)
-          .map(([s,v])=>`<span class="mono" style="border:1px solid var(--line);padding:3px 7px;font-size:11px">$${esc(s)} <b>${v.pct}%</b> <span style="color:var(--muted)">· ${v.members} wallets</span></span>`).join('');
+        const me=h.addr.toLowerCase(),common=clusterCommonName(sc),names=clusterNames(sc);
+        // draw at the width it will show at, so 12px in the map is 12px on screen (left column is 1fr of 1fr 1.2fr, minus padding)
+        const gw=grid.clientWidth||900,clW=Math.max(320,Math.round(innerWidth>1250?(gw-52-22)/2.2-28:gw-52-28));
+        const others=sc.members.map(m=>m.addr.toLowerCase()).filter(a=>a!==me);
+        const why=clusterSentences(sc,me).map(t=>`<div style="font-size:13px;color:var(--muted);padding:5px 0;line-height:1.5">· ${t}</div>`).join('');
+        const pts=Object.entries(sc.perToken||{}).filter(([,v])=>v.members>1).sort((a,b)=>b[1].pct-a[1].pct).map(([s,v])=>`$${esc(s)}: ${v.members} fish · ${v.pct}%`).join(' · ');
         const conf=String(sc.confidence||'high').toUpperCase();
-        return `<div class="wbox"><h5 style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap">
-            <span>Cluster${common?` · <span style="color:var(--text)">${esc(common)}</span>`:''}</span>
-            <small>${sc.members.length} connected wallets · confidence ${esc(conf)}</small></h5>
-          <div style="margin:6px 0 4px;border:1px solid var(--line);padding:12px 8px 6px">${renderClusterSvg(sc,me,{w:640})}</div>
-          ${pts?`<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 0 4px"><span style="font-size:11px;color:var(--muted);margin-right:4px">Held together</span>${pts}</div>`:''}
-          <div style="padding-top:10px"><div style="font:500 10.5px var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding-bottom:4px">Why these wallets are linked</div>
-            <ul style="list-style:none;margin:0;padding:0">${why||'<li style="font-size:12px;color:var(--muted);padding:5px 0">Linked through other members of this cluster.</li>'}</ul></div>
-          <div style="color:var(--dim);font-size:11px;padding-top:10px">Based on on-chain evidence — shared private funding and direct transfers. It suggests common control; it doesn't prove it.</div></div>`})()}
+        return `<div class="wbox"><h5><span style="color:var(--accent)">Cluster detected${common?` · ${esc(common)}`:''}</span><small>${sc.members.length} wallets appear connected · confidence ${esc(conf)}</small></h5>
+          <div style="margin:2px 0 10px;padding:0 14px">${renderClusterSvg(sc,me,{w:clW})}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;padding:2px 20px 12px">${others.map(a=>`<button onclick="openProfileByAddr('${a}')" style="border:0;padding:5px 10px;font-size:12px;cursor:pointer;color:var(--text);background:var(--panel3)" class="mono">${esc(names[a]&&!common?names[a].slice(0,20):short(a))}</button>`).join('')}</div>
+          ${pts?`<div class="hrow"><span>Combined holdings</span><span></span><b>${pts}</b></div>`:''}
+          <div style="padding:14px 20px 4px"><b style="font-size:12px;color:var(--dim);font-weight:500">Why these wallets are linked</b>${why||'<div style="font-size:13px;color:var(--muted);padding:5px 0">Linked through other members of this cluster.</div>'}</div>
+          <div style="color:var(--dim);font-size:12px;line-height:1.55;padding:10px 20px 14px">Based on on-chain evidence (direct transfers, shared private funding). Not proof of common ownership.</div></div>`})()}
       ${h.school&&schoolOf(h.school)?'':portfolioBox}
       ${h.school&&schoolOf(h.school)?'':cpBox}
     </div>
-    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
-      <div class="wbox"><h5 id="wphtitle" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span id="wphlabel">Balance history</span><span id="wpranges" style="display:inline-flex;border:1px solid var(--line)"></span></h5><div style="padding:10px 8px"><canvas class="hist" id="wphist" style="cursor:crosshair"></canvas></div></div>
+    <div class="wcol">
+      <div class="wbox"><h5 id="wphtitle" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span id="wphlabel">Balance history</span><span id="wpranges" style="display:inline-flex;border:0"></span></h5><div style="padding:6px 14px 14px"><canvas class="hist" id="wphist" style="cursor:crosshair"></canvas></div></div>
       ${h.school&&schoolOf(h.school)?portfolioBox+cpBox:''}
       <div class="wbox"><h5>Transfers <small>${transfers.length} recent · by Arkham</small></h5>${transfers.length?`<div style="max-height:430px;overflow:auto"><table><thead><tr><th>Time</th><th>Dir</th><th>Counterparty</th><th>Token</th><th class="r">USD</th><th class="r">Link</th></tr></thead><tbody>${transfers.map(x=>`<tr class="txrow"><td style="color:var(--muted);white-space:nowrap">${x.ts?agoStr(x.ts)+' ago':''}</td><td><span style="color:${x.dir==='out'?'var(--coral)':'var(--teal)'}">${x.dir==='out'?'OUT':'IN'}</span></td><td onclick="openProfileByAddr('${x.cp||''}')" title="Open wallet page">${x.cpLabel?`<b style="color:var(--teal)">${cexIcon(x.cpLabel)}${x.cpLabel}</b>`:(x.cp?`<span class="mono">${cpa(x.cp)}</span>`:'?')}${x.chain?` <span class="chainpill">${x.chain}</span>`:''}</td><td>${x.token||'<span style="color:var(--dim)">—</span>'}</td><td class="r mono">${x.usd?usd(x.usd):num(x.amount)}</td><td class="r">${x.hash?`<a href="https://basescan.org/tx/${x.hash}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--dim);font-weight:700">tx ↗</a>`:''}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty2">No transfers captured yet. The fish is patient.</div>'}</div>
       <div class="empty2" style="border:0">Portfolio & transfer data by <a href="${ark}" target="_blank" rel="noopener" style="color:var(--muted)">Arkham Intelligence</a> · labels by Arkham & <a href="https://frontrun.pro" target="_blank" rel="noopener" style="color:var(--muted)">Frontrun</a>${p?` · profile updated ${agoStr(p.updated)} ago`:''}</div>
@@ -2464,7 +2477,7 @@ async function openProfile(h){
     if(mine.length>=3&&(series.length<4||spanD<3)){series=mine;label=`$${cur.sym} position value <small>one point per snapshot</small>`}}catch{}
   const hl=document.getElementById('wphlabel');if(hl)hl.innerHTML=label;
   WH={all:series.map(q=>({ts:+new Date(q.ts),usd:+q.usd})).filter(q=>isFinite(q.ts)&&isFinite(q.usd)).sort((a,b)=>a.ts-b.ts),range:'all',hover:null};
-  const rg=document.getElementById('wpranges');const R=histRanges();if(rg)rg.innerHTML=R.length>1?R.map(r=>`<button data-r="${r[0]}" class="${r[0]===WH.range?'on':''}" onclick="histSetRange('${r[0]}')" style="height:22px;padding:0 9px;font-size:10.5px;font-weight:700;text-transform:none;letter-spacing:0">${r[1]}</button>`).join(''):'';
+  const rg=document.getElementById('wpranges');const R=histRanges();if(rg)rg.innerHTML=R.length>1?R.map(r=>`<button data-r="${r[0]}" class="${r[0]===WH.range?'on':''}" onclick="histSetRange('${r[0]}')" style="height:24px;padding:0 10px;font-size:12px;font-weight:600;white-space:nowrap;text-transform:none;letter-spacing:0">${r[1]}</button>`).join(''):'';
   drawHistory(document.getElementById('wphist'));
 }
 function jumpToken(sym){const t=TOKENS.find(x=>x.sym===sym);if(t){closeCard();loadToken(t).then(()=>setView('aquarium'))}}
