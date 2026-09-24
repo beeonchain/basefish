@@ -46,16 +46,16 @@ await run('alchemy_webhook', async () => {
 });
 
 await run('r2', async () => {
-  const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, ListBucketsCommand } = await import('@aws-sdk/client-s3');
+  const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = await import('@aws-sdk/client-s3');
   const s3 = new S3Client({ region: 'auto', endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
     credentials: { accessKeyId: process.env.R2_ACCESS_KEY_ID, secretAccessKey: process.env.R2_SECRET_ACCESS_KEY } });
-  const buckets = (await s3.send(new ListBucketsCommand({}))).Buckets.map((b) => b.Name);
+  // no ListBuckets: a token scoped to one bucket is denied that call, which is the correct, tighter scope
   const body = JSON.stringify({ hello: 'reef', at: out.at });
   await s3.send(new PutObjectCommand({ Bucket: 'reef-data', Key: '_infra_check.json', Body: body, ContentType: 'application/json' }));
   const got = await (await s3.send(new GetObjectCommand({ Bucket: 'reef-data', Key: '_infra_check.json' }))).Body.transformToString();
   await s3.send(new DeleteObjectCommand({ Bucket: 'reef-data', Key: '_infra_check.json' }));
   if (got !== body) throw new Error('read back did not match write');
-  return { buckets, wrote_and_read: true };
+  return { bucket: 'reef-data', wrote_and_read: true };
 });
 
 await run('fly', async () => {
