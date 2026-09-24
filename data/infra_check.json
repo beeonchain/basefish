@@ -1,0 +1,45 @@
+{
+ "at": "2026-09-24T13:47:33.130Z",
+ "checks": {
+  "postgres": {
+   "ok": true,
+   "db": "neondb",
+   "server": "PostgreSQL 17.11",
+   "wrote": "2026-09-24T13:47:34.275Z"
+  },
+  "alchemy_rpc": {
+   "ok": true,
+   "block": 51734153
+  },
+  "alchemy_archive": {
+   "ok": true,
+   "at_block": 33554432
+  },
+  "alchemy_webhook": {
+   "ok": true,
+   "id": "wh_n8pxw2vbek7lbt8v",
+   "addresses_first_page": 100,
+   "total": 321
+  },
+  "r2": {
+   "ok": false,
+   "error": "Access Denied"
+  },
+  "fly": {
+   "ok": true,
+   "apps": []
+  },
+  "bitquery": {
+   "ok": true,
+   "top_holder_balance": 1.157920892373162e+59,
+   "sane": false
+  },
+  "site": {
+   "ok": true,
+   "tokens": 27,
+   "generated_at": "2026-09-24T10:31:53.162Z",
+   "api_auth": 200
+  }
+ },
+ "summary": "PASS postgres, PASS alchemy_rpc, PASS alchemy_archive, PASS alchemy_webhook, FAIL r2, PASS fly, PASS bitquery, PASS site"
+}
