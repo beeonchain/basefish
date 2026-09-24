@@ -1,15 +1,15 @@
 {
- "at": "2026-09-24T13:49:34.939Z",
+ "at": "2026-09-24T14:09:48.752Z",
  "checks": {
   "postgres": {
    "ok": true,
    "db": "neondb",
    "server": "PostgreSQL 17.11",
-   "wrote": "2026-09-24T13:49:35.171Z"
+   "wrote": "2026-09-24T14:09:49.727Z"
   },
   "alchemy_rpc": {
    "ok": true,
-   "block": 51734214
+   "block": 51734821
   },
   "alchemy_archive": {
    "ok": true,
@@ -30,10 +30,18 @@
    "ok": true,
    "apps": []
   },
-  "bitquery": {
+  "bitquery_unbounded": {
    "ok": true,
-   "top_holder_balance": 1.157920892373162e+59,
-   "sane": false
+   "top": 1.157920892373162e+59,
+   "wrapped": 20,
+   "of": 20
+  },
+  "bitquery_bounded": {
+   "ok": true,
+   "top": 1158126373.5053976,
+   "wrapped": 0,
+   "of": 20,
+   "sane": true
   },
   "site": {
    "ok": true,
@@ -42,5 +50,5 @@
    "api_auth": 200
   }
  },
- "summary": "PASS postgres, PASS alchemy_rpc, PASS alchemy_archive, PASS alchemy_webhook, PASS r2, PASS fly, PASS bitquery, PASS site"
+ "summary": "PASS postgres, PASS alchemy_rpc, PASS alchemy_archive, PASS alchemy_webhook, PASS r2, PASS fly, PASS bitquery_unbounded, PASS bitquery_bounded, PASS site"
 }
