@@ -1,10 +1,11 @@
 {
-  "name": "whalarium",
+  "name": "reef",
   "private": true,
   "type": "module",
-  "description": "Whalarium \u2014 Netlify functions deps (jose verifies Privy access tokens; viem for on-chain reads). The site itself is static.",
+  "description": "REEF \u2014 Netlify functions deps (jose verifies Privy access tokens; viem for on-chain reads; @neondatabase/serverless talks to Postgres over HTTPS). The site itself is static.",
   "dependencies": {
-    "viem": "^2.21.0",
-    "jose": "^5.9.6"
+    "@neondatabase/serverless": "^0.10.4",
+    "jose": "^5.9.6",
+    "viem": "^2.21.0"
   }
 }
