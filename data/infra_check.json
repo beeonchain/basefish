@@ -1,15 +1,15 @@
 {
- "at": "2026-09-24T13:47:33.130Z",
+ "at": "2026-09-24T13:49:34.939Z",
  "checks": {
   "postgres": {
    "ok": true,
    "db": "neondb",
    "server": "PostgreSQL 17.11",
-   "wrote": "2026-09-24T13:47:34.275Z"
+   "wrote": "2026-09-24T13:49:35.171Z"
   },
   "alchemy_rpc": {
    "ok": true,
-   "block": 51734153
+   "block": 51734214
   },
   "alchemy_archive": {
    "ok": true,
@@ -22,8 +22,9 @@
    "total": 321
   },
   "r2": {
-   "ok": false,
-   "error": "Access Denied"
+   "ok": true,
+   "bucket": "reef-data",
+   "wrote_and_read": true
   },
   "fly": {
    "ok": true,
@@ -41,5 +42,5 @@
    "api_auth": 200
   }
  },
- "summary": "PASS postgres, PASS alchemy_rpc, PASS alchemy_archive, PASS alchemy_webhook, FAIL r2, PASS fly, PASS bitquery, PASS site"
+ "summary": "PASS postgres, PASS alchemy_rpc, PASS alchemy_archive, PASS alchemy_webhook, PASS r2, PASS fly, PASS bitquery, PASS site"
 }
