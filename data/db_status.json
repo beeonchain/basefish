@@ -1,0 +1,19 @@
+{
+ "at": "2026-09-24T14:29:39.820Z",
+ "whitelist": {
+  "n": 2
+ },
+ "codes": {
+  "total": 100,
+  "redeemed": 0
+ },
+ "waitlist": {
+  "n": 0
+ },
+ "tables": [
+  "access_codes",
+  "gate_attempts",
+  "waitlist",
+  "whitelist"
+ ]
+}
