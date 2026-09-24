@@ -1,0 +1,719 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>REEF — Every wallet on Base is a fish.</title>
+<meta name="description" content="Institutional-grade on-chain data. For everyone.">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="apple-touch-icon" href="assets/reef-app-icon.png">
+<meta property="og:title" content="REEF — Every wallet on Base is a fish.">
+<meta property="og:description" content="Institutional-grade on-chain data. For everyone.">
+<meta property="og:image" content="https://usereef.io/assets/reef-og.png">
+<meta property="og:url" content="https://usereef.io/">
+<link rel="canonical" href="https://usereef.io/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://usereef.io/assets/reef-og.png">
+<meta name="theme-color" content="#0000FF">
+<style>@font-face{font-family:'Inter Tight';font-style:normal;font-weight:400;font-display:swap;src:url('assets/fonts/inter-tight-latin-400-normal.woff2') format('woff2')}@font-face{font-family:'Inter Tight';font-style:normal;font-weight:500;font-display:swap;src:url('assets/fonts/inter-tight-latin-500-normal.woff2') format('woff2')}@font-face{font-family:'Inter Tight';font-style:normal;font-weight:600;font-display:swap;src:url('assets/fonts/inter-tight-latin-600-normal.woff2') format('woff2')}@font-face{font-family:'Roboto Mono';font-style:normal;font-weight:400;font-display:swap;src:url('assets/fonts/roboto-mono-latin-400-normal.woff2') format('woff2')}@font-face{font-family:'Roboto Mono';font-style:normal;font-weight:500;font-display:swap;src:url('assets/fonts/roboto-mono-latin-500-normal.woff2') format('woff2')}</style>
+<style>
+:root{
+  --bg:#FFFFFF; --ink:#0A0B0D; --muted:#5B616E; --faint:#6E7584; --line:#DEE1E7; --line2:#B1B7C3; --wash:#F5F6F8;
+  --blue:#0000FF; --deep:#0A0B0D;
+  --sans:'Inter Tight',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+  --mono:'Roboto Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{overflow-x:clip}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:24px}
+.mono{font-family:var(--mono);font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+
+/* ---------- nav ---------- */
+.nav{position:fixed;top:0;left:0;right:0;z-index:40;height:66px;display:flex;align-items:center;
+     --mk:var(--blue); --wd:var(--ink); --nb:#0A0B0D; --nbf:#fff;
+     transition:background .3s ease,border-color .3s ease;
+     background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;width:100%}
+.lockup{display:block}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:38px;padding:0 17px;
+     border:1px solid var(--ink);background:var(--ink);color:#fff;font-weight:500;font-size:14px;cursor:pointer;border-radius:0;
+     transition:background .2s,color .2s,border-color .2s;white-space:nowrap}
+.btn.blue{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn{overflow:hidden;position:relative}
+.btn .bt{display:inline-block;will-change:transform;transition:transform .42s cubic-bezier(.2,.9,.3,1)}
+.btn.pull .bt{transition-duration:.12s}
+.btn.lg{height:52px;padding:0 26px;font-size:16px}
+.nav .btn{background:var(--nb);border-color:var(--nb);color:var(--nbf)}
+
+/* ---------- stage ---------- */
+.stage{position:relative;height:470vh}
+.sticky{position:sticky;top:0;height:100svh;overflow:hidden;background:var(--bg)}
+.stagebg{position:absolute;inset:0;background:var(--deep);opacity:0}
+
+.hero{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      text-align:center;padding:66px 24px 28vh;will-change:transform,opacity}
+.eyebrow{display:inline-flex;align-items:center;gap:11px;color:var(--muted)}
+.eyebrow i{width:5px;height:5px;background:var(--blue);display:block}
+h1{font-size:clamp(38px,6.1vw,80px);line-height:.98;letter-spacing:-.052em;font-weight:600;margin:26px 0 0;
+   max-width:16ch;text-wrap:balance;font-feature-settings:"ss01"}
+h1 em{font-style:normal;color:var(--blue);font-weight:600}
+#inlw{display:inline-block;vertical-align:-.26em;height:1.05em;width:1.7em;margin:0 -.02em -.02em .04em}
+.lede{margin:24px 0 0;font-size:clamp(16px,1.45vw,19px);line-height:1.5;color:var(--muted);max-width:46ch;letter-spacing:-.005em}
+.form{display:flex;flex-direction:column;margin:32px 0 0;width:min(430px,86vw);text-align:left}
+.form input{height:48px;padding:0 15px;border:1px solid var(--ink);background:transparent;font-size:15px;width:100%}
+.form input+input{border-top:0;font-family:var(--mono);font-size:13.5px;letter-spacing:.01em}
+.form input::placeholder{color:var(--faint);font-family:var(--sans);letter-spacing:0}
+.form input:disabled{background:var(--wash);color:var(--muted)}
+.form .btn{height:48px;width:100%;margin:10px 0 0}
+.fmsg{margin:10px 0 0;font-size:13.5px;line-height:1.45;min-height:1.2em;color:var(--muted)}
+.fmsg.err{color:#B3261E}
+.fmsg.ok{color:var(--blue);font-weight:500}
+.form.done input,.form.done .btn{display:none}
+.wl{margin:14px 0 0;font-size:13px;color:var(--muted)}
+.wl a{color:var(--blue);font-weight:500;border-bottom:1px solid currentColor}
+.disc{margin:24px 0 0;font-size:11.5px;line-height:1.6;color:var(--faint);max-width:48ch}
+.scrollcue{position:absolute;left:50%;transform:translateX(-50%);bottom:16px;color:var(--faint)}
+
+.tank{position:absolute;overflow:hidden;background:#061426;will-change:transform}
+.tank canvas{display:block;width:100%;height:100%}
+.tankhud{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:flex-end;
+         padding:26px 16px 14px;color:rgba(255,255,255,.72);pointer-events:none;
+         background:linear-gradient(transparent,rgba(3,10,20,.85))}
+.tankhud b{color:#fff;font-weight:500}
+
+/* panel — every step starts on the same top line */
+.panel{position:absolute;display:flex;gap:30px;color:#fff;opacity:0;will-change:transform,opacity}
+.rail{display:flex;flex-direction:column;gap:2px;flex:0 0 128px;padding-top:6px}
+.rail button{display:block;width:100%;text-align:left;background:none;border:0;cursor:pointer;
+             padding:9px 12px;color:rgba(255,255,255,.44);box-shadow:inset 2px 0 0 rgba(255,255,255,.14);
+             font-family:var(--mono);font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+             transition:color .2s,box-shadow .2s,background .2s}
+.rail button:hover{color:rgba(255,255,255,.82)}
+.rail button[aria-selected="true"]{color:#fff;box-shadow:inset 3px 0 0 #fff;background:rgba(255,255,255,.07)}
+.steps{position:relative;flex:1;min-height:330px}
+.step{position:absolute;inset:0 auto auto 0;width:min(470px,100%);opacity:0;pointer-events:none;transform:translateY(10px);
+      transition:opacity .34s ease,transform .34s ease}
+.step[data-on="1"]{opacity:1;pointer-events:auto;transform:none}
+.step h2{font-size:clamp(25px,2.35vw,34px);line-height:1.06;letter-spacing:-.04em;font-weight:600;margin:0;text-wrap:balance}
+.step p{margin:14px 0 0;color:rgba(255,255,255,.62);font-size:15px;line-height:1.5;max-width:42ch}
+.out{margin:22px 0 0;background:rgba(255,255,255,.06);padding:14px 16px;
+     font-family:var(--mono);font-size:12.5px;line-height:1.85;color:rgba(255,255,255,.74);white-space:pre}
+.out b{color:#fff;font-weight:500}
+.out .hi{color:#8FB0FF;font-weight:500}
+.tiers{margin:22px 0 0;display:flex;flex-direction:column}
+.tier{display:grid;grid-template-columns:92px 1fr auto;align-items:center;gap:14px;padding:9px 8px;margin:0 -8px;
+      font-size:13.5px;transition:background .18s}
+.tier:hover{background:rgba(255,255,255,.07)}
+.tier .bar{height:6px;background:#3A6BFF}
+.tier .v{font-family:var(--mono);font-size:11.5px;color:rgba(255,255,255,.6);white-space:nowrap}
+.tier b{font-weight:500}
+
+/* ---------- stats 2x2 ---------- */
+.stats{padding:104px 0 96px}
+.sechead{display:flex;flex-direction:column;gap:18px;margin:0 0 56px}
+.sechead h2{font-size:clamp(30px,3.6vw,50px);line-height:1.02;letter-spacing:-.045em;font-weight:600;margin:0;max-width:20ch}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.cell{background:var(--wash);padding:34px 32px 36px;display:block;transition:background .2s}
+.cell:hover{background:#ECEEF2}
+.cell .n{font-size:clamp(34px,3.4vw,50px);line-height:1;letter-spacing:-.04em;font-weight:600;margin:0;color:var(--blue)}
+.cell h3{font-size:16.5px;font-weight:600;letter-spacing:-.02em;margin:12px 0 0}
+.cell p{margin:9px 0 0;color:var(--muted);font-size:14.5px;line-height:1.55;max-width:44ch}
+
+/* ---------- rungs ---------- */
+.sizes{padding:96px 0 104px;border-top:1px solid var(--line);background:var(--wash)}
+.rungs{margin:44px 0 0;display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.rung{position:relative;display:grid;grid-template-columns:130px minmax(0,1fr) 190px 92px;gap:24px;align-items:center;
+      padding:22px 8px;border-bottom:1px solid var(--line);transition:background .18s}
+.rung:hover{background:#fff}
+.rung .nm{display:flex;align-items:center;gap:10px;font-weight:600;font-size:16px;letter-spacing:-.02em}
+.rung .sw{width:9px;height:9px;flex:none}
+.rung .track{height:10px;background:#E7E9EE;position:relative}
+.rung .fill{position:absolute;inset:0 auto 0 0}
+.rung .rg{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right}
+.rung .ct{font-family:var(--mono);font-size:12px;color:var(--faint);text-align:right}
+.rung .track{position:relative;overflow:visible}
+.rung .fx{position:absolute;top:50%;opacity:0;pointer-events:none;z-index:2;
+          transform:translate(-40%,-50%) scale(.86);transition:opacity .28s ease,transform .42s cubic-bezier(.2,.9,.3,1);
+          filter:drop-shadow(0 10px 22px rgba(10,11,13,.25))}
+.rung:hover .fx{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.rung[data-t="small"] .fx{height:36px}.rung[data-t="medium"] .fx{height:52px}
+.rung[data-t="large"] .fx{height:68px}.rung[data-t="whale"] .fx{height:94px}
+
+/* ---------- end ---------- */
+.end{position:relative;background:var(--deep);color:#fff;overflow:hidden;padding:128px 0 116px}
+#endcv{position:absolute;inset:0;width:100%;height:100%;opacity:.42}
+.end::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:1;
+  background:linear-gradient(98deg,#0A0B0D 30%,rgba(10,11,13,.86) 52%,rgba(10,11,13,.55) 78%,rgba(10,11,13,.35))}
+.end .wrap{position:relative;z-index:2}
+.end .eyebrow{color:rgba(255,255,255,.5)}
+.end h2{font-size:clamp(34px,4.9vw,64px);line-height:1.02;letter-spacing:-.045em;font-weight:600;margin:20px 0 0;max-width:18ch}
+.end h2 em{font-style:normal;color:#5C7CFF}
+.end .sub{margin:26px 0 0;font-size:clamp(16px,1.5vw,20px);color:rgba(255,255,255,.62);max-width:44ch}
+.cta{display:flex;gap:12px;margin:46px 0 0;flex-wrap:wrap}
+.end .btn{background:#fff;border-color:#fff;color:var(--ink)}
+.end .btn.blue{background:var(--blue);border-color:var(--blue);color:#fff}
+.foot{background:var(--deep);color:rgba(255,255,255,.55);font-size:14px;
+      border-top:1px solid rgba(255,255,255,.13);padding:64px 0 34px}
+.ftop{display:grid;grid-template-columns:minmax(240px,1fr) auto;gap:56px;align-items:start}
+.fbrand .lockup{width:112px;height:auto}
+.fbrand p{margin:20px 0 0;line-height:1.6;color:rgba(255,255,255,.42);max-width:32ch}
+.fcols{display:grid;grid-template-columns:repeat(3,minmax(148px,1fr));gap:48px}
+.fcols h4{margin:0 0 14px;color:rgba(255,255,255,.38);font-weight:500}
+.fcols a{display:block;padding:7px 0;color:rgba(255,255,255,.72);transition:color .18s}
+.fcols a:hover{color:#fff}
+.fbot{margin:56px 0 0;padding-top:24px;border-top:1px solid rgba(255,255,255,.1);
+      display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;color:rgba(255,255,255,.32);font-size:13px}
+
+@media (max-width:900px), (prefers-reduced-motion:reduce){
+  .stage{height:auto}
+  .sticky{position:static;height:auto;overflow:visible}
+  .stagebg{display:none}
+  .hero{position:static;padding:112px 24px 46px}
+  .tank{position:relative!important;left:auto!important;top:auto!important;
+        width:calc(100% - 32px)!important;height:64vw!important;min-height:280px;margin:0 16px;transform:none!important}
+  .panel{position:static;opacity:1!important;transform:none!important;flex-direction:column;gap:0;
+         color:var(--ink);padding:38px 24px 4px;max-width:660px;margin:0 auto;width:auto!important}
+  .rail{display:none}
+  .steps{min-height:0}
+  .step{position:static;opacity:1!important;pointer-events:auto;transform:none!important;width:auto;
+        padding:26px 0;border-top:1px solid var(--line)}
+  .step:first-child{border-top:0}
+  .step p{color:var(--muted)}
+  .out{background:var(--wash);color:var(--muted);white-space:pre-wrap;font-size:12px}
+  .out b{color:var(--ink)}.out .hi{color:var(--blue)}
+  .tier .v{color:var(--muted)}.tier:hover{background:var(--wash)}
+  .scrollcue{display:none}
+  .tankhud{padding:34px 12px 10px;font-size:10px;letter-spacing:.06em}
+  .tankhud span+span{display:none}
+  .grid2{grid-template-columns:1fr}
+  .cell{padding:26px 22px 28px}
+  .stats,.sizes{padding:64px 0}
+  .rung{grid-template-columns:104px 1fr;gap:12px 14px;padding:16px 0}
+  .rung .track{grid-column:2}
+  .rung .rg{grid-column:1/-1;text-align:left}
+  .rung .ct{display:none}
+  .end{padding:88px 0 72px}
+  .ftop{grid-template-columns:1fr;gap:38px}
+  .fcols{grid-template-columns:1fr 1fr;gap:26px}
+  .foot{padding:48px 0 26px}
+  .fbot{margin:40px 0 0}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav"><div class="wrap">
+  <a href="#" aria-label="REEF home"><svg class="lockup" viewBox="0 0 428.8 100" width="111.5" height="26" aria-label="REEF"><path d="M38.17 92.32C38.03 92.09 38.97 91.25 40.07 90.65C41.05 90.12 44.33 88.96 44.89 88.96C45.68 88.96 49.95 87.73 51.26 87.13C54.12 85.81 55.51 84.55 57.54 81.44C60.36 77.14 62.51 75.78 67.97 74.87C70.79 74.39 72.32 73.91 74.36 72.85C76.86 71.55 78.90 69.40 80.15 66.74C80.51 65.98 80.60 65.43 80.60 64.25C80.60 62.91 80.54 62.65 80.07 62.04C79.36 61.11 78.83 60.80 77.77 60.65L76.87 60.53L76.23 61.74C75.28 63.52 73.36 65.13 70.46 66.59C68.15 67.75 65.70 68.42 61.55 69.01C56.29 69.75 53.99 70.77 50.81 73.76C48.43 76.00 46.38 77.50 44.92 78.08C41.55 79.40 38.93 79.90 34.04 80.16C32.00 80.27 30.07 80.45 29.75 80.55C29.44 80.66 28.99 80.74 28.74 80.74C28.04 80.74 24.78 81.87 23.29 82.63C20.21 84.20 17.67 86.52 15.55 89.71C13.90 92.19 13.41 92.34 10.98 91.10C8.69 89.94 7.16 88.27 6.17 85.83C5.93 85.24 5.64 84.58 5.54 84.36C5.42 84.12 5.37 76.82 5.40 64.78L5.46 45.59L8.33 45.32C10.71 45.08 11.54 45.08 13.22 45.29C15.85 45.61 18.67 46.17 21.12 46.86C22.20 47.16 23.78 47.53 24.64 47.68C26.75 48.03 34.20 48.04 35.80 47.68C38.18 47.16 39.76 46.62 41.48 45.75C44.12 44.41 46.06 43.97 50.79 43.65C54.22 43.41 55.01 43.30 56.17 42.86C58.49 41.99 60.74 40.22 61.95 38.31C62.61 37.26 62.67 36.77 62.18 36.17C61.69 35.56 61.23 35.38 59.59 35.14C58.22 34.94 36.81 34.50 15.44 34.22C10.27 34.15 5.89 34.01 5.70 33.91C5.38 33.75 5.36 33.10 5.36 24.68C5.36 19.69 5.43 15.53 5.52 15.43C5.61 15.33 5.88 14.71 6.12 14.05C7.04 11.54 9.41 9.17 11.92 8.29C12.56 8.06 13.24 7.79 13.43 7.69C13.88 7.45 86.31 7.45 86.76 7.69C86.95 7.79 87.57 8.05 88.13 8.27C89.67 8.86 91.23 9.98 92.23 11.21C93.15 12.33 94.25 14.39 94.25 14.99C94.25 15.17 94.34 15.37 94.45 15.44C94.69 15.59 94.72 83.71 94.48 83.98C94.38 84.08 94.20 84.59 94.06 85.11C93.32 87.84 90.71 90.55 87.69 91.70C87.05 91.94 86.36 92.22 86.18 92.32C85.74 92.54 38.31 92.55 38.17 92.32ZM22.29 67.91C24.92 67.59 25.15 67.59 27.58 67.94C30.88 68.41 35.35 68.41 37.66 67.94C42.31 66.99 44.73 65.84 47.42 63.29C48.92 61.88 49.63 61.36 51.09 60.66C53.55 59.47 55.32 59.08 59.50 58.82C63.90 58.55 65.15 58.33 68.21 57.30C69.61 56.83 71.42 55.80 71.94 55.18C72.07 55.02 72.28 54.90 72.41 54.90C72.73 54.90 75.01 53.43 75.72 52.77C76.50 52.05 77.17 50.96 77.32 50.15C77.47 49.36 77.04 48.33 76.48 48.16C75.35 47.81 72.71 47.66 67.48 47.65L61.57 47.65L60.70 49.00C59.17 51.36 56.99 52.49 52.15 53.43C51.35 53.59 50.32 53.72 49.86 53.72C48.93 53.72 47.38 54.01 46.08 54.44C44.50 54.95 43.28 55.66 41.38 57.15C38.02 59.79 36.95 60.12 30.62 60.46C25.90 60.71 25.79 60.72 24.25 61.36C22.92 61.91 22.45 62.25 21.11 63.59C19.86 64.84 19.41 65.45 18.98 66.49C18.37 67.93 18.41 68.51 19.11 68.34C19.36 68.28 20.79 68.09 22.29 67.91Z" fill="var(--mk)" fill-rule="evenodd"/><g transform="translate(122.36 18) scale(0.64)"><path d="M5.6375838926174495 100.0V0.0H46.84563758389262Q58.12080536912752 0.0 66.30872483221476 4.060402684563755Q74.49664429530202 8.12080536912751 78.95973154362417 15.604026845637577Q83.42281879194631 23.087248322147644 83.42281879194631 33.28859060402685Q83.42281879194631 43.691275167785236 78.89261744966444 50.939597315436245Q74.36241610738256 58.18791946308725 65.97315436241611 61.97986577181207Q57.58389261744966 65.7718120805369 46.1744966442953 65.7718120805369H20.06711409395973V46.711409395973156H41.67785234899329Q47.11409395973154 46.711409395973156 50.83892617449664 45.30201342281879Q54.56375838926174 43.89261744966443 56.47651006711409 40.90604026845638Q58.38926174496644 37.919463087248324 58.38926174496644 33.28859060402685Q58.38926174496644 28.65771812080537 56.47651006711409 25.604026845637584Q54.56375838926174 22.550335570469798 50.83892617449664 21.04026845637584Q47.11409395973154 19.530201342281885 41.61073825503356 19.530201342281885H29.731543624161073V100.0ZM60.40268456375839 100.0 36.04026845637584 54.29530201342282H61.87919463087248L86.84563758389262 100.0ZM87.3208053691275 100.0V0.0H157.05234899328858V19.664429530201346H111.41476510067113V39.86577181208054H153.42818791946308V59.060402684563755H111.41476510067113V80.33557046979865H156.98523489932884V100.0ZM162.76241610738253 100.0V0.0H232.4939597315436V19.664429530201346H186.85637583892617V39.86577181208054H228.8697986577181V59.060402684563755H186.85637583892617V80.33557046979865H232.42684563758388V100.0ZM238.20402684563757 100.0V0.0H306.45906040268454V19.664429530201346H262.2979865771812V44.697986577181204H302.096644295302V63.89261744966443H262.2979865771812V100.0Z" fill="var(--wd)"/></g></svg></a>
+  <a class="btn" id="navBtn" href="https://app.usereef.io">Connect wallet</a>
+</div></nav>
+
+<section class="stage" id="stage">
+  <div class="sticky">
+    <div class="stagebg" id="stagebg"></div>
+
+    <div class="hero" id="hero">
+      <span class="eyebrow mono"><i></i>Built on Base · Private beta</span>
+      <h1>Every wallet on Base<br>is a<canvas id="inlw" aria-hidden="true"></canvas><em>fish.</em></h1>
+      <p class="lede">Institutional-grade on-chain data, for everyone. The top 100 holders of any Base token, drawn as a sea you can read at a glance.</p>
+      <form class="form" id="wlForm" novalidate>
+        <input type="email" id="wlEmail" placeholder="you@domain.xyz" aria-label="Email address" autocomplete="email" required>
+        <input type="text" id="wlWallet" placeholder="0x… your Base wallet" aria-label="Base wallet address" autocomplete="off" spellcheck="false" required>
+        <button class="btn" type="submit" id="wlBtn">Join the waitlist</button>
+        <p class="fmsg" id="wlMsg" role="status" aria-live="polite"></p>
+      </form>
+      <p class="wl">Already whitelisted? <a href="https://app.usereef.io">Connect wallet</a></p>
+      <p class="disc">No token. No fees. On-chain data, shown as it is. Not affiliated with Base, Coinbase or any token team.</p>
+      <span class="scrollcue mono">Scroll</span>
+    </div>
+
+    <div class="tank" id="tank">
+      <canvas id="cv"></canvas>
+      <div class="tankhud mono"><span><b>$AERO</b> · top 100 · 73.8% of supply · 6 whales</span><span>snapshot <b>08:17 UTC</b></span></div>
+    </div>
+
+    <div class="panel" id="panel">
+      <div class="rail" role="tablist" id="rail">
+        <button role="tab" aria-selected="true"  data-i="0">Map</button>
+        <button role="tab" aria-selected="false" data-i="1">Flows</button>
+        <button role="tab" aria-selected="false" data-i="2">Alerts</button>
+      </div>
+
+      <div class="steps">
+        <div class="step" data-on="1">
+          <h2>The whole ecosystem, one tank at a time.</h2>
+          <p>Every holder is a fish sized by position. Whales sink to the bottom, minnows school at the top. Exchanges, lockers and vesting contracts are labelled, not hidden in the ranking.</p>
+<div class="out"><b>0x2739…a058</b>      <span class="hi">8.03%</span>   $84.27M
+<b>Upbit Deposit</b>     <span class="hi">1.26%</span>   $13.20M
+<b>0x971a…a57a</b>      <span class="hi">1.15%</span>   $12.05M</div>
+        </div>
+
+        <div class="step">
+          <h2>Simple math, no errors.</h2>
+          <p>Net flow is two on-chain balance reads, now and one window ago, over today's top 100. Where the coins went is traced per wallet and reconciled to the dollar.</p>
+<div class="out">7d   in − out = net
+     <span class="hi">$27.4M</span> − $19.3M = <b>+$8.1M</b>
+to exchanges  $6.9M    to new wallets  $11.2M</div>
+        </div>
+
+        <div class="step">
+          <h2>Before the crowd.</h2>
+          <p>Whale moves, new top-20 entries, top-10 exits and exchange flows, at every refresh. Watch any wallet, get it in Telegram.</p>
+<div class="out"><span class="hi">WHALE MOVE</span>    0xbf0d…424d accumulated $497K
+<span class="hi">NEW IN TOP 20</span> 0xc288…5d47 entered at #20
+<span class="hi">TOP-10 EXIT</span>   0xd9e2…c7a1 left the top 10</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="stats">
+  <div class="wrap">
+    <div class="sechead">
+      <span class="eyebrow mono"><i></i>What you're looking at</span>
+      <h2>Every number on this page comes off the chain.</h2>
+    </div>
+    <div class="grid2">
+      <div class="cell">
+        <div><p class="n">100</p><h3>Holders mapped per token</h3>
+        <p>The full top 100 of every tracked token, ranked by position and reconciled against the contract, not a sampled subset.</p></div>
+      </div>
+      <div class="cell">
+        <div><p class="n" id="tokCount">27</p><h3>Tokens tracked on Base</h3>
+        <p>The largest by market cap plus the ones trending right now, refreshed as the ecosystem moves. More open up as the beta widens.</p></div>
+      </div>
+      <div class="cell">
+        <div><p class="n">~2h</p><h3>Between on-chain snapshots</h3>
+        <p>Every reef you see is a timestamped snapshot. Nothing is smoothed, interpolated or carried over from the last read.</p></div>
+      </div>
+      <div class="cell">
+        <div><p class="n">1d · 7d · 30d</p><h3>Flow windows, exact to the block</h3>
+        <p>Net flow is measured between two real balance reads at the edges of each window, so in minus out always closes to the dollar.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sizes">
+  <div class="wrap">
+    <div class="sechead">
+      <span class="eyebrow mono"><i></i>Fish size = wallet size</span>
+      <h2>Bigger wallet, bigger fish.</h2>
+    </div>
+    <p style="margin:-34px 0 0;color:var(--muted);max-width:52ch">Thresholds are computed per token from its own top-100 distribution, so a whale in a small-cap and a whale in $AERO both read as whales at a glance. Today, in $AERO:</p>
+    <div class="rungs">
+      <div class="rung" data-t="small"><span class="nm"><i class="sw" style="background:#AFCBE8"></i>Small</span><span class="track"><i class="fill" style="width:8%;background:#AFCBE8"></i><img class="fx" data-f="small" style="left:8%" alt=""></span><span class="rg">&lt; $1.50M</span><span class="ct">40 wallets</span></div>
+      <div class="rung" data-t="medium"><span class="nm"><i class="sw" style="background:#53C7F0"></i>Medium</span><span class="track"><i class="fill" style="width:24%;background:#53C7F0"></i><img class="fx" data-f="medium" style="left:24%" alt=""></span><span class="rg">$1.50M – $7.33M</span><span class="ct">36 wallets</span></div>
+      <div class="rung" data-t="large"><span class="nm"><i class="sw" style="background:#F2C14E"></i>Large</span><span class="track"><i class="fill" style="width:56%;background:#F2C14E"></i><img class="fx" data-f="large" style="left:56%" alt=""></span><span class="rg">$7.33M – $25.30M</span><span class="ct">18 wallets</span></div>
+      <div class="rung" data-t="whale"><span class="nm"><i class="sw" style="background:#3B6BFF"></i>Whale</span><span class="track"><i class="fill" style="width:100%;background:#3B6BFF"></i><img class="fx" data-f="whale" style="left:97%" alt=""></span><span class="rg">&gt; $25.30M</span><span class="ct">6 wallets</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="end">
+  <canvas id="endcv" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <span class="eyebrow mono"><i></i>Private beta</span>
+    <h2>Find the whales. Watch the <em>money move.</em></h2>
+    <p class="sub">Whitelisted wallets are in today. Everyone else, take a place in line — we open in waves.</p>
+    <div class="cta"><a class="btn blue lg" href="https://app.usereef.io">Connect wallet</a><a class="btn lg" href="#wlEmail">Join the waitlist</a></div>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="ftop">
+      <div class="fbrand"><a href="#" aria-label="REEF home"><svg class="lockup" viewBox="0 0 428.8 100"  aria-label="REEF"><path d="M38.17 92.32C38.03 92.09 38.97 91.25 40.07 90.65C41.05 90.12 44.33 88.96 44.89 88.96C45.68 88.96 49.95 87.73 51.26 87.13C54.12 85.81 55.51 84.55 57.54 81.44C60.36 77.14 62.51 75.78 67.97 74.87C70.79 74.39 72.32 73.91 74.36 72.85C76.86 71.55 78.90 69.40 80.15 66.74C80.51 65.98 80.60 65.43 80.60 64.25C80.60 62.91 80.54 62.65 80.07 62.04C79.36 61.11 78.83 60.80 77.77 60.65L76.87 60.53L76.23 61.74C75.28 63.52 73.36 65.13 70.46 66.59C68.15 67.75 65.70 68.42 61.55 69.01C56.29 69.75 53.99 70.77 50.81 73.76C48.43 76.00 46.38 77.50 44.92 78.08C41.55 79.40 38.93 79.90 34.04 80.16C32.00 80.27 30.07 80.45 29.75 80.55C29.44 80.66 28.99 80.74 28.74 80.74C28.04 80.74 24.78 81.87 23.29 82.63C20.21 84.20 17.67 86.52 15.55 89.71C13.90 92.19 13.41 92.34 10.98 91.10C8.69 89.94 7.16 88.27 6.17 85.83C5.93 85.24 5.64 84.58 5.54 84.36C5.42 84.12 5.37 76.82 5.40 64.78L5.46 45.59L8.33 45.32C10.71 45.08 11.54 45.08 13.22 45.29C15.85 45.61 18.67 46.17 21.12 46.86C22.20 47.16 23.78 47.53 24.64 47.68C26.75 48.03 34.20 48.04 35.80 47.68C38.18 47.16 39.76 46.62 41.48 45.75C44.12 44.41 46.06 43.97 50.79 43.65C54.22 43.41 55.01 43.30 56.17 42.86C58.49 41.99 60.74 40.22 61.95 38.31C62.61 37.26 62.67 36.77 62.18 36.17C61.69 35.56 61.23 35.38 59.59 35.14C58.22 34.94 36.81 34.50 15.44 34.22C10.27 34.15 5.89 34.01 5.70 33.91C5.38 33.75 5.36 33.10 5.36 24.68C5.36 19.69 5.43 15.53 5.52 15.43C5.61 15.33 5.88 14.71 6.12 14.05C7.04 11.54 9.41 9.17 11.92 8.29C12.56 8.06 13.24 7.79 13.43 7.69C13.88 7.45 86.31 7.45 86.76 7.69C86.95 7.79 87.57 8.05 88.13 8.27C89.67 8.86 91.23 9.98 92.23 11.21C93.15 12.33 94.25 14.39 94.25 14.99C94.25 15.17 94.34 15.37 94.45 15.44C94.69 15.59 94.72 83.71 94.48 83.98C94.38 84.08 94.20 84.59 94.06 85.11C93.32 87.84 90.71 90.55 87.69 91.70C87.05 91.94 86.36 92.22 86.18 92.32C85.74 92.54 38.31 92.55 38.17 92.32ZM22.29 67.91C24.92 67.59 25.15 67.59 27.58 67.94C30.88 68.41 35.35 68.41 37.66 67.94C42.31 66.99 44.73 65.84 47.42 63.29C48.92 61.88 49.63 61.36 51.09 60.66C53.55 59.47 55.32 59.08 59.50 58.82C63.90 58.55 65.15 58.33 68.21 57.30C69.61 56.83 71.42 55.80 71.94 55.18C72.07 55.02 72.28 54.90 72.41 54.90C72.73 54.90 75.01 53.43 75.72 52.77C76.50 52.05 77.17 50.96 77.32 50.15C77.47 49.36 77.04 48.33 76.48 48.16C75.35 47.81 72.71 47.66 67.48 47.65L61.57 47.65L60.70 49.00C59.17 51.36 56.99 52.49 52.15 53.43C51.35 53.59 50.32 53.72 49.86 53.72C48.93 53.72 47.38 54.01 46.08 54.44C44.50 54.95 43.28 55.66 41.38 57.15C38.02 59.79 36.95 60.12 30.62 60.46C25.90 60.71 25.79 60.72 24.25 61.36C22.92 61.91 22.45 62.25 21.11 63.59C19.86 64.84 19.41 65.45 18.98 66.49C18.37 67.93 18.41 68.51 19.11 68.34C19.36 68.28 20.79 68.09 22.29 67.91Z" fill="#fff" fill-rule="evenodd"/><g transform="translate(122.36 18) scale(0.64)"><path d="M5.6375838926174495 100.0V0.0H46.84563758389262Q58.12080536912752 0.0 66.30872483221476 4.060402684563755Q74.49664429530202 8.12080536912751 78.95973154362417 15.604026845637577Q83.42281879194631 23.087248322147644 83.42281879194631 33.28859060402685Q83.42281879194631 43.691275167785236 78.89261744966444 50.939597315436245Q74.36241610738256 58.18791946308725 65.97315436241611 61.97986577181207Q57.58389261744966 65.7718120805369 46.1744966442953 65.7718120805369H20.06711409395973V46.711409395973156H41.67785234899329Q47.11409395973154 46.711409395973156 50.83892617449664 45.30201342281879Q54.56375838926174 43.89261744966443 56.47651006711409 40.90604026845638Q58.38926174496644 37.919463087248324 58.38926174496644 33.28859060402685Q58.38926174496644 28.65771812080537 56.47651006711409 25.604026845637584Q54.56375838926174 22.550335570469798 50.83892617449664 21.04026845637584Q47.11409395973154 19.530201342281885 41.61073825503356 19.530201342281885H29.731543624161073V100.0ZM60.40268456375839 100.0 36.04026845637584 54.29530201342282H61.87919463087248L86.84563758389262 100.0ZM87.3208053691275 100.0V0.0H157.05234899328858V19.664429530201346H111.41476510067113V39.86577181208054H153.42818791946308V59.060402684563755H111.41476510067113V80.33557046979865H156.98523489932884V100.0ZM162.76241610738253 100.0V0.0H232.4939597315436V19.664429530201346H186.85637583892617V39.86577181208054H228.8697986577181V59.060402684563755H186.85637583892617V80.33557046979865H232.42684563758388V100.0ZM238.20402684563757 100.0V0.0H306.45906040268454V19.664429530201346H262.2979865771812V44.697986577181204H302.096644295302V63.89261744966443H262.2979865771812V100.0Z" fill="#fff"/></g></svg></a>
+        <p>The Base ecosystem, as a sea of wallets. On-chain data, shown as it is.</p></div>
+      <div class="fcols">
+        <div><h4 class="mono">Product</h4><a href="https://app.usereef.io">Open app</a><a href="#wlEmail">Join the waitlist</a><a href="#wlEmail">Request access</a></div>
+        <div><h4 class="mono">Community</h4><a href="#">X / Twitter</a><a href="#">Telegram</a><a href="#">Farcaster</a></div>
+        <div><h4 class="mono">Legal</h4><a href="#">Privacy policy</a><a href="#">Cookie policy</a><a href="#">Terms of use</a></div>
+      </div>
+    </div>
+    <div class="fbot">
+      <span>&copy; 2026 REEF. Not affiliated with Base, Coinbase or any token team.</span>
+      <span class="mono">There's always a bigger whale &middot; NFA</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ============ sprites (enhancement) + vector fallback (always works) ============ */
+const SPR={},NAMES=['king','whale','large','medium','small','minnow','kelp1','kelp2','coralfan','coralbranch','crystals','grass'];
+let sprReady=false,loaded=0,USE_SPR=false;
+NAMES.forEach(n=>{const im=new Image();im.onload=im.onerror=()=>{if(im.naturalWidth)SPR[n]={img:im,w:im.naturalWidth,h:im.naturalHeight};
+  if(++loaded===NAMES.length){sprReady=Object.keys(SPR).length>=10;USE_SPR=sprReady}};im.src='assets/tank/'+n+'.webp'});
+setTimeout(()=>{if(!sprReady)USE_SPR=false},1100);
+
+const TIERC={small:'#AFCBE8',medium:'#53C7F0',large:'#F2C14E',whale:'#3B6BFF'};
+const TIERS={whale:[.60,.86],large:[.46,.70],medium:[.28,.54],small:[.10,.36]};
+const HOLD=[
+ ['0x2739…a058',8.03,84.27],['0x37aa…787b',7.36,77.32],['0x89a1…ee18',7.36,77.32],
+ ['0x9cfd…7e8d',4.01,42.14],['0xe3f9…cdde',2.69,28.24],['0x9b70…fb48',2.41,25.30],
+ ['0xc8e2…79e4',2.35,24.69],['0x27db…1ea7',2.32,24.34],['0x5612…7a60',2.27,23.81],
+ ['0x1a04…33c1',1.92,20.16],['0x7f3d…9b21',1.74,18.27],['Upbit Deposit',1.26,13.20],
+ ['0x971a…a57a',1.15,12.05],['0x66c2…ab90',0.94,9.87],['0xb115…7d40',0.81,8.50],
+ ['0x3e77…c412',0.72,7.56],['0x08aa…5561',0.61,6.40],['0xd240…19e3',0.54,5.67],
+ ['0x912f…6b08',0.47,4.93],['0x77e5…d1ac',0.41,4.30],['0x2b90…8f27',0.36,3.78],
+ ['0xa604…c3d5',0.31,3.25],['0x5cc1…40b6',0.27,2.83],['0xf182…7715',0.23,2.41],
+ ['0x6a3e…9902',0.19,1.99],['0xc47b…2264',0.16,1.68],['0x1de0…ba83',0.13,1.36],
+ ['0x830c…4e57',0.11,1.15],['0x49f2…d6a1',0.09,0.94],['0x0b6d…8834',0.07,0.73]];
+const ALERTS=[['WHALE MOVE','0xbf0d…424d accumulated $497K'],['NEW IN TOP 20','0xc288…5d47 entered at #20'],['TOP-10 EXIT','0xd9e2…c7a1 left the top 10']];
+const MONO="'Roboto Mono',ui-monospace,Menlo,monospace";
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const cv=document.getElementById('cv');let ctx=cv.getContext('2d');
+let W=0,H=0,DPR=1,fish=[],env=[],motes=[],flows=[];
+
+function mix(a,b,t){const p=x=>[1,3,5].map(i=>parseInt(x.slice(i,i+2),16));const A=p(a),B=p(b);
+  return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join('')}
+const darken=(h,a)=>mix(h,'#03101f',a), lighten=(h,a)=>mix(h,'#ffffff',a);
+
+/* --- the app's own vector fish, used whenever the sprites can't load --- */
+function drawWhaleV(x,y,s,dir,t,color,wob){
+  ctx.save();ctx.translate(x,y);ctx.scale(dir,1);
+  const tail=Math.sin(t*2.2+wob)*0.3, O=Math.max(1.4,s*.045), R=Math.max(2,s*.11);
+  const body=()=>{ctx.beginPath();ctx.moveTo(s*.7,-s*.02);ctx.bezierCurveTo(s*.55,-s*.34,-s*.1,-s*.36,-s*.55,-s*.14);ctx.bezierCurveTo(-s*.75,-s*.06,-s*.8,s*.06,-s*.6,s*.12);ctx.bezierCurveTo(-s*.2,s*.32,s*.45,s*.3,s*.7,-s*.02);ctx.closePath()};
+  const fluke=()=>{ctx.beginPath();ctx.moveTo(-s*.62,0);ctx.quadraticCurveTo(-s*.95,-s*.05+tail*s*.3,-s*1.02,-s*.24+tail*s*.3);ctx.quadraticCurveTo(-s*.9,-s*.02+tail*s*.3,-s*.82,tail*s*.3);ctx.quadraticCurveTo(-s*.9,s*.02+tail*s*.3,-s*1.0,s*.22+tail*s*.3);ctx.quadraticCurveTo(-s*.92,s*.06+tail*s*.3,-s*.62,s*.03);ctx.closePath()};
+  ctx.lineJoin='round';ctx.lineCap='round';
+  ctx.strokeStyle='#FFFFFF';ctx.lineWidth=R*2;fluke();ctx.stroke();body();ctx.stroke();
+  fluke();ctx.fillStyle=darken(color,.2);ctx.fill();ctx.strokeStyle='#0A0B0D';ctx.lineWidth=O;ctx.stroke();
+  body();ctx.fillStyle=color;ctx.fill();
+  ctx.save();body();ctx.clip();
+  ctx.fillStyle=lighten(color,.55);ctx.beginPath();ctx.ellipse(s*.1,s*.3,s*.75,s*.26,0,0,6.28);ctx.fill();
+  ctx.fillStyle=darken(color,.22);ctx.beginPath();ctx.ellipse(-s*.05,-s*.3,s*.7,s*.16,0,0,6.28);ctx.fill();
+  ctx.strokeStyle='rgba(10,11,13,.35)';ctx.lineWidth=O*.7;
+  for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(s*.5-i*s*.09,s*.02+i*s*.03);ctx.quadraticCurveTo(s*.34-i*s*.1,s*.2,s*.2-i*s*.11,s*.26);ctx.stroke()}
+  ctx.restore();
+  body();ctx.strokeStyle='#0A0B0D';ctx.lineWidth=O;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(s*.12,s*.14);ctx.quadraticCurveTo(-s*.02,s*.42+tail*s*.08,-s*.26,s*.2);ctx.closePath();ctx.fillStyle=darken(color,.12);ctx.fill();ctx.stroke();
+  const ex=s*.46,ey=-s*.08,er=Math.max(2.5,s*.09);
+  ctx.beginPath();ctx.arc(ex,ey,er,0,6.28);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#0A0B0D';ctx.lineWidth=O;ctx.stroke();
+  ctx.beginPath();ctx.arc(ex+er*.25,ey,er*.5,0,6.28);ctx.fillStyle='#0A0B0D';ctx.fill();
+  ctx.beginPath();ctx.arc(ex+er*.05,ey-er*.3,er*.18,0,6.28);ctx.fillStyle='#fff';ctx.fill();
+  if(s>=26){const bx=s*.3,by=-s*.26;
+    ctx.strokeStyle='#FFFFFF';ctx.lineWidth=R*1.4;
+    ctx.beginPath();ctx.moveTo(bx-s*.26,by+s*.02);ctx.quadraticCurveTo(bx,by-s*.34,bx+s*.26,by+s*.02);ctx.closePath();ctx.stroke();
+    ctx.fillStyle='#1414E6';ctx.fill();ctx.strokeStyle='#0A0B0D';ctx.lineWidth=O;ctx.stroke();
+    ctx.fillStyle='#0000CC';ctx.beginPath();ctx.rect(bx-s*.28,by,s*.56,s*.1);ctx.fill();ctx.stroke();
+    const q=s*.07;ctx.fillStyle='#fff';ctx.fillRect(bx-q/2,by+s*.015,q,q);ctx.fillStyle='#0000FF';ctx.fillRect(bx-q*.3,by+s*.015+q*.2,q*.6,q*.6)}
+  ctx.restore();
+}
+function drawFishV(x,y,s,dir,t,color,wob){
+  ctx.save();ctx.translate(x,y);ctx.scale(dir,1);
+  const tail=Math.sin(t*6+wob)*0.35, O=Math.max(1.1,s*.055), R=Math.max(1.6,s*.12);
+  const body=()=>{ctx.beginPath();ctx.moveTo(s*.55,0);ctx.bezierCurveTo(s*.3,-s*.42,-s*.35,-s*.42,-s*.6,-s*.05);ctx.bezierCurveTo(-s*.35,s*.42,s*.3,s*.42,s*.55,0);ctx.closePath()};
+  const tailP=()=>{ctx.beginPath();ctx.moveTo(-s*.5,0);ctx.lineTo(-s*.95,-s*.34+tail*s*.25);ctx.lineTo(-s*.8,tail*s*.12);ctx.lineTo(-s*.95,s*.34+tail*s*.25);ctx.closePath()};
+  ctx.lineJoin='round';ctx.lineCap='round';
+  ctx.strokeStyle='#FFFFFF';ctx.lineWidth=R*2;tailP();ctx.stroke();body();ctx.stroke();
+  tailP();ctx.fillStyle=darken(color,.18);ctx.fill();ctx.strokeStyle='#0A0B0D';ctx.lineWidth=O;ctx.stroke();
+  body();ctx.fillStyle=color;ctx.fill();
+  ctx.save();body();ctx.clip();
+  ctx.fillStyle=lighten(color,.5);ctx.beginPath();ctx.ellipse(s*.05,s*.3,s*.6,s*.26,0,0,6.28);ctx.fill();
+  ctx.fillStyle=darken(color,.16);ctx.beginPath();ctx.ellipse(0,-s*.36,s*.55,s*.17,0,0,6.28);ctx.fill();
+  ctx.restore();
+  body();ctx.strokeStyle='#0A0B0D';ctx.lineWidth=O;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(-s*.05,-s*.34);ctx.quadraticCurveTo(s*.1,-s*.6,s*.26,-s*.3);ctx.closePath();ctx.fillStyle=darken(color,.1);ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.moveTo(s*.06,s*.1);ctx.quadraticCurveTo(-s*.1,s*.36,-s*.2,s*.12);ctx.closePath();ctx.fillStyle=darken(color,.12);ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.moveTo(s*.2,-s*.16);ctx.quadraticCurveTo(s*.12,0,s*.2,s*.16);ctx.strokeStyle='rgba(10,11,13,.45)';ctx.lineWidth=O*.8;ctx.stroke();
+  const ex=s*.32,ey=-s*.06,er=Math.max(1.8,s*.14);
+  ctx.beginPath();ctx.arc(ex,ey,er,0,6.28);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#0A0B0D';ctx.lineWidth=O;ctx.stroke();
+  ctx.beginPath();ctx.arc(ex+er*.25,ey,er*.5,0,6.28);ctx.fillStyle='#0A0B0D';ctx.fill();
+  ctx.beginPath();ctx.arc(ex+er*.05,ey-er*.32,er*.2,0,6.28);ctx.fillStyle='#fff';ctx.fill();
+  ctx.restore();
+}
+
+function hash(s){let a=7,b=13;for(let i=0;i<s.length;i++){a=(a*31+s.charCodeAt(i))>>>0;b=(b*131+s.charCodeAt(i))>>>0}return[a/4294967295,b/4294967295]}
+function rng(seed){let s=seed;return()=>(s=(s*1664525+1013904223)>>>0)/4294967296}
+(function build(){
+  const r=rng(97),max=HOLD[0][2],min=HOLD[HOLD.length-1][2],lo=Math.log(min),hi=Math.log(max);
+  fish=HOLD.map((h,i)=>{
+    const tier=i<6?'whale':i<12?'large':i<20?'medium':'small';
+    const n=(Math.log(h[2])-lo)/(hi-lo),[hx,hy]=hash(h[0]),band=TIERS[tier];
+    return {name:h[0],pct:h[1],usd:h[2],tier,rank:i+1,
+      s:0.055+Math.pow(n,1.6)*0.20,hx,hy,x:0.08+hx*0.84,y:band[0]+hy*(band[1]-band[0]),
+      band,dir:hx>.5?1:-1,sp:(tier==='whale'?11:tier==='large'?17:tier==='medium'?23:31),ph:hy*6.28,a:1}});
+  const kinds=['kelp1','kelp2','coralfan','coralbranch','crystals','grass','grass','kelp1'];
+  for(let i=0;i<9;i++)env.push({k:kinds[i%kinds.length],x:.04+i*0.115+r()*0.03,h:0.10+r()*0.16,n:2+Math.floor(r()*3),ph:r()*6.28});
+  for(let i=0;i<70;i++)motes.push({x:r(),y:r(),r:0.4+r()*1.5,v:0.004+r()*0.012,ph:r()*6.28});
+  flows=[[0,0.86,0.12],[3,0.82,0.18],[11,0.14,0.10]];
+})();
+
+function resize(){
+  const r=cv.getBoundingClientRect();
+  const w=Math.max(160,Math.round(r.width)),h=Math.max(120,Math.round(r.height));
+  if(Math.abs(w-W)<10&&Math.abs(h-H)<10)return;
+  W=w;H=h;DPR=Math.min(2,devicePixelRatio||1);
+  cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+function water(c,w,h,t){
+  const g=c.createLinearGradient(0,0,0,h);
+  g.addColorStop(0,'#0E2E52');g.addColorStop(.55,'#0A1E38');g.addColorStop(1,'#050E1C');
+  c.fillStyle=g;c.fillRect(0,0,w,h);
+  c.save();c.globalCompositeOperation='lighter';
+  for(let i=0;i<5;i++){const x=w*(0.08+i*0.21)+Math.sin(t*.16+i)*w*.015;
+    c.globalAlpha=.045;c.fillStyle='#9ED8FF';
+    c.beginPath();c.moveTo(x,0);c.lineTo(x+w*.07,0);c.lineTo(x+w*.15,h);c.lineTo(x-w*.02,h);c.closePath();c.fill()}
+  c.restore();
+}
+function drawEnv(t){
+  ctx.fillStyle='#02090F';
+  ctx.beginPath();ctx.moveTo(0,H);ctx.lineTo(0,H*.94);
+  for(let i=0;i<=6;i++)ctx.lineTo(W*i/6,H*(.94-Math.sin(i*1.3)*.025));
+  ctx.lineTo(W,H);ctx.closePath();ctx.fill();
+  if(USE_SPR){env.forEach(e=>{const sp=SPR[e.k];if(!sp)return;const h=H*e.h,w=h*sp.w/sp.h;
+      ctx.drawImage(sp.img,W*e.x-w/2,H-h+H*.012,w,h)});return}
+  /* vector weed when sprites are unavailable */
+  env.forEach(e=>{const x=W*e.x,h=H*e.h*1.1;
+    for(let i=0;i<e.n;i++){const o=(i-(e.n-1)/2)*h*.13, sw=Math.sin(t*.7+e.ph+i)*h*.10;
+      ctx.beginPath();ctx.moveTo(x+o,H*.955);
+      ctx.quadraticCurveTo(x+o+sw*.6,H*.955-h*.55,x+o+sw,H*.955-h);
+      ctx.strokeStyle=i%2?'#1C6E63':'#2A8C74';ctx.lineWidth=Math.max(2.5,h*.055);ctx.lineCap='round';ctx.stroke()}});
+}
+function drawMotes(t,dt){
+  ctx.fillStyle='rgba(190,225,255,.30)';
+  motes.forEach(m=>{m.y-=m.v*dt;if(m.y<-.02){m.y=1.02;m.x=Math.random()}
+    ctx.beginPath();ctx.arc((m.x+Math.sin(t*.4+m.ph)*.004)*W,m.y*H,m.r,0,6.28);ctx.fill()});
+}
+function drawOne(f,t){
+  const yy=f.y*H+Math.sin(t*1.5+f.ph)*H*f.s*.045;
+  ctx.save();ctx.globalAlpha=f.a;
+  if(USE_SPR){const sp=f.rank===1?SPR.king:SPR[f.tier];
+    if(sp){const h=H*f.s,w=h*sp.w/sp.h;
+      ctx.translate(f.x*W,yy);ctx.scale(f.dir,1);ctx.drawImage(sp.img,-w/2,-h/2,w,h);ctx.restore();return}}
+  const wh=f.tier==='whale';
+  (wh?drawWhaleV:drawFishV)(f.x*W,yy,H*f.s*(wh?.78:.50),f.dir,t,TIERC[f.tier],f.ph);
+  ctx.restore();
+}
+function chip(x,y,parts){
+  ctx.font='500 11px '+MONO;ctx.textBaseline='middle';ctx.textAlign='left';
+  let w=18;parts.forEach((p,i)=>{w+=ctx.measureText(p[0]).width+(i?10:0)});
+  const bx=Math.max(4,Math.min(W-w-4,x-w/2));
+  ctx.fillStyle='rgba(3,10,20,.88)';ctx.fillRect(bx,y-20,w,21);
+  let cx=bx+9;parts.forEach(p=>{ctx.fillStyle=p[1];ctx.fillText(p[0],cx,y-9.5);cx+=ctx.measureText(p[0]).width+10});
+}
+function drawFlows(t){
+  ctx.save();ctx.strokeStyle='rgba(143,176,255,.75)';ctx.lineWidth=1.4;ctx.setLineDash([5,6]);
+  ctx.lineDashOffset=-(t*26)%11;
+  flows.forEach(fl=>{const f=fish[fl[0]];if(!f)return;
+    ctx.beginPath();ctx.moveTo(f.x*W,f.y*H);
+    ctx.quadraticCurveTo((f.x+fl[1])/2*W,(f.y+fl[2])/2*H-H*.16,fl[1]*W,fl[2]*H);ctx.stroke()});
+  ctx.restore();
+  [[0.86,0.12,'TO EXCHANGES'],[0.14,0.10,'TO NEW WALLETS']].forEach(p=>{
+    ctx.font='500 10px '+MONO;const w=ctx.measureText(p[2]).width+16;
+    ctx.fillStyle='#0000FF';ctx.fillRect(p[0]*W-w/2,p[1]*H-9,w,19);
+    ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(p[2],p[0]*W,p[1]*H+1)});
+  ctx.textAlign='left';
+}
+let alertT=0;
+function drawAlerts(dt){
+  alertT+=dt;ctx.textBaseline='middle';ctx.textAlign='left';
+  ALERTS.forEach((a,i)=>{
+    const k=Math.min(1,Math.max(0,(alertT-i*0.55)/0.45));if(k<=0)return;
+    const y=26+i*34,x=16+(1-k)*22;ctx.globalAlpha=k;
+    ctx.font='500 10px '+MONO;const tw=ctx.measureText(a[0]).width+14;
+    ctx.font='400 11px '+MONO;const bw=ctx.measureText(a[1]).width+20;
+    ctx.fillStyle='rgba(3,10,20,.9)';ctx.fillRect(x,y-13,tw+bw,27);
+    ctx.fillStyle='#0000FF';ctx.fillRect(x,y-13,tw,27);
+    ctx.font='500 10px '+MONO;ctx.fillStyle='#fff';ctx.fillText(a[0],x+7,y+1);
+    ctx.font='400 11px '+MONO;ctx.fillStyle='rgba(255,255,255,.82)';ctx.fillText(a[1],x+tw+10,y+1);
+    ctx.globalAlpha=1});
+}
+
+let STATE=0,FOCUS=null,HOVER=null,last=performance.now(),T=0,visible=true;
+function step(dt,t){
+  fish.forEach(f=>{
+    const want=HOVER?(f===HOVER?1:.2):(FOCUS&&f.tier!==FOCUS?.14:1);
+    f.a+=(want-f.a)*Math.min(1,dt*7);
+    if(REDUCED)return;
+    const slow=HOVER===f?.3:1;
+    f.x+=f.dir*(f.sp/Math.max(360,W))*dt*slow;
+    const m=f.s*.6+.02,l=Math.max(m,.08+f.hx*.84-.15),r2=Math.min(1-m,.08+f.hx*.84+.15);
+    if(f.x>r2)f.dir=-1;if(f.x<l)f.dir=1;
+    f.y+=Math.sin(t*.55+f.ph)*.00035;
+    f.y=Math.max(f.band[0],Math.min(f.band[1],f.y))});
+}
+
+/* inline whale in the headline + slow whale behind the closing block */
+const inl=document.getElementById('inlw'),ictx=inl.getContext('2d');
+const ecv=document.getElementById('endcv'),ectx=ecv.getContext('2d');
+let ex2=0.45;
+function drawInline(t){
+  const r=inl.getBoundingClientRect();if(r.width<4)return;
+  const d=Math.min(2,devicePixelRatio||1),w=Math.round(r.width),h=Math.round(r.height);
+  if(inl.width!==w*d){inl.width=w*d;inl.height=h*d}
+  ictx.setTransform(d,0,0,d,0,0);ictx.clearRect(0,0,w,h);
+  const bob=Math.sin(t*1.4)*h*.035, sp=SPR.king;
+  if(sp){const hh=h*.94,ww=hh*sp.w/sp.h;ictx.drawImage(sp.img,w*.5-ww/2,h*.5-hh/2+bob,ww,hh);return}
+  const keep=ctx;ctx=ictx;drawWhaleV(w*.5,h*.54+bob,h*.62,1,t,'#0000FF',1.3);ctx=keep;
+}
+function drawEnd(t,dt){
+  const r=ecv.getBoundingClientRect();if(r.width<4||r.bottom<0||r.top>innerHeight)return;
+  const d=Math.min(2,devicePixelRatio||1),w=Math.round(r.width),h=Math.round(r.height);
+  if(ecv.width!==w*d){ecv.width=w*d;ecv.height=h*d}
+  ectx.setTransform(d,0,0,d,0,0);ectx.clearRect(0,0,w,h);
+  const keep=ctx;ctx=ectx;
+  ectx.globalAlpha=.5;for(let i=0;i<60;i++){const x=((i*97)%100)/100*w,y=((i*61)%100)/100*h;
+    ectx.fillStyle='rgba(190,225,255,.25)';ectx.beginPath();ectx.arc(x,(y+t*8*(1+i%3))%h,1.2,0,6.28);ectx.fill()}
+  ectx.globalAlpha=1;
+  ex2+=dt*0.035;if(ex2>1.45)ex2=0.18;
+  const sp=SPR.king;
+  if(sp){const hh=Math.min(270,h*.52),ww=hh*sp.w/sp.h;
+    ectx.drawImage(sp.img,w*ex2-ww/2,h*.62-hh/2+Math.sin(t*.8)*h*.012,ww,hh)}
+  else drawWhaleV(w*ex2,h*.66,Math.min(260,h*.46),1,t,'#2E4EA8',.6);
+  ctx=keep;
+}
+
+function frame(now){
+  const dt=Math.min(.05,(now-last)/1000);last=now;T+=dt;
+  if(visible){
+    resize();water(ctx,W,H,T);drawMotes(T,dt);step(dt,T);
+    fish.slice().sort((a,b)=>a.s-b.s).forEach(f=>drawOne(f,T));
+    drawEnv(T);
+    if(STATE===1)drawFlows(T);
+    if(STATE===2)drawAlerts(dt);
+    if(HOVER)chip(HOVER.x*W,HOVER.y*H-H*HOVER.s*.55,[[HOVER.name,'#fff'],[HOVER.pct.toFixed(2)+'%','#8FB0FF'],['$'+HOVER.usd.toFixed(2)+'M','rgba(255,255,255,.7)']]);
+    else if(STATE===0){const f=fish[0],g=fish[11];
+      chip(f.x*W,f.y*H-H*f.s*.55,[[f.name,'#fff'],[f.pct.toFixed(2)+'%','#8FB0FF']]);
+      chip(g.x*W,g.y*H-H*g.s*.55,[[g.name,'#fff'],[g.pct.toFixed(2)+'%','#8FB0FF']])}
+  }
+  try{drawInline(T)}catch(e){}
+  try{drawEnd(T,dt)}catch(e){}
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+new IntersectionObserver(e=>{visible=e[0].isIntersecting},{threshold:0}).observe(cv);
+
+function pick(e){
+  const r=cv.getBoundingClientRect();
+  const mx=(e.clientX-r.left)/r.width,my=(e.clientY-r.top)/r.height;
+  let best=null,bd=1e9;
+  fish.forEach(f=>{const d=Math.hypot((f.x-mx)*W,(f.y-my)*H),rad=H*f.s*.5+8;if(d<rad&&d<bd){bd=d;best=f}});
+  HOVER=best;cv.style.cursor=best?'pointer':'default';
+}
+cv.addEventListener('mousemove',pick);
+cv.addEventListener('mouseleave',()=>{HOVER=null;cv.style.cursor='default'});
+
+/* ---------- choreography ---------- */
+const stage=document.getElementById('stage'),sticky=stage.querySelector('.sticky'),
+      hero=document.getElementById('hero'),tank=document.getElementById('tank'),
+      panel=document.getElementById('panel'),sbg=document.getElementById('stagebg'),
+      nav=document.querySelector('.nav'),rail=document.getElementById('rail'),
+      steps=[...document.querySelectorAll('.step')];
+const NTAB=3,T0=0.34,SLICE=(1-T0)/NTAB;
+const desktop=()=>matchMedia('(min-width:901px)').matches&&!REDUCED;
+const cl=(v,a,b)=>Math.max(a,Math.min(b,v)),inv=(v,a,b)=>cl((v-a)/(b-a),0,1),
+      ease=v=>v<.5?4*v*v*v:1-Math.pow(-2*v+2,3)/2,lerp=(a,b,v)=>a+(b-a)*v;
+const rgb=(a,b,v)=>'rgb('+a.map((c,i)=>Math.round(lerp(c,b[i],v))).join(',')+')';
+
+function navTint(k){ /* header darkens on exactly the same curve as the page */
+  nav.style.background='rgba('+Math.round(lerp(255,10,k))+','+Math.round(lerp(255,11,k))+','+Math.round(lerp(255,13,k))+',.92)';
+  nav.style.borderBottomColor=rgb([222,225,231],[38,40,46],k);
+  nav.style.setProperty('--mk',rgb([0,0,255],[255,255,255],k));
+  nav.style.setProperty('--wd',rgb([10,11,13],[255,255,255],k));
+  nav.style.setProperty('--nb',rgb([10,11,13],[255,255,255],k));
+  nav.style.setProperty('--nbf',rgb([255,255,255],[10,11,13],k));
+}
+const endSec=document.querySelector('.end');
+function endTint(){const r=endSec.getBoundingClientRect();return (r.top<66&&r.bottom>0)?1:0}
+function place(){
+  if(!desktop()){tank.style.cssText='';hero.style.cssText='';panel.style.cssText='';sbg.style.opacity=0;navTint(endTint());return}
+  const vh=sticky.clientHeight,vw=sticky.clientWidth,total=stage.offsetHeight-vh;
+  const p=cl((scrollY-stage.offsetTop)/total,0,1);
+  const pOpen=ease(inv(p,0.05,0.20)),pDock=ease(inv(p,0.22,0.32));
+  const gone=inv(scrollY-stage.offsetTop-total,0,vh*0.4); /* fade the header back on the way out */
+
+  const ph=inv(p,0.01,0.14);
+  hero.style.transform='translateY('+(-ph*90)+'px)';hero.style.opacity=String(1-ease(ph));
+  sbg.style.opacity=String(pOpen);
+  navTint(Math.max(pOpen*(1-gone),endTint()));
+
+  const A={l:vw*0.20,t:vh*0.76,w:vw*0.60,h:vh*0.46},
+        B={l:0,t:0,w:vw,h:vh},
+        C={l:vw*0.05,t:vh*0.14,w:vw*0.46,h:vh*0.72};
+  const rect=k=>lerp(lerp(A[k],B[k],pOpen),C[k],pDock);
+  tank.style.left=rect('l')+'px';tank.style.top=rect('t')+'px';
+  tank.style.width=rect('w')+'px';tank.style.height=rect('h')+'px';
+  tank.style.boxShadow=pOpen<1?'0 30px 90px rgba(10,11,13,.30)':'none';
+
+  const px=vw*0.05+vw*0.46+vw*0.05;
+  panel.style.left=px+'px';panel.style.top='50%';panel.style.width=(vw-px-vw*0.05)+'px';
+  panel.style.opacity=String(pDock);
+  panel.style.transform='translate('+((1-pDock)*46)+'px,-50%)';
+  panel.style.pointerEvents=pDock>.9?'auto':'none';
+
+  if(p>=T0){const k=Math.min(NTAB-1,Math.floor((p-T0)/SLICE));if(k!==STATE)select(k)}
+  else if(STATE!==0)select(0);
+}
+function select(i){
+  if(i===STATE)return;
+  STATE=i;FOCUS=null;if(i===2)alertT=0;
+  [...rail.children].forEach((b,k)=>b.setAttribute('aria-selected',String(k===i)));
+  steps.forEach((s,k)=>s.dataset.on=k===i?'1':'0');
+}
+addEventListener('scroll',place,{passive:true});
+addEventListener('resize',()=>{resize();place()});
+rail.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  const i=+b.dataset.i,total=stage.offsetHeight-sticky.clientHeight;
+  scrollTo({top:stage.offsetTop+total*(T0+SLICE*(i+0.5)),behavior:'smooth'})});
+{const SRC=(typeof SPRSRC!=='undefined')?SPRSRC:Object.fromEntries(NAMES.map(n=>[n,'assets/tank/'+n+'.webp']));
+ document.querySelectorAll('.rung .fx').forEach(el=>{const k=el.dataset.f;if(SRC[k])el.src=SRC[k]})}
+/* buttons: the label leans toward the cursor instead of inverting */
+document.querySelectorAll('.btn').forEach(b=>{
+  if(!b.querySelector('.bt')){const sp=document.createElement('span');sp.className='bt';
+    while(b.firstChild)sp.appendChild(b.firstChild);b.appendChild(sp)}
+  const lb=b.querySelector('.bt');
+  b.addEventListener('mouseenter',()=>b.classList.add('pull'));
+  b.addEventListener('mousemove',e=>{const r=b.getBoundingClientRect();
+    const dx=(e.clientX-r.left-r.width/2)/r.width, dy=(e.clientY-r.top-r.height/2)/r.height;
+    lb.style.transform='translate('+(dx*16).toFixed(2)+'px,'+(dy*8).toFixed(2)+'px)'});
+  b.addEventListener('mouseleave',()=>{b.classList.remove('pull');lb.style.transform='translate(0,0)'});
+});
+/* ============ waitlist ============ */
+const API = /^(localhost|127\.|\[::1\])/.test(location.hostname) ? '' : 'https://app.usereef.io';
+{
+  const f=document.getElementById('wlForm'), em=document.getElementById('wlEmail'),
+        wa=document.getElementById('wlWallet'), btn=document.getElementById('wlBtn'), msg=document.getElementById('wlMsg');
+  const say=(t,k)=>{msg.textContent=t;msg.className='fmsg'+(k?' '+k:'')};
+  const ok=(e)=>/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(e);
+  f.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const email=em.value.trim(), wallet=wa.value.trim();
+    if(!ok(email)){say('That email address does not look right.','err');em.focus();return}
+    if(!/^0x[0-9a-fA-F]{40}$/.test(wallet)){say('A Base wallet address is 0x followed by 40 characters.','err');wa.focus();return}
+    btn.disabled=true;em.disabled=true;wa.disabled=true;say('Sending…');
+    try{
+      const r=await fetch(API+'/api/waitlist',{method:'POST',headers:{'content-type':'application/json'},
+        body:JSON.stringify({email,wallet,source:'landing',ref:(location.search||'').slice(1)||document.referrer||''})});
+      const j=await r.json().catch(()=>({}));
+      if(j.ok&&j.already){f.classList.add('done');say('You are already on the list — we will be in touch.','ok');return}
+      if(j.ok){f.classList.add('done');say('You are in line at number '+j.position+'. We open in waves — watch your inbox.','ok');return}
+      say(j.error||'Something went wrong. Try again in a moment.','err');
+    }catch{ say('Could not reach the waitlist. Check your connection and try again.','err'); }
+    btn.disabled=false;em.disabled=false;wa.disabled=false;
+  });
+}
+
+/* the tracked-token count comes from the app's own index, so this number cannot go stale */
+fetch(API+'/data/index.json').then(r=>r.ok?r.json():null).then(d=>{
+  const n=d&&d.tokens&&d.tokens.length; if(n) document.getElementById('tokCount').textContent=n;
+}).catch(()=>{});
+
+/* the size rungs show their fish on hover; touch devices never hover, so reveal them on scroll instead */
+if(matchMedia('(hover: none)').matches && 'IntersectionObserver' in window){
+  const io=new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting){
+    e.target.querySelectorAll('.fx').forEach(el=>{el.style.opacity='1';el.style.transform='translate(-50%,-50%) scale(1)'});
+    io.unobserve(e.target)}}),{threshold:.6});
+  document.querySelectorAll('.rung').forEach(r=>io.observe(r));
+}
+
+place();
+</script>
+</body>
+</html>

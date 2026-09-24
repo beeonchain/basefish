@@ -1,0 +1,5 @@
+# The landing page is a static folder with no build step. This site's base directory is `landing/`,
+# so Netlify reads this file rather than the one at the repo root (which configures the app site).
+[build]
+  publish = "."
+  command = ""
