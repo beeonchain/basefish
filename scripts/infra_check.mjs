@@ -65,15 +65,21 @@ await run('fly', async () => {
   return { apps: (j.apps || []).map((a) => a.name) };
 });
 
-await run('bitquery', async () => {
+const bqQuery = async (where) => {
   const r = await fetch('https://streaming.bitquery.io/graphql', { method: 'POST',
     headers: { 'content-type': 'application/json', Authorization: 'Bearer ' + process.env.BITQUERY_TOKEN },
-    body: JSON.stringify({ query: `query { EVM(dataset: archive, network: base) { TokenHolders(date: "${new Date().toISOString().slice(0, 10)}", tokenSmartContract: "0x532f27101965dd16442e59d40670faf5ebb142e4", limit: {count: 3}, orderBy: {descendingByField: "Balance_Amount"}) { Holder { Address } Balance { Amount } } } }` }) });
+    body: JSON.stringify({ query: `query { EVM(dataset: archive, network: base) { TokenHolders(date: "${new Date().toISOString().slice(0, 10)}", tokenSmartContract: "0x532f27101965dd16442e59d40670faf5ebb142e4", limit: {count: 20}, orderBy: {descendingByField: "Balance_Amount"}${where}) { Holder { Address } Balance { Amount } } } }` }) });
   const j = await r.json();
   const rows = j.data && j.data.EVM && j.data.EVM.TokenHolders;
   if (!rows || !rows.length) throw new Error(JSON.stringify(j.errors || j).slice(0, 150));
-  const top = Number(rows[0].Balance.Amount);
-  return { top_holder_balance: top, sane: top < 1e30 };
+  const amts = rows.map((x) => Number(x.Balance.Amount));
+  return { top: amts[0], wrapped: amts.filter((a) => a >= 1e30).length, of: amts.length };
+};
+// Is the uint256-max garbage actually neutralised by the upper bound the pipeline sends? Compare both.
+await run('bitquery_unbounded', () => bqQuery(''));
+await run('bitquery_bounded', async () => { // exactly what scripts/fetch.mjs sends
+  const r = await bqQuery(', where: { Balance: { Amount: { gt: "0", lt: "1000000000000000000000000000" } } }');
+  return { ...r, sane: r.wrapped === 0 };
 });
 
 await run('site', async () => {
