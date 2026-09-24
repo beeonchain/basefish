@@ -5,3 +5,10 @@
   # rebuilding the site for each one burned through Netlify credits (Sep 7 incident).
   # The site + functions read those two files straight from GitHub instead.
   ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':(exclude)data/alerts.json' ':(exclude)data/tg_subs.json' ':(exclude)data/alerts_state.json' ':(exclude)data/users.json' ':(exclude)data/tags_manual.json' ':(exclude)data/proposals.json' ':(exclude)data/infra_check.json' ':(exclude)data/db_status.json'"
+
+[build.environment]
+  # ALCH_WEBHOOK_ID is an identifier, not a credential — it does nothing without ALCH_NOTIFY_TOKEN — and it
+  # appears as a default in fetch.mjs, store.mjs and the workflows. Netlify's scanner fails a build whenever it
+  # finds an env var's value anywhere in the repo, which broke every deploy from 2026-09-24 12:42 until this was
+  # added, leaving the site serving hours-old data. Only ever exempt keys that are not actually secrets.
+  SECRETS_SCAN_OMIT_KEYS = "ALCH_WEBHOOK_ID"
