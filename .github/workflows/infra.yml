@@ -1,0 +1,38 @@
+name: infra check
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: infra
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: npm install --no-save pg @aws-sdk/client-s3
+      - name: run checks
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
+          ALCH_NOTIFY_TOKEN: ${{ secrets.ALCH_NOTIFY_TOKEN }}
+          ALCH_WEBHOOK_ID: wh_n8pxw2vbek7lbt8v
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          BITQUERY_TOKEN: ${{ secrets.BITQUERY_TOKEN }}
+        run: node scripts/infra_check.mjs
+      - name: commit result
+        run: |
+          git config user.name "Claude"
+          git config user.email "noreply@anthropic.com"
+          git add data/infra_check.json
+          git diff --cached --quiet || git commit -m "infra: smoke-test result $(date -u +%H:%M)"
+          git pull -q --rebase origin main || true
+          git push -q origin main
