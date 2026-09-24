@@ -7,7 +7,8 @@ import crypto from 'node:crypto';
 import { updateJson, USERS_PATH, MAX_HITS, webhookAddresses } from '../lib/store.mjs';
 
 const REPO = 'beeonchain/basefish';
-const SITE = 'https://basefish.netlify.app';
+// the site's own data files; Netlify sets URL to the primary domain, SITE_URL overrides
+const SITE = (process.env.SITE_URL || process.env.URL || 'https://usereef.io').replace(/\/$/, '');
 const TH = { whale: 50_000, cex: 100_000 }; // instant thresholds (lower than the 2h digest)
 const CEX_RX = /coinbase|binance|kraken|okx|bybit|upbit|bithumb|\bgate\b|kucoin|mexc|bitget|htx|crypto\.com|bitpanda|bitvavo|bitstamp|gemini|robinhood|exchange|deposit/i;
 

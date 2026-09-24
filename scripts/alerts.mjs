@@ -168,7 +168,7 @@ export async function writeFeed(alerts) {
   // merge with the LIVE feed (instant webhook alerts may have landed since this run checked out)
   let feed = jread(FEED, { alerts: [] });
   try {
-    const r = await fetch('https://basefish.netlify.app/data/alerts.json?t=' + Date.now());
+    const r = await fetch('https://usereef.io/data/alerts.json?t=' + Date.now());
     if (r.ok) { const live = await r.json(); const ids = new Set((feed.alerts || []).map((a) => a.id));
       for (const a of live.alerts || []) if (!ids.has(a.id)) feed.alerts.push(a);
       feed.alerts.sort((a, b) => b.ts - a.ts); }
@@ -182,7 +182,7 @@ export async function writeFeed(alerts) {
 }
 
 const ICON = { whale: '🐋', entry: '🎣', exit: '🏃', cex: '🏦', school: '🕸', watch: '👁' };
-export async function sendTelegram(publicAlerts, watchAlerts, siteUrl = 'https://basefish.netlify.app') {
+export async function sendTelegram(publicAlerts, watchAlerts, siteUrl = process.env.SITE_URL || 'https://usereef.io') {
   const token = process.env.TG_BOT_TOKEN;
   if (!token) return 0;
   const subs = jread(SUBS, { chats: {} });
