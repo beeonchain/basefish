@@ -1,6 +1,7 @@
 // POST /api/track {ca}  (signed-in users) — promote an untracked token into tokens.config.json and dispatch a refresh.
 // Quota: plan-based per account (free = 5 fetches, lifetime; admins can raise fetchLimit), 12 per day site-wide, 60 tokens max.
 import { readSession, updateJson, readRaw, USERS_PATH, json, fetchLimit } from '../lib/store.mjs';
+import { gateStatus, GATE_DENIED } from '../lib/gate.mjs';
 
 const CFG = 'tokens.config.json';
 const LIMITS = { globalDay: 12, maxTokens: 60 };
@@ -10,6 +11,7 @@ export default async (req) => {
   if (req.method !== 'POST') return json({ error: 'method' }, 405);
   const uid = await readSession(req);
   if (!uid) return json({ error: 'sign in to add tokens' }, 401);
+  if (!(await gateStatus(uid)).allowed) return json({ error: GATE_DENIED, gate: true }, 403);
   const body = await req.json().catch(() => ({}));
   const ca = String(body.ca || '').toLowerCase();
   if (!/^0x[0-9a-f]{40}$/.test(ca)) return json({ error: 'bad contract address' }, 400);

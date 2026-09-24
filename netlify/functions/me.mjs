@@ -1,6 +1,7 @@
 // Account endpoint (Privy-authenticated). GET → profile (creates the record on first visit, syncs linked accounts).
 // POST {op:'add', w, t} | {op:'remove', w, t} | {op:'linkcode'} | {op:'unlink'} | {op:'clearhits'} | {op:'sync'}
 //      | {op:'claim', addr, name?} | {op:'unclaim', addr} | {op:'avatar', avatar:{fish,color,acc}}
+import { gateStatus, GATE_DENIED } from '../lib/gate.mjs';
 import { readRaw, updateJson, USERS_PATH, SUBS_PATH, readSession, privyUser, publicUser, labelFor, json, trackedSyms, planOf, webhookAddresses, isAdminFull } from '../lib/store.mjs';
 
 const AVATAR = { fish: ['small', 'medium', 'large', 'whale'], color: ['blue', 'gold', 'coral'], acc: ['none', 'crown', 'chain'] };
@@ -30,6 +31,7 @@ export default async (req) => {
   if (req.method !== 'POST') return json({ error: 'method' }, 405);
   const body = await req.json().catch(() => ({}));
   const op = String(body.op || '');
+  if (!['sync', 'unlink'].includes(op) && !(await gateStatus(uid)).allowed) return json({ error: GATE_DENIED, gate: true }, 403);
   const TOKENS = await trackedSyms();
   const la = op === 'sync' || op === 'claim' ? await privyUser(uid, { fresh: true }) : null;
   let out = null, err = null, addedAddr = null;

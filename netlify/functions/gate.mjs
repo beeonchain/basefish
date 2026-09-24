@@ -2,34 +2,15 @@
 //   GET  /api/gate            → { allowed, reason, wallets }
 //   POST /api/gate { code }   → redeem an access code; whitelists the signed-in user's wallet
 // A wallet gets in three ways: it is an admin, it is already on the whitelist, or it redeems a code.
-import { readSession, privyUser, isAdminFull, readRaw, USERS_PATH } from '../lib/store.mjs';
-import { db, json, lc, sha256, ipHash } from '../lib/db.mjs';
-
-const OPEN = process.env.GATE_OPEN === '1';          // kill-switch: set GATE_OPEN=1 to let everyone in
-
-async function walletsOf(uid) {
-  const la = await privyUser(uid, { fresh: true }).catch(() => null);
-  const ws = (la && la.wallets) || [];
-  return [...new Set(ws.map(lc).filter((w) => /^0x[0-9a-f]{40}$/.test(w)))];
-}
-async function status(uid) {
-  if (OPEN) return { allowed: true, reason: 'open', wallets: [] };
-  const d = await readRaw(USERS_PATH, { users: {} }).catch(() => ({ users: {} }));
-  const u = d.users && d.users[uid];
-  if (await isAdminFull(uid, u).catch(() => false)) return { allowed: true, reason: 'admin', wallets: await walletsOf(uid) };
-  const wallets = await walletsOf(uid);
-  const sql = db();
-  if (!sql) return { allowed: false, reason: 'no-db', wallets };
-  if (!wallets.length) return { allowed: false, reason: 'no-wallet', wallets };
-  const rows = await sql`select wallet from whitelist where wallet = any(${wallets})`;
-  return { allowed: rows.length > 0, reason: rows.length ? 'whitelist' : 'not-whitelisted', wallets };
-}
+import { readSession } from '../lib/store.mjs';
+import { db, json, sha256, ipHash } from '../lib/db.mjs';
+import { gateStatus, walletsOf } from '../lib/gate.mjs';
 
 export default async (req) => {
   const uid = await readSession(req);
   if (!uid) return json({ allowed: false, reason: 'signed-out' }, 401);
 
-  if (req.method === 'GET') return json(await status(uid));
+  if (req.method === 'GET') return json(await gateStatus(uid));
   if (req.method !== 'POST') return json({ error: 'method' }, 405);
 
   const b = await req.json().catch(() => ({}));

@@ -1,10 +1,12 @@
 // POST /api/propose — signed-in users propose a tag or an identity for a wallet; admins approve in /admin.
 // {kind:'tag', addr, tag, note?} | {kind:'identity', addr, x?, name?, evidence?}
 import { readSession, updateJson, readRaw, USERS_PATH, json } from '../lib/store.mjs';
+import { gateStatus, GATE_DENIED } from '../lib/gate.mjs';
 const TAGS_OK = ['CT', 'WHALE', 'SNIPE', 'DIAMOND', 'OG', 'DEV', 'MM', 'CEX', 'SCAM', 'INSIDER'];
 export default async (req) => {
   if (req.method !== 'POST') return json({ error: 'method' }, 405);
   const uid = await readSession(req); if (!uid) return json({ error: 'sign in' }, 401);
+  if (!(await gateStatus(uid)).allowed) return json({ error: GATE_DENIED, gate: true }, 403);
   const b = await req.json().catch(() => ({}));
   const addr = String(b.addr || '').toLowerCase();
   if (!/^0x[0-9a-f]{40}$/.test(addr)) return json({ error: 'bad address' }, 400);

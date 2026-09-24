@@ -421,6 +421,29 @@
   .view td.r,.view th.r{text-align:right}
   
   .modal{position:fixed;inset:0;background:rgba(3,8,18,.7);display:none;place-items:center;z-index:20;backdrop-filter:blur(4px)}
+  /* private-beta gate: covers the app until the signed-in wallet is admin, whitelisted, or has redeemed a code; sits under the sign-in modal */
+  .gate{position:fixed;inset:0;z-index:18;background:var(--abyss);display:none;place-items:center;grid-template-columns:minmax(0,440px);justify-content:center;padding:24px 16px;overflow:auto}
+  .gate.show{display:grid}
+  .gate .gin{width:100%;border:1px solid var(--text);background:var(--panel);padding:30px 24px 22px}
+  .gate .glogo{display:flex;align-items:center;gap:10px;color:var(--brand)}
+  .gate .glogo svg{display:block}
+  .gate .gword{color:var(--text)}
+  .gate .gtag{font:500 10.5px var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:22px 0 0;display:flex;align-items:center;gap:8px}
+  .gate .gtag i{width:5px;height:5px;background:var(--brand);display:block}
+  .gate h2{margin:10px 0 8px;font-size:26px;line-height:1.08;letter-spacing:-.035em;font-weight:700}
+  .gate p{color:var(--muted);font-size:14px;line-height:1.5;margin:0 0 18px}
+  .gate .gwal{font:500 12px var(--font-mono);background:var(--panel2);padding:8px 10px;margin:0 0 14px;color:var(--text);word-break:break-all}
+  .gate .grow{display:flex}
+  .gate .grow input{flex:1;min-width:0;height:44px;border:1px solid var(--text);border-right:0;padding:0 12px;font:500 13.5px var(--font-mono);letter-spacing:.04em;text-transform:uppercase;background:var(--panel);color:var(--text)}
+  .gate .grow input::placeholder{text-transform:none;letter-spacing:0;color:var(--dim)}
+  .gate .gbtn{height:44px;padding:0 18px;background:var(--text);color:#fff;font-weight:600;font-size:14px;border:1px solid var(--text);white-space:nowrap}
+  .gate .gbtn.full{width:100%}
+  .gate .gbtn:disabled{opacity:.5}
+  .gate .gmsg{min-height:18px;font-size:12.5px;margin-top:9px;color:var(--coral)}
+  .gate .gmsg.ok{color:var(--brand)}
+  .gate .gfoot{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .gate .gfoot a,.gate .gfoot button{color:var(--brand);font-weight:600}
+  html.gated body{overflow:hidden}
   .modal.show{display:grid}
   .modal .in{width:480px;background:var(--panel);border:1px solid var(--line2);border-radius:var(--r);padding:24px}
   .modal h4{font:900 16px var(--font-display);text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px}
@@ -557,6 +580,10 @@
     </div></div>
   </aside>
 
+  <div class="gate show" id="gate" role="dialog" aria-modal="true" aria-labelledby="gateH"><div class="gin" id="gateIn">
+    <div class="glogo"><svg width="26" height="26"><use href="#reefmark"/></svg><svg class="gword" width="80" height="26" viewBox="0 0 197.8 64"><use href="#reefword"/></svg></div>
+    <p class="gtag"><i></i>Private beta</p><h2 id="gateH">Checking access…</h2>
+  </div></div>
   <div class="modal" id="signin" onclick="if(event.target===this)closeSignIn()"><div class="in" id="signinIn" style="width:440px;max-width:94vw"></div></div>
   <footer class="foot"><span><svg style="width:12px;height:12px;vertical-align:-2px;color:var(--brand)"><use href="#reefmark"/></svg> <b>REEF</b> · the Base ecosystem, as a sea of wallets.</span><span>·</span><span id="modeNote">Data shown here is <b>simulated</b> for the prototype</span><span class="r">There's always a bigger whale · NFA</span></footer>
 </div>
@@ -1630,12 +1657,56 @@ async function acctInit(){
       await acctAfterLogin(mode==='link'?'Account linked':'Signed in');if(mode==='link')setView('profile');
     }catch(e){toastMsg('Sign-in failed: '+esc(e.message||'try again'),'var(--coral)')}
   }else if(hasPrivySession()){try{await privyInit();if(await acctToken()){const j=await acctApi('/api/me');acctSet(j.user)}}catch{}}
-  acctNav();if(view==='alerts')renderAlerts();if(view==='profile')renderProfile()}
+  acctNav();if(view==='alerts')renderAlerts();if(view==='profile')renderProfile();gateCheck()}
 function acctSet(u){ACCT.user=u;if(u&&ACCT.seenHits===null)ACCT.seenHits=new Set((u.hits||[]).map(h=>h.id));acctNav()}
 function acctNav(){const b=document.querySelector('#nav button[data-view="profile"] span');if(b)b.textContent=ACCT.user?(ACCT.user.label||'Account'):'Sign in';const h=document.getElementById('acctBtn');if(h){h.textContent=ACCT.user?(ACCT.user.label||'Account'):'Sign in';h.classList.toggle('signed',!!ACCT.user)}}
-async function acctAfterLogin(msg){let j;try{j=await acctApi('/api/me?sync=1')}catch(e){throw new Error('signed in with Privy, but the account service said: '+errText(e))}ACCT.seenHits=null;acctSet(j.user);toastMsg(`${msg} as <b>${esc(j.user.label)}</b>`,'var(--teal)');closeSignIn();if(view==='alerts')renderAlerts();if(view==='profile')renderProfile();if(view==='wallet'&&location.hash.startsWith('#w='))openProfileByAddr(location.hash.slice(3));const f=ACCT.after;ACCT.after=null;if(f)try{f()}catch{}}
+async function acctAfterLogin(msg){let j;try{j=await acctApi('/api/me?sync=1')}catch(e){throw new Error('signed in with Privy, but the account service said: '+errText(e))}ACCT.seenHits=null;acctSet(j.user);toastMsg(`${msg} as <b>${esc(j.user.label)}</b>`,'var(--teal)');closeSignIn();gateCheck();if(view==='alerts')renderAlerts();if(view==='profile')renderProfile();if(view==='wallet'&&location.hash.startsWith('#w='))openProfileByAddr(location.hash.slice(3));const f=ACCT.after;ACCT.after=null;if(f)try{f()}catch{}}
 async function acctRefresh(){if(!ACCT.user)return false;try{const j=await acctApi('/api/me');const fresh=(j.user.hits||[]).filter(h=>!ACCT.seenHits.has(h.id));fresh.slice(0,3).forEach(h=>toastMsg(`<b>${esc(h.title)}</b>`,h.usd>=0?'var(--teal)':'var(--coral)'));fresh.forEach(h=>ACCT.seenHits.add(h.id));ACCT.user=j.user;return fresh.length>0}catch{return false}}
-async function acctSignOut(rerender=true){try{if(ACCT.privy)await ACCT.privy.logout()}catch{}ACCT.token=null;ACCT.user=null;ACCT.seenHits=null;acctNav();if(rerender){if(view==='profile')setView('aquarium');else if(view==='alerts')renderAlerts()}}
+async function acctSignOut(rerender=true){try{if(ACCT.privy)await ACCT.privy.logout()}catch{}ACCT.token=null;ACCT.user=null;ACCT.seenHits=null;acctNav();gateCheck();if(rerender){if(view==='profile')setView('aquarium');else if(view==='alerts')renderAlerts()}}
+/* ---- private-beta gate ----
+   The app is covered until the signed-in user is an admin, has a whitelisted wallet, or redeems an access code.
+   The server enforces the same rule on every paid or write action (lib/gate.mjs) — this screen is the front door, not the lock. */
+const GATE={state:'checking',wallets:[],err:''};
+const WAITLIST_URL='https://usereef.io/#wlEmail';
+function gateShow(on){const g=document.getElementById('gate');if(g)g.classList.toggle('show',!!on);document.documentElement.classList.toggle('gated',!!on)}
+function gateRender(){
+  const el=document.getElementById('gateIn');if(!el)return;
+  const head=`<div class="glogo"><svg width="26" height="26"><use href="#reefmark"/></svg><svg class="gword" width="80" height="26" viewBox="0 0 197.8 64"><use href="#reefword"/></svg></div><p class="gtag"><i></i>Private beta</p>`;
+  const foot=(extra)=>`<div class="gfoot"><span>No access yet? <a href="${WAITLIST_URL}">Join the waitlist</a></span>${extra||''}</div>`;
+  const out=`<button onclick="acctSignOut()">Sign out</button>`;
+  const wal=GATE.wallets.length?`<div class="gwal">${GATE.wallets.map(w=>esc(w)).join('<br>')}</div>`:'';
+  const S=GATE.state;
+  if(S==='checking'){el.innerHTML=head+`<h2 id="gateH">Checking access…</h2>`;return}
+  if(S==='signed-out'){el.innerHTML=head+`<h2 id="gateH">REEF is invite-only for now.</h2>
+    <p>Sign in with the wallet you were whitelisted with, or with any account and an access code.</p>
+    <button class="gbtn full" onclick="openSignIn('login')">Sign in</button>`+foot();return}
+  if(S==='no-wallet'){el.innerHTML=head+`<h2 id="gateH">Connect your wallet.</h2>
+    <p>Access is tied to a wallet. You're signed in as <b>${esc((ACCT.user&&ACCT.user.label)||'your account')}</b> — link the wallet that was whitelisted, or the one you'll use with an access code.</p>
+    <button class="gbtn full" onclick="openSignIn('link')">Connect wallet</button>`+foot(out);return}
+  if(S==='not-whitelisted'){el.innerHTML=head+`<h2 id="gateH">Enter your access code.</h2>
+    <p>This wallet isn't on the list yet. A code whitelists it for good.</p>${wal}
+    <div class="grow"><input id="gateCode" placeholder="REEF-XXXX-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false" maxlength="30" onkeydown="if(event.key==='Enter')gateRedeem()"><button class="gbtn" id="gateGo" onclick="gateRedeem()">Enter</button></div>
+    <div class="gmsg" id="gateMsg" role="status"></div>`+foot(`<span><button onclick="openSignIn('link')">Use another wallet</button> · ${out}</span>`);
+    setTimeout(()=>{const i=document.getElementById('gateCode');i&&i.focus()},50);return}
+  el.innerHTML=head+`<h2 id="gateH">We couldn't check your access.</h2>
+    <p>${S==='no-db'?'The access service is unavailable right now.':esc(GATE.err||'Something went wrong.')} Try again in a moment.</p>
+    <button class="gbtn full" onclick="gateCheck()">Try again</button>`+foot(out);
+}
+async function gateCheck(){
+  if(!ACCT.user){GATE.state='signed-out';GATE.wallets=[];gateShow(true);gateRender();return}
+  try{const j=await acctApi('/api/gate');GATE.wallets=j.wallets||[];
+    if(j.allowed){GATE.state='in';gateShow(false);return}
+    GATE.state=j.reason||'not-whitelisted';
+  }catch(e){if(/401/.test(String(e&&e.message))){await acctSignOut(false);return}GATE.state='error';GATE.err=errText(e)}
+  gateShow(true);gateRender()}
+async function gateRedeem(){
+  const inp=document.getElementById('gateCode'),btn=document.getElementById('gateGo'),msg=document.getElementById('gateMsg');
+  const say=(t,ok)=>{if(msg){msg.textContent=t;msg.className='gmsg'+(ok?' ok':'')}};
+  const code=String(inp&&inp.value||'').trim().toUpperCase().replace(/\s+/g,'');
+  if(!/^REEF(-[0-9A-Z]{4}){4}$/.test(code)){say('Codes look like REEF-XXXX-XXXX-XXXX-XXXX.');inp&&inp.focus();return}
+  btn.disabled=true;say('Checking…',true);
+  try{await acctApi('/api/gate',{code});say('You’re in.',true);toastMsg('Welcome to <b>REEF</b>','var(--teal)');await gateCheck()}
+  catch(e){say(errText(e));btn.disabled=false}}
 /* requireAuth(fn): run fn now if signed in, else open the sign-in modal and run it after */
 function requireAuth(fn){if(ACCT.user){fn&&fn();return true}ACCT.after=fn||null;openSignIn('login');return false}
 /* ---- sign-in / link modal ---- */
