@@ -1736,7 +1736,7 @@ function gateRender(){
   if(S==='not-whitelisted'){el.innerHTML=head+`<h2 id="gateH">Enter your access code.</h2>
     <p>This wallet isn't on the list yet. A code whitelists it for good.</p>${wal}
     <div class="grow"><input id="gateCode" placeholder="REEF-XXXX-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false" maxlength="30" onkeydown="if(event.key==='Enter')gateRedeem()"><button class="gbtn" id="gateGo" onclick="gateRedeem()">Enter</button></div>
-    <div class="gmsg" id="gateMsg" role="status"></div>`+foot(`<span><button onclick="openSignIn('link')">Use another wallet</button> · ${out}</span>`);
+    <div class="gmsg" id="gateMsg" role="status"></div>`+foot(`<span><button onclick="acctSwitchWallet()">Use another wallet</button> · ${out}</span>`);
     setTimeout(()=>{const i=document.getElementById('gateCode');i&&i.focus()},50);return}
   el.innerHTML=head+`<h2 id="gateH">We couldn't check your access.</h2>
     <p>${S==='no-db'?'The access service is unavailable right now.':esc(GATE.err||'Something went wrong.')} Try again in a moment.</p>
@@ -1776,7 +1776,7 @@ function renderSignIn(){const link=SI.mode==='link';const el=document.getElement
     ${SI.step==='code'?`<div class="sirow"><input id="siCode" placeholder="6-digit code from your email" inputmode="numeric" autocomplete="one-time-code" onkeydown="if(event.key==='Enter')siEmailCode()"><button class="btn primary" onclick="siEmailCode()">${link?'Link email':'Sign in'}</button></div><div style="color:var(--dim);font-size:11.5px;margin:-4px 0 10px">Code sent to <b>${esc(SI.email)}</b> · <button onclick="SI.step='start';renderSignIn()" style="color:var(--teal);font-weight:700">change</button></div>`
     :`<div class="sirow"><input id="siEmail" type="email" placeholder="you@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')siEmailSend()"><button class="btn primary" onclick="siEmailSend()">${link?'Link email':'Continue'}</button></div>`}
     <div class="sior"><i></i><span>or</span><i></i></div>
-    <div class="sigrid">${btn('Google',"siOAuth('google')",'<b class="sig">G</b>')}${btn('X / Twitter',"siOAuth('twitter')",ICON_X)}${btn(link?'Verify a wallet':'Wallet',"siWallet()",'<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" shape-rendering="crispEdges"><rect x="1" y="3" width="14" height="10"/><rect x="10" y="7" width="3" height="2" fill="#fff"/></svg>')}</div>
+    <div class="sigrid">${btn('Google',"siOAuth('google')",'<b class="sig">G</b>')}${btn('X / Twitter',"siOAuth('twitter')",ICON_X)}${btn(link?'Add a wallet to this account':'Wallet',"siWallet()",'<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" shape-rendering="crispEdges"><rect x="1" y="3" width="14" height="10"/><rect x="10" y="7" width="3" height="2" fill="#fff"/></svg>')}</div>
     ${link?'':`<button class="silink" onclick="siWallet(true)">Use a different wallet account</button>`}
     <div id="siMsg" style="min-height:16px;color:var(--muted);font-size:11.5px;margin-top:8px"></div>
     <div style="color:var(--dim);font-size:11px;margin-top:6px">Wallet sign-in is a gas-free signature. We never ask for a transaction. Powered by Privy.</div>`}
@@ -1842,6 +1842,8 @@ const errText=e=>{const m=(e&&(e.message||e.error||e.code))||'';return typeof m=
 async function siWallet(pick,chosen){const eth=window.ethereum;if(!eth){siMsg('No wallet found in this browser — install MetaMask, Coinbase Wallet or Rabby, or use email.',true);return}
   try{siMsg('Waiting for your wallet…');const p=await privyInit();
     let raw;
+    // a plain sign-in must never attach the wallet to a session that is still alive in Privy: end any old session first
+    if(SI.mode==='login'){try{await p.logout()}catch{}ACCT.token=null}
     if(SI.mode==='claim'){ // must sign with the wallet being claimed: open the account picker, then insist on that account
       try{await eth.request({method:'wallet_requestPermissions',params:[{eth_accounts:{}}]})}catch(e){if(e&&e.code===4001)throw e}
       const accts=(await eth.request({method:'eth_accounts'}))||[];raw=accts.find(x=>String(x).toLowerCase()===SI.addr);
@@ -1929,7 +1931,7 @@ function renderProfile(){const el=document.getElementById('profileView');if(!el)
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px">
       ${box('Accounts',`${row('Email',u.email?esc(u.email):'<span style="color:var(--dim)">none</span>')}${row('X',u.x?`<a href="https://x.com/${esc(u.x)}" target="_blank" rel="noopener" style="font-weight:700">@${esc(u.x)}</a>`:'<span style="color:var(--dim)">not linked</span>')}
         <div style="margin-top:10px;font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)">Wallets <span style="color:var(--dim);text-transform:none;letter-spacing:0">· ${(u.wallets||[]).length}</span></div>${wallets||'<div style="padding:6px 0;color:var(--dim);font-size:12px">No wallet linked yet.</div>'}
-        <div style="margin-top:10px"><button class="btn" onclick="openSignIn('link')">+ Verify another wallet / link email / X</button></div>
+        <div style="margin-top:10px"><button class="btn" onclick="openSignIn('link')">+ Add another wallet, email or X to this account</button></div>
         <div style="color:var(--dim);font-size:11px;margin-top:8px">Linking a wallet asks it for one gas-free signature — that is how we know it is yours. Linked wallets can be claimed below.</div>`)}
       ${box('Plan & usage',`${row('Plan',`<b>${u.plan}</b>`)}${row('Token fetches',`<b class="mono">${u.fetches.used} / ${u.fetches.limit}</b>`)}<div style="height:6px;background:var(--panel2);border:1px solid var(--line);margin:8px 0 6px"><i style="display:block;height:100%;width:${pct}%;background:${pct>=100?'var(--coral)':'var(--teal)'}"></i></div><div style="color:var(--dim);font-size:11px">"Fetch full data" on a pasted contract address uses one fetch. ${u.fetches.used>=u.fetches.limit?'You have used them all — bigger plans are coming soon.':`${u.fetches.limit-u.fetches.used} left on the free plan.`}</div>${row('Watches',`<b class="mono">${(u.watches||[]).length}</b> <button onclick="setView('alerts')" style="color:var(--teal);font-weight:700;font-size:11px">manage →</button>`)}${row('Telegram',tg)}`)}
       ${box('Your shark',`<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap"><span style="border:1px solid var(--line);background:var(--panel2);padding:6px">${av.v===2?avatarHtml(av,112):avatarHtml(av,64)}</span><div style="display:grid;gap:8px;font-size:12px;min-width:200px">
