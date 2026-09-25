@@ -1698,13 +1698,16 @@ let WM_BUSY=false;
 async function walletMismatch(list){const eth=window.ethereum;if(!ACCT.user||!eth||WM_BUSY)return;
   let accts=list;if(!accts){try{accts=await eth.request({method:'eth_accounts'})}catch{accts=[]}}
   const now=String((accts||[])[0]||'').toLowerCase(),mine=(ACCT.user.wallets||[]).map(x=>String(x).toLowerCase());
+  const prev=ACCT.active;ACCT.active=now||null;if(prev!==ACCT.active)acctNav();
   if(!now||!mine.length||mine.includes(now))return;
   WM_BUSY=true;try{const was=ACCT.user.label||short(mine[0]);await acctSignOut();
     openSignIn('login');siMsg(`Your wallet switched to ${short(now)}. Signed out of ${was}. Sign in with the new wallet:`);
     const e=document.getElementById('siMsg');if(e)e.insertAdjacentHTML('beforeend',`<div class="sipick"><button onclick="siWallet(false,'${now}')"><span>${short(now)}</span><span style="color:var(--accent)">Sign in →</span></button></div>`);
     toastMsg(`Wallet changed to <b>${short(now)}</b> — signed out of ${esc(was)}`,'var(--coral)')}finally{WM_BUSY=false}}
 if(window.ethereum&&window.ethereum.on)window.ethereum.on('accountsChanged',a=>walletMismatch(a||[]));
-function acctNav(){const b=document.querySelector('#nav button[data-view="profile"] span');if(b)b.textContent=ACCT.user?(ACCT.user.label||'Account'):'Sign in';const h=document.getElementById('acctBtn');if(h){h.textContent=ACCT.user?(ACCT.user.label||'Account'):'Sign in';h.classList.toggle('signed',!!ACCT.user)}}
+// the name shown is the wallet in use right now when it belongs to the account, otherwise the account's label
+function acctName(){if(!ACCT.user)return 'Sign in';const mine=(ACCT.user.wallets||[]).map(x=>String(x).toLowerCase());return ACCT.active&&mine.includes(ACCT.active)?short(ACCT.active):(ACCT.user.label||'Account')}
+function acctNav(){const b=document.querySelector('#nav button[data-view="profile"] span');if(b)b.textContent=acctName();const h=document.getElementById('acctBtn');if(h){h.textContent=acctName();h.title=ACCT.user&&(ACCT.user.wallets||[]).length>1?'Wallets on this account: '+ACCT.user.wallets.map(w=>short(String(w).toLowerCase())).join(', '):'';h.classList.toggle('signed',!!ACCT.user)}}
 async function acctAfterLogin(msg){let j;try{j=await acctApi('/api/me?sync=1')}catch(e){throw new Error('signed in with Privy, but the account service said: '+errText(e))}ACCT.seenHits=null;acctSet(j.user);toastMsg(`${msg} as <b>${esc(j.user.label)}</b>`,'var(--teal)');closeSignIn();gateCheck();if(view==='alerts')renderAlerts();if(view==='profile')renderProfile();if(view==='wallet'&&location.hash.startsWith('#w='))openProfileByAddr(location.hash.slice(3));const f=ACCT.after;ACCT.after=null;if(f)try{f()}catch{}}
 async function acctRefresh(){if(!ACCT.user)return false;try{const j=await acctApi('/api/me');const fresh=(j.user.hits||[]).filter(h=>!ACCT.seenHits.has(h.id));fresh.slice(0,3).forEach(h=>toastMsg(`<b>${esc(h.title)}</b>`,h.usd>=0?'var(--teal)':'var(--coral)'));fresh.forEach(h=>ACCT.seenHits.add(h.id));ACCT.user=j.user;return fresh.length>0}catch{return false}}
 /* switch wallet: sign out, then open the wallet's own account picker so another account can be chosen */
