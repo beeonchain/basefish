@@ -16,7 +16,6 @@
 <meta name="twitter:image" content="https://app.usereef.io/assets/og.png">
 </head>
 <body>
-<div class="wmbar" id="wmBar" role="status"></div>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Doto:wght@700;900&family=Inter+Tight:wght@400;500;600;700;800;900&family=Roboto+Mono:wght@400;500;700&display=swap">
 <style>
   :root{
@@ -464,11 +463,6 @@
   .modal p{color:var(--muted);margin:0 0 10px;font-size:13px}
   .sirow{display:flex;gap:6px;margin:8px 0 10px}.sirow input{flex:1;height:36px;padding:0 10px;font-size:13px;border:1px solid var(--line2)}
   .sior{display:flex;align-items:center;gap:10px;color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin:4px 0 10px}.sior i{flex:1;border-top:1px solid var(--line)}
-  .wmbar{display:none;position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:30;width:min(720px,calc(100% - 32px));background:var(--text);color:#fff;padding:12px 14px;font-size:13px;line-height:1.45;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;box-shadow:0 8px 24px rgba(10,11,13,.25)}
-  .wmbar.show{display:flex}
-  .wmbar b{color:#fff}
-  .wmbar button{height:32px;padding:0 12px;border:0;font-weight:700;font-size:12px;cursor:pointer;margin-left:6px;background:rgba(255,255,255,.14);color:#fff}
-  .wmbar button.go{background:var(--accent)}
   .silink{display:block;margin:10px 0 0;padding:0;border:0;background:none;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
   .sipick{display:flex;flex-direction:column;gap:6px;margin-top:10px}
   .sipick button{display:flex;justify-content:space-between;align-items:center;height:36px;padding:0 12px;border:1px solid var(--line2);background:var(--panel);font:600 12px var(--font-mono);cursor:pointer}
@@ -1697,16 +1691,18 @@ async function acctInit(){
   }else if(hasPrivySession()){try{await privyInit();if(await acctToken()){const j=await acctApi('/api/me');acctSet(j.user)}}catch{}}
   acctNav();if(view==='alerts')renderAlerts();if(view==='profile')renderProfile();gateCheck()}
 function acctSet(u){ACCT.user=u;if(u&&ACCT.seenHits===null)ACCT.seenHits=new Set((u.hits||[]).map(h=>h.id));acctNav();walletMismatch()}
-/* A REEF session belongs to the wallet that SIGNED IN (a signature), not to whichever account the wallet extension
-   has selected right now. Disconnecting or switching in MetaMask does not sign anyone out of REEF. So when the
-   extension's account differs from every wallet on the signed-in account, say so plainly and offer to switch. */
-async function walletMismatch(list){const bar=document.getElementById('wmBar');const eth=window.ethereum;
-  if(!bar)return;if(!ACCT.user||!eth){bar.classList.remove('show');return}
+/* The app follows the wallet: if the extension's account is not a wallet on the signed-in REEF account
+   (switched or reconnected in MetaMask), the old session ends at once and the new account is asked to sign in.
+   Access is then decided for the new wallet, never inherited from the old one. */
+let WM_BUSY=false;
+async function walletMismatch(list){const eth=window.ethereum;if(!ACCT.user||!eth||WM_BUSY)return;
   let accts=list;if(!accts){try{accts=await eth.request({method:'eth_accounts'})}catch{accts=[]}}
   const now=String((accts||[])[0]||'').toLowerCase(),mine=(ACCT.user.wallets||[]).map(x=>String(x).toLowerCase());
-  if(!now||!mine.length||mine.includes(now)){bar.classList.remove('show');return}
-  bar.innerHTML=`<span>Your wallet is on <b class="mono">${short(now)}</b>, but you're signed in to REEF as <b class="mono">${esc(ACCT.user.label||short(mine[0]))}</b>. Access and alerts follow the signed-in account.</span><span><button class="go" onclick="acctSwitchWallet()">Switch to this wallet</button><button onclick="document.getElementById('wmBar').classList.remove('show')">Keep</button></span>`;
-  bar.classList.add('show')}
+  if(!now||!mine.length||mine.includes(now))return;
+  WM_BUSY=true;try{const was=ACCT.user.label||short(mine[0]);await acctSignOut();
+    openSignIn('login');siMsg(`Your wallet switched to ${short(now)}. Signed out of ${was}. Sign in with the new wallet:`);
+    const e=document.getElementById('siMsg');if(e)e.insertAdjacentHTML('beforeend',`<div class="sipick"><button onclick="siWallet(false,'${now}')"><span>${short(now)}</span><span style="color:var(--accent)">Sign in →</span></button></div>`);
+    toastMsg(`Wallet changed to <b>${short(now)}</b> — signed out of ${esc(was)}`,'var(--coral)')}finally{WM_BUSY=false}}
 if(window.ethereum&&window.ethereum.on)window.ethereum.on('accountsChanged',a=>walletMismatch(a||[]));
 function acctNav(){const b=document.querySelector('#nav button[data-view="profile"] span');if(b)b.textContent=ACCT.user?(ACCT.user.label||'Account'):'Sign in';const h=document.getElementById('acctBtn');if(h){h.textContent=ACCT.user?(ACCT.user.label||'Account'):'Sign in';h.classList.toggle('signed',!!ACCT.user)}}
 async function acctAfterLogin(msg){let j;try{j=await acctApi('/api/me?sync=1')}catch(e){throw new Error('signed in with Privy, but the account service said: '+errText(e))}ACCT.seenHits=null;acctSet(j.user);toastMsg(`${msg} as <b>${esc(j.user.label)}</b>`,'var(--teal)');closeSignIn();gateCheck();if(view==='alerts')renderAlerts();if(view==='profile')renderProfile();if(view==='wallet'&&location.hash.startsWith('#w='))openProfileByAddr(location.hash.slice(3));const f=ACCT.after;ACCT.after=null;if(f)try{f()}catch{}}
