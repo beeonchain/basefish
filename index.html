@@ -1786,7 +1786,6 @@ function renderSignIn(){const link=SI.mode==='link';const el=document.getElement
     :`<div class="sirow"><input id="siEmail" type="email" placeholder="you@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')siEmailSend()"><button class="btn primary" onclick="siEmailSend()">${link?'Link email':'Continue'}</button></div>`}
     <div class="sior"><i></i><span>or</span><i></i></div>
     <div class="sigrid">${btn('Google',"siOAuth('google')",'<b class="sig">G</b>')}${btn('X / Twitter',"siOAuth('twitter')",ICON_X)}${btn(link?'Add wallet':'Wallet',"siWallet()",'<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" shape-rendering="crispEdges"><rect x="1" y="3" width="14" height="10"/><rect x="10" y="7" width="3" height="2" fill="#fff"/></svg>')}</div>
-    ${link?'':`<button class="silink" onclick="siWallet(true)">Use a different wallet account</button>`}
     <div id="siMsg" style="min-height:16px;color:var(--muted);font-size:11.5px;margin-top:8px"></div>
     <div style="color:var(--dim);font-size:11px;margin-top:6px">Wallet sign-in is a gas-free signature. We never ask for a transaction. Powered by Privy.</div>`}
 const siMsg=(m,err)=>{const e=document.getElementById('siMsg');if(e){e.textContent=m||'';e.style.color=err?'var(--coral)':'var(--muted)'}};
@@ -1865,7 +1864,7 @@ async function siWallet(pick,chosen){const eth=window.ethereum;if(!eth){siMsg('N
       raw=accts.find(x=>!mine.has(String(x).toLowerCase()));
       if(!raw){siMsg('That wallet is already linked. In your wallet, connect or select the other account, then try again.',true);return}
     }else if(chosen){raw=chosen}
-    else if(pick){ // "use a different wallet account": wallet_requestPermissions opens the wallet's account picker even when a site is already connected
+    else{ // every wallet sign-in opens the wallet's own account picker, so the person always chooses which account signs
       siMsg('Choose the account in your wallet…');
       try{await eth.request({method:'wallet_requestPermissions',params:[{eth_accounts:{}}]})}catch(e){if(e&&e.code===4001)throw e}
       const accts=(await eth.request({method:'eth_accounts'}))||[];
@@ -1874,7 +1873,6 @@ async function siWallet(pick,chosen){const eth=window.ethereum;if(!eth){siMsg('N
         const e=document.getElementById('siMsg');siMsg('Sign in with which account?');
         e.insertAdjacentHTML('beforeend',`<div class="sipick">${accts.map(a=>`<button onclick="siWallet(false,'${a}')"><span>${short(String(a).toLowerCase())}</span><span style="color:var(--accent)">Sign →</span></button>`).join('')}</div>`);return}
       raw=accts[0]}
-    else{[raw]=await eth.request({method:'eth_requestAccounts'})}
     await ensureBase(eth);SI.raw=raw;
     const addr=toChecksum(raw);const wallet={address:addr,chainId:'eip155:8453'};const {message}=await p.auth.siwe.init(wallet,location.host,location.origin);
     siMsg('Sign the message in your wallet (gas-free)…');const sig=await eth.request({method:'personal_sign',params:[message,raw]});
