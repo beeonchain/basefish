@@ -1,6 +1,11 @@
 name: db migrate
 on:
   workflow_dispatch:
+    inputs:
+      add_wallets:
+        description: 'Wallets to whitelist (comma-separated)'
+        required: false
+        default: ''
   push:
     branches: [main]
     paths:
@@ -25,7 +30,10 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           ADMIN_IDS: ${{ secrets.ADMIN_IDS }}
-        run: node scripts/db_migrate.mjs
+          ADD_WALLETS: ${{ github.event.inputs.add_wallets }}
+        run: |
+          for w in $(echo "$ADD_WALLETS" | tr ',' ' '); do echo "::add-mask::$w"; done
+          node scripts/db_migrate.mjs
       - name: commit status
         run: |
           git config user.name "Claude"
