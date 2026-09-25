@@ -1713,6 +1713,7 @@ async function acctRefresh(){if(!ACCT.user)return false;try{const j=await acctAp
 async function acctUnlinkWallet(w){if(!confirm(`Remove ${short(w)} from this account? It will no longer sign in as you or share your access.`))return;
   try{const p=await privyInit();await p.auth.siwe.unlinkWallet(toChecksum(w));const j=await acctApi('/api/me?sync=1');acctSet(j.user);toastMsg(`Removed <b>${short(w)}</b> from your account`,'var(--teal)');renderProfile();gateCheck()}
   catch(e){toastMsg('Could not remove it: '+esc(errText(e)),'var(--coral)')}}
+async function siUseWallet(w){await acctSignOut(false);openSignIn('login');siWallet(false,w)}
 /* switch wallet: sign out, then open the wallet's own account picker so another account can be chosen */
 async function acctSwitchWallet(){await acctSignOut(false);openSignIn('login');siWallet(true)}
 /* end the Privy session for real. (Privy's method is privy.auth.logout — the old call to privy.logout() didn't exist,
@@ -1784,7 +1785,7 @@ function renderSignIn(){const link=SI.mode==='link';const el=document.getElement
     ${SI.step==='code'?`<div class="sirow"><input id="siCode" placeholder="6-digit code from your email" inputmode="numeric" autocomplete="one-time-code" onkeydown="if(event.key==='Enter')siEmailCode()"><button class="btn primary" onclick="siEmailCode()">${link?'Link email':'Sign in'}</button></div><div style="color:var(--dim);font-size:11.5px;margin:-4px 0 10px">Code sent to <b>${esc(SI.email)}</b> · <button onclick="SI.step='start';renderSignIn()" style="color:var(--teal);font-weight:700">change</button></div>`
     :`<div class="sirow"><input id="siEmail" type="email" placeholder="you@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')siEmailSend()"><button class="btn primary" onclick="siEmailSend()">${link?'Link email':'Continue'}</button></div>`}
     <div class="sior"><i></i><span>or</span><i></i></div>
-    <div class="sigrid">${btn('Google',"siOAuth('google')",'<b class="sig">G</b>')}${btn('X / Twitter',"siOAuth('twitter')",ICON_X)}${btn(link?'Add a wallet to this account':'Wallet',"siWallet()",'<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" shape-rendering="crispEdges"><rect x="1" y="3" width="14" height="10"/><rect x="10" y="7" width="3" height="2" fill="#fff"/></svg>')}</div>
+    <div class="sigrid">${btn('Google',"siOAuth('google')",'<b class="sig">G</b>')}${btn('X / Twitter',"siOAuth('twitter')",ICON_X)}${btn(link?'Add wallet':'Wallet',"siWallet()",'<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" shape-rendering="crispEdges"><rect x="1" y="3" width="14" height="10"/><rect x="10" y="7" width="3" height="2" fill="#fff"/></svg>')}</div>
     ${link?'':`<button class="silink" onclick="siWallet(true)">Use a different wallet account</button>`}
     <div id="siMsg" style="min-height:16px;color:var(--muted);font-size:11.5px;margin-top:8px"></div>
     <div style="color:var(--dim);font-size:11px;margin-top:6px">Wallet sign-in is a gas-free signature. We never ask for a transaction. Powered by Privy.</div>`}
@@ -1874,7 +1875,7 @@ async function siWallet(pick,chosen){const eth=window.ethereum;if(!eth){siMsg('N
         e.insertAdjacentHTML('beforeend',`<div class="sipick">${accts.map(a=>`<button onclick="siWallet(false,'${a}')"><span>${short(String(a).toLowerCase())}</span><span style="color:var(--accent)">Sign →</span></button>`).join('')}</div>`);return}
       raw=accts[0]}
     else{[raw]=await eth.request({method:'eth_requestAccounts'})}
-    await ensureBase(eth);
+    await ensureBase(eth);SI.raw=raw;
     const addr=toChecksum(raw);const wallet={address:addr,chainId:'eip155:8453'};const {message}=await p.auth.siwe.init(wallet,location.host,location.origin);
     siMsg('Sign the message in your wallet (gas-free)…');const sig=await eth.request({method:'personal_sign',params:[message,raw]});
     siMsg('Verifying…');
@@ -1882,7 +1883,12 @@ async function siWallet(pick,chosen){const eth=window.ethereum;if(!eth){siMsg('N
       if(ACCT.user&&!already)await p.auth.siwe.linkWithSiwe(sig,wallet,message);else if(!ACCT.user)await p.auth.siwe.loginWithSiwe(sig,wallet,message,'login-or-sign-up');
       await acctAfterLogin('Wallet verified');closeSignIn();await claimWallet(SI.addr,true);return}
     if(SI.mode==='link')await p.auth.siwe.linkWithSiwe(sig,wallet,message);else await p.auth.siwe.loginWithSiwe(sig,wallet,message,'login-or-sign-up');
-    await acctAfterLogin(SI.mode==='link'?'Wallet linked':'Signed in');if(SI.mode==='link')renderProfile()}catch(e){console.error('sign-in',e);siMsg(e&&e.code===4001?'Cancelled in your wallet.':'Sign-in failed: '+errText(e),!(e&&e.code===4001));toastMsg('Sign-in failed: '+esc(errText(e)),'var(--coral)')}}
+    await acctAfterLogin(SI.mode==='link'?'Wallet linked':'Signed in');if(SI.mode==='link')renderProfile()}catch(e){console.error('sign-in',e);
+    // adding a wallet that already has its own REEF account: that's the person's other account, not a clash. Offer to sign in with it.
+    if(SI.mode!=='login'&&SI.raw&&/already (been )?linked|another user/i.test(errText(e))){const w=String(SI.raw).toLowerCase();
+      siMsg(`${short(w)} already has its own REEF account (it signed in before on its own). It can't be added to this one, but you can sign in with it instead:`);
+      const m=document.getElementById('siMsg');if(m)m.insertAdjacentHTML('beforeend',`<div class="sipick"><button onclick="siUseWallet('${w}')"><span>Sign in as ${short(w)}</span><span style="color:var(--accent)">Sign in →</span></button></div>`);return}
+    siMsg(e&&e.code===4001?'Cancelled in your wallet.':'Sign-in failed: '+errText(e),!(e&&e.code===4001));toastMsg('Sign-in failed: '+esc(errText(e)),'var(--coral)')}}
 /* ---- watches (Alerts tab) ---- */
 async function acctAdd(){const w=(document.getElementById('acctW').value||'').trim(),t=document.getElementById('acctT').value;if(!/^0x[0-9a-fA-F]{40}$/.test(w)){toastMsg('Paste a full wallet address (0x…40 hex).','var(--coral)');return}
   try{const j=await acctApi('/api/me',{op:'add',w,t});ACCT.user=j.user;toastMsg(`Watching <b>${short(w.toLowerCase())}</b> for $${t}`,'var(--teal)');renderAlerts()}catch(e){toastMsg(esc(e.message),'var(--coral)')}}
