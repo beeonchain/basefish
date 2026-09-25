@@ -1710,9 +1710,17 @@ function acctName(){if(!ACCT.user)return 'Sign in';const mine=(ACCT.user.wallets
 function acctNav(){const b=document.querySelector('#nav button[data-view="profile"] span');if(b)b.textContent=acctName();const h=document.getElementById('acctBtn');if(h){h.textContent=acctName();h.title=ACCT.user&&(ACCT.user.wallets||[]).length>1?'Wallets on this account: '+ACCT.user.wallets.map(w=>short(String(w).toLowerCase())).join(', '):'';h.classList.toggle('signed',!!ACCT.user)}}
 async function acctAfterLogin(msg){let j;try{j=await acctApi('/api/me?sync=1')}catch(e){throw new Error('signed in with Privy, but the account service said: '+errText(e))}ACCT.seenHits=null;acctSet(j.user);toastMsg(`${msg} as <b>${esc(j.user.label)}</b>`,'var(--teal)');closeSignIn();gateCheck();if(view==='alerts')renderAlerts();if(view==='profile')renderProfile();if(view==='wallet'&&location.hash.startsWith('#w='))openProfileByAddr(location.hash.slice(3));const f=ACCT.after;ACCT.after=null;if(f)try{f()}catch{}}
 async function acctRefresh(){if(!ACCT.user)return false;try{const j=await acctApi('/api/me');const fresh=(j.user.hits||[]).filter(h=>!ACCT.seenHits.has(h.id));fresh.slice(0,3).forEach(h=>toastMsg(`<b>${esc(h.title)}</b>`,h.usd>=0?'var(--teal)':'var(--coral)'));fresh.forEach(h=>ACCT.seenHits.add(h.id));ACCT.user=j.user;return fresh.length>0}catch{return false}}
+async function acctUnlinkWallet(w){if(!confirm(`Remove ${short(w)} from this account? It will no longer sign in as you or share your access.`))return;
+  try{const p=await privyInit();await p.auth.siwe.unlinkWallet(toChecksum(w));const j=await acctApi('/api/me?sync=1');acctSet(j.user);toastMsg(`Removed <b>${short(w)}</b> from your account`,'var(--teal)');renderProfile();gateCheck()}
+  catch(e){toastMsg('Could not remove it: '+esc(errText(e)),'var(--coral)')}}
 /* switch wallet: sign out, then open the wallet's own account picker so another account can be chosen */
 async function acctSwitchWallet(){await acctSignOut(false);openSignIn('login');siWallet(true)}
-async function acctSignOut(rerender=true){try{if(ACCT.privy)await ACCT.privy.logout()}catch{}ACCT.token=null;ACCT.user=null;ACCT.seenHits=null;acctNav();gateCheck();if(rerender){if(view==='profile')setView('aquarium');else if(view==='alerts')renderAlerts()}}
+/* end the Privy session for real. (Privy's method is privy.auth.logout — the old call to privy.logout() didn't exist,
+   threw silently, and left the session alive, so the next wallet that signed in was ADDED to the old account.) */
+async function privyEnd(){try{if(ACCT.privy)await ACCT.privy.auth.logout()}catch(e){console.warn('privy logout',e)}
+  try{Object.keys(localStorage).filter(k=>/^privy/i.test(k)).forEach(k=>localStorage.removeItem(k))}catch{}
+  ACCT.privy=null;ACCT.token=null}
+async function acctSignOut(rerender=true){await privyEnd();ACCT.token=null;ACCT.user=null;ACCT.seenHits=null;acctNav();gateCheck();if(rerender){if(view==='profile')setView('aquarium');else if(view==='alerts')renderAlerts()}}
 /* ---- private-beta gate ----
    The app is covered until the signed-in user is an admin, has a whitelisted wallet, or redeems an access code.
    The server enforces the same rule on every paid or write action (lib/gate.mjs) — this screen is the front door, not the lock. */
@@ -1782,10 +1790,10 @@ function renderSignIn(){const link=SI.mode==='link';const el=document.getElement
     <div style="color:var(--dim);font-size:11px;margin-top:6px">Wallet sign-in is a gas-free signature. We never ask for a transaction. Powered by Privy.</div>`}
 const siMsg=(m,err)=>{const e=document.getElementById('siMsg');if(e){e.textContent=m||'';e.style.color=err?'var(--coral)':'var(--muted)'}};
 async function siEmailSend(){const em=(document.getElementById('siEmail').value||'').trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){siMsg('Enter a valid email');return}
-  try{siMsg('Sending code…');const p=await privyInit();await p.auth.email.sendCode(em);SI.email=em;SI.step='code';renderSignIn();setTimeout(()=>{const i=document.getElementById('siCode');i&&i.focus()},50)}catch(e){siMsg(e.message||'could not send the code')}}
+  try{siMsg('Sending code…');if(SI.mode==='login')await privyEnd();const p=await privyInit();await p.auth.email.sendCode(em);SI.email=em;SI.step='code';renderSignIn();setTimeout(()=>{const i=document.getElementById('siCode');i&&i.focus()},50)}catch(e){siMsg(e.message||'could not send the code')}}
 async function siEmailCode(){const code=(document.getElementById('siCode').value||'').trim();if(code.length<4){siMsg('Enter the code');return}
   try{siMsg('Checking…');const p=await privyInit();if(SI.mode==='link')await p.auth.email.linkWithCode(SI.email,code);else await p.auth.email.loginWithCode(SI.email,code);await acctAfterLogin(SI.mode==='link'?'Email linked':'Signed in');if(SI.mode==='link')renderProfile()}catch(e){console.error('sign-in',e);siMsg('Sign-in failed: '+errText(e))}}
-async function siOAuth(provider){try{siMsg('Redirecting…');const p=await privyInit();sessionStorage.setItem('pv_mode',SI.mode);const r=await p.auth.oauth.generateURL(provider,location.origin+location.pathname);location.assign(r.url||r)}catch(e){siMsg(e.message||'could not start '+provider)}}
+async function siOAuth(provider){try{siMsg('Redirecting…');if(SI.mode==='login')await privyEnd();const p=await privyInit();sessionStorage.setItem('pv_mode',SI.mode);const r=await p.auth.oauth.generateURL(provider,location.origin+location.pathname);location.assign(r.url||r)}catch(e){siMsg(e.message||'could not start '+provider)}}
 /* keccak-256 (same code as scripts/keccak.mjs) → EIP-55 checksum addresses. SIWE requires the checksummed form; wallets hand us lowercase. */
 const RC = [1n, 0x8082n, 0x800000000000808an, 0x8000000080008000n, 0x808bn, 0x80000001n,
   0x8000000080008081n, 0x8000000000008009n, 0x8an, 0x88n, 0x80008009n, 0x8000000an,
@@ -1840,10 +1848,12 @@ async function ensureBase(eth){const cid=await eth.request({method:'eth_chainId'
   try{await eth.request({method:'wallet_switchEthereumChain',params:[{chainId:'0x2105'}]})}catch(e){if(e&&(e.code===4902||/unrecognized|not added|4902/i.test(e.message||''))){await eth.request({method:'wallet_addEthereumChain',params:[BASE_CHAIN]})}else throw e}}
 const errText=e=>{const m=(e&&(e.message||e.error||e.code))||'';return typeof m==='string'&&m?m.slice(0,200):'something went wrong'};
 async function siWallet(pick,chosen){const eth=window.ethereum;if(!eth){siMsg('No wallet found in this browser — install MetaMask, Coinbase Wallet or Rabby, or use email.',true);return}
-  try{siMsg('Waiting for your wallet…');const p=await privyInit();
+  try{siMsg('Waiting for your wallet…');let p=await privyInit();
     let raw;
     // a plain sign-in must never attach the wallet to a session that is still alive in Privy: end any old session first
-    if(SI.mode==='login'){try{await p.logout()}catch{}ACCT.token=null}
+    if(SI.mode==='login'){await privyEnd();p=await privyInit();
+      let left=null;try{left=await p.getAccessToken()}catch{}
+      if(left){siMsg('Could not end the previous session. Reload the page and try again.',true);return}}
     if(SI.mode==='claim'){ // must sign with the wallet being claimed: open the account picker, then insist on that account
       try{await eth.request({method:'wallet_requestPermissions',params:[{eth_accounts:{}}]})}catch(e){if(e&&e.code===4001)throw e}
       const accts=(await eth.request({method:'eth_accounts'}))||[];raw=accts.find(x=>String(x).toLowerCase()===SI.addr);
@@ -1922,7 +1932,7 @@ function renderProfile(){const el=document.getElementById('profileView');if(!el)
   const u=ACCT.user,av=u.avatar||{fish:'medium',color:'blue',acc:'none'};
   const box=(t,inner,right)=>`<div class="card-ui" style="padding:0"><div style="display:flex;justify-content:space-between;align-items:baseline;padding:10px 14px;border-bottom:1px solid var(--line)"><b style="font-size:11px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)">${t}</b><span style="color:var(--dim);font-size:11px">${right||''}</span></div><div style="padding:12px 14px">${inner}</div></div>`;
   const row=(k,v)=>`<div style="display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid var(--line);font-size:12.5px"><span style="color:var(--muted)">${k}</span><span style="text-align:right;min-width:0">${v}</span></div>`;
-  const wallets=(u.wallets||[]).map(w=>`<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:12px"><span>${cpa(w)} ${u.claims&&u.claims[w]?'<span class="pill id" style="height:18px;font-size:10px">claimed</span>':''}</span><span style="display:flex;gap:8px"><button onclick="openProfileByAddr('${w}')" style="color:var(--teal);font-weight:700;font-size:11px">wallet page →</button></span></div>`).join('');
+  const wallets=(u.wallets||[]).map(w=>`<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:12px"><span>${cpa(w)} ${u.claims&&u.claims[w]?'<span class="pill id" style="height:18px;font-size:10px">claimed</span>':''}</span><span style="display:flex;gap:8px"><button onclick="openProfileByAddr('${w}')" style="color:var(--teal);font-weight:700;font-size:11px">wallet page →</button>${(u.wallets||[]).length>1?`<button onclick="acctUnlinkWallet('${w}')" style="color:var(--coral);font-weight:700;font-size:11px">remove</button>`:''}</span></div>`).join('');
   const claims=Object.entries(u.claims||{}).map(([a,c])=>`<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:12px"><span>${avatarHtml(av,22)} <b>${esc(c.name||u.label)}</b> · ${cpa(a)}</span><button onclick="claimWallet('${a}',false)" style="color:var(--coral);font-weight:800;font-size:11px">unclaim</button></div>`).join('');
   const pct=Math.min(100,Math.round(100*(u.fetches.used||0)/Math.max(1,u.fetches.limit)));
   const tg=u.tg?`<span style="color:var(--teal);font-weight:700">linked</span> <button onclick="acctOp('unlink')" style="color:var(--dim);font-size:11px">unlink</button>`:u.link?`send <code class="mono" style="font-weight:800;color:var(--teal)">/link ${u.link}</code> to <a href="https://t.me/${TG_BOT}" target="_blank" rel="noopener" style="color:var(--teal);font-weight:800">@${TG_BOT}</a> (15 min)`:`<button onclick="acctOp('linkcode')" style="border:1px solid var(--line);padding:3px 8px;font-size:11px;font-weight:700;color:var(--teal)">Link Telegram</button>`;
