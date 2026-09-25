@@ -1,12 +1,12 @@
 {
- "at": "2026-09-25T09:39:03.002Z",
+ "at": "2026-09-25T09:39:50.980Z",
  "whitelist": {
-  "n": 2
+  "n": 3
  },
  "manual": {
-  "asked": 0,
-  "added": 0,
-  "present": 0
+  "asked": 1,
+  "added": 1,
+  "present": 1
  },
  "codes": {
   "total": 100,
