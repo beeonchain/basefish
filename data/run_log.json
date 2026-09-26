@@ -1,5 +1,5 @@
 {
- "started": "2026-09-26T12:27:39.742Z",
+ "started": "2026-09-26T14:17:30.084Z",
  "tier": "hot",
  "tokens": {
   "BRETT": {
@@ -7,56 +7,56 @@
    "src": "bitquery",
    "top": 100,
    "infra": 35,
-   "price": 0.00598752
+   "price": 0.00602125
   },
   "TOSHI": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 46,
-   "price": 0.00013339
+   "price": 0.00013183
   },
   "BASECAT": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 6,
-   "price": 0.01698996
+   "price": 0.01672533
   },
   "AERO": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 58,
-   "price": 0.928092
+   "price": 0.894403
   },
   "VIRTUAL": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 54,
-   "price": 0.789242
+   "price": 0.785269
   },
   "SR": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 2,
-   "price": 0.00109774
+   "price": 0.00108301
   },
   "BPAD": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 1,
-   "price": 0.00007679
+   "price": 0.00007668
   },
   "EDEL": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 4,
-   "price": 0.03019269
+   "price": 0.03056355
   },
   "VVV": {
    "ok": true,
@@ -70,70 +70,70 @@
    "src": "bitquery",
    "top": 100,
    "infra": 6,
-   "price": 0.419281
+   "price": 0.419411
   },
   "TIBBIR": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 4,
-   "price": 0.289765
+   "price": 0.275088
   },
   "AWE": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 36,
-   "price": 0.07039
+   "price": 0.0714
   },
   "CHIP": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 19,
-   "price": 0.04898227
+   "price": 0.04856863
   },
   "MAG7SSI": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 10,
-   "price": 0.564477
+   "price": 0.563904
   },
   "O": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 15,
-   "price": 0.544371
+   "price": 0.543247
   },
   "DIEM": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 23,
-   "price": 1982.66
+   "price": 1983.72
   },
   "NOCK": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 5,
-   "price": 0.03138213
+   "price": 0.03169488
   },
   "OMI": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 18,
-   "price": 0.00022973
+   "price": 0.00023006
   },
   "FRENPET": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 3,
-   "price": 7.58
+   "price": 7.71
   },
   "BIM": {
    "ok": true,
@@ -147,71 +147,71 @@
    "src": "bitquery",
    "top": 100,
    "infra": 16,
-   "price": 0.00982018
+   "price": 0.0093374
   },
   "MSETH": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 12,
-   "price": 2378.16
+   "price": 2375.84
   },
   "KTA": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 25,
-   "price": 0.082078
+   "price": 0.081962
   },
   "BNKR": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 16,
-   "price": 0.0004568
+   "price": 0.00045379
   },
   "B3": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 24,
-   "price": 0.00081275
+   "price": 0.00082216
   },
   "DRB": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 8,
-   "price": 0.00021596
+   "price": 0.00021876
   }
  },
  "errors": [],
  "tags": {
-  "WHALE": 630,
-  "OG": 319,
-  "CT": 26,
+  "WHALE": 632,
+  "OG": 320,
+  "CT": 25,
   "SNIPE": 21,
-  "DIAMOND": 244
+  "DIAMOND": 247
  },
- "finished": "2026-09-26T13:14:44.540Z",
+ "finished": "2026-09-26T15:04:58.872Z",
  "budgets": {
   "arkham": 0,
-  "profile": 395,
+  "profile": 386,
   "frontrun": 150,
   "rpc": 396,
   "funding": 0
  },
  "webhook": {
   "have": 309,
-  "want": 309,
-  "added": 0,
-  "removed": 1,
+  "want": 310,
+  "added": 1,
+  "removed": 0,
   "audited": 309,
-  "evicted": 1,
+  "evicted": 0,
   "noisy": 194
  },
  "alertTx": {
   "looked": 40,
-  "found": 30
+  "found": 27
  }
 }
