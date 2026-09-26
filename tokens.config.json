@@ -11,9 +11,9 @@
       "exclude": [
         "0x7061f0B28F5a95AaE717905Bb59AA4e08C165268"
       ],
-      "cap": 55280169,
+      "cap": 56406656,
       "tier": "hot",
-      "rank": 14
+      "rank": 13
     },
     {
       "sym": "TOSHI",
@@ -22,7 +22,7 @@
       "contract": "0xac1bd2486aaf3b5c0fc3fd868558b082a531b2b4",
       "coingecko": "toshi",
       "exclude": [],
-      "cap": 54884456,
+      "cap": 53736821,
       "tier": "hot",
       "rank": 15
     },
@@ -46,7 +46,7 @@
       "coingecko": "aerodrome-finance",
       "exclude": [],
       "tier": "hot",
-      "cap": 698505619,
+      "cap": 891025143,
       "rank": 2,
       "trending": true
     },
@@ -58,7 +58,7 @@
       "coingecko": "virtual-protocol",
       "exclude": [],
       "tier": "hot",
-      "cap": 501528115,
+      "cap": 508388501,
       "rank": 3
     },
     {
@@ -91,7 +91,7 @@
       "tier": "hot",
       "coingecko": "edel",
       "trending": true,
-      "cap": 14937933,
+      "cap": 19961726,
       "rank": 23
     },
     {
@@ -101,7 +101,7 @@
       "contract": "0xacfe6019ed1a7dc6f7b508c02d1b04ec88cc21bf",
       "exclude": [],
       "auto": true,
-      "cap": 1486327011,
+      "cap": 1462868306,
       "coingecko": "venice-token",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/54023/large/VVV_Token_Transparent.png?1741856877",
       "trending": true,
@@ -115,7 +115,7 @@
       "contract": "0x9d0e8f5b25384c7310cb8c6ae32c8fbeb645d083",
       "exclude": [],
       "auto": true,
-      "cap": 435231895,
+      "cap": 430570111,
       "coingecko": "derive",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/52889/large/Token_Logo.png?1734601695",
       "tier": "hot",
@@ -128,7 +128,7 @@
       "contract": "0xa4a2e2ca3fbfe21aed83471d28b6f65a233c6e00",
       "exclude": [],
       "auto": true,
-      "cap": 272506001,
+      "cap": 284596112,
       "coingecko": "ribbita-by-virtuals",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/54970/large/Untitled_design.png?1742941268",
       "trending": true,
@@ -142,11 +142,24 @@
       "contract": "0x1b4617734c43f6159f3a70b7e06d883647512778",
       "exclude": [],
       "auto": true,
-      "cap": 126372613,
+      "cap": 136332827,
       "coingecko": "stp-network",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/8713/large/awe-network.jpg?1747816016",
       "tier": "hot",
       "rank": 6
+    },
+    {
+      "sym": "CHIP",
+      "name": "Chip",
+      "color": "#F43F5E",
+      "contract": "0x0c1c1c109fe34733fca54b82d7b46b75cfb71f6e",
+      "exclude": [],
+      "auto": true,
+      "cap": 97037210,
+      "coingecko": "chip-2",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/102171777/large/CHIP_Token_Logo_Large.png?1776777444",
+      "tier": "hot",
+      "rank": 7
     },
     {
       "sym": "MAG7SSI",
@@ -155,11 +168,11 @@
       "contract": "0x9e6a46f294bb67c20f1d1e7afb0bbef614403b55",
       "exclude": [],
       "auto": true,
-      "cap": 94455519,
+      "cap": 94434171,
       "coingecko": "mag7-ssi",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/52962/large/mag7.png?1734863745",
       "tier": "hot",
-      "rank": 7
+      "rank": 8
     },
     {
       "sym": "O",
@@ -168,11 +181,11 @@
       "contract": "0x182fa643e5f29d5eca75e7b9cf9336a3fe4620b2",
       "exclude": [],
       "auto": true,
-      "cap": 86032051,
+      "cap": 86279583,
       "coingecko": "o1-exchange",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/102173974/large/o1.png?1781654491",
       "tier": "hot",
-      "rank": 8
+      "rank": 9
     },
     {
       "sym": "DIEM",
@@ -181,11 +194,11 @@
       "contract": "0xf4d97f2da56e8c3098f3a8d538db630a2606a024",
       "exclude": [],
       "auto": true,
-      "cap": 75479121,
+      "cap": 73971782,
       "coingecko": "diem",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/68436/large/DIEM_SeaMid_-_200px.png?1755734213",
       "tier": "hot",
-      "rank": 9
+      "rank": 10
     },
     {
       "sym": "NOCK",
@@ -194,37 +207,11 @@
       "contract": "0x9b5e262cf9bb04869ab40b19af91d2dc85761722",
       "exclude": [],
       "auto": true,
-      "cap": 73078617,
+      "cap": 73231646,
       "coingecko": "nockchain",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/68474/large/GrCcG9N9_400x400.jpg?1755845184",
       "tier": "hot",
-      "rank": 10
-    },
-    {
-      "sym": "BIO",
-      "name": "BIO",
-      "color": "#A3E635",
-      "contract": "0x226a2fa2556c48245e57cd1cba4c6c9e67077dd2",
-      "exclude": [],
-      "auto": true,
-      "cap": 65819788,
-      "coingecko": "bio-protocol",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/53022/large/bio.jpg?1735011002",
-      "tier": "hot",
       "rank": 11
-    },
-    {
-      "sym": "FRENPET",
-      "name": "Fren Pet",
-      "color": "#F43F5E",
-      "contract": "0xff0c532fdb8cd566ae169c1cb157ff2bdc83e105",
-      "exclude": [],
-      "auto": true,
-      "cap": 59437308,
-      "coingecko": "frenpet",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/33022/large/token.png?1700274697",
-      "tier": "hot",
-      "rank": 12
     },
     {
       "sym": "OMI",
@@ -233,11 +220,24 @@
       "contract": "0x3792dbdd07e87413247df995e692806aa13d3299",
       "exclude": [],
       "auto": true,
-      "cap": 58028791,
+      "cap": 63332924,
       "coingecko": "ecomi",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/4428/large/ECOMI.png?1696505023",
       "tier": "hot",
-      "rank": 13
+      "rank": 12
+    },
+    {
+      "sym": "FRENPET",
+      "name": "Fren Pet",
+      "color": "#F43F5E",
+      "contract": "0xff0c532fdb8cd566ae169c1cb157ff2bdc83e105",
+      "exclude": [],
+      "auto": true,
+      "cap": 55822094,
+      "coingecko": "frenpet",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/33022/large/token.png?1700274697",
+      "tier": "hot",
+      "rank": 14
     },
     {
       "sym": "BIM",
@@ -246,11 +246,24 @@
       "contract": "0x555fff48549c1a25a723bd8e7ed10870d82e8379",
       "exclude": [],
       "auto": true,
-      "cap": 52723114,
+      "cap": 52964839,
       "coingecko": "bim-2",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/54860/large/bim-fi.jpg?1742179842",
       "tier": "hot",
       "rank": 16
+    },
+    {
+      "sym": "AUKI",
+      "name": "Auki Token",
+      "color": "#A3E635",
+      "contract": "0xf9569cfb8fd265e91aa478d86ae8c78b8af55df4",
+      "exclude": [],
+      "auto": true,
+      "cap": 52083040,
+      "coingecko": "auki-labs",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/39811/large/COINGECKO-200-x-200_%281%29.png?1724166209",
+      "tier": "hot",
+      "rank": 17
     },
     {
       "sym": "MSETH",
@@ -259,11 +272,11 @@
       "contract": "0x7ba6f01772924a82d9626c126347a28299e98c98",
       "exclude": [],
       "auto": true,
-      "cap": 50409809,
+      "cap": 50557444,
       "coingecko": "metronome-synth-eth",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/67512/large/metronome_mseth.png?1753017508",
       "tier": "hot",
-      "rank": 17
+      "rank": 18
     },
     {
       "sym": "KTA",
@@ -272,34 +285,24 @@
       "contract": "0xc0634090f2fe6c6d75e61be2b949464abb498973",
       "exclude": [],
       "auto": true,
-      "cap": 48655953,
+      "cap": 49590410,
       "coingecko": "keeta",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/54723/large/2025-03-05_22.53.06.jpg?1741234207",
       "trending": true,
       "tier": "hot",
-      "rank": 18
-    },
-    {
-      "sym": "MOCA",
-      "name": "Moca",
-      "color": "#8B5CF6",
-      "contract": "0x2b11834ed1feaed4b4b3a86a6f571315e25a884d",
-      "exclude": [],
-      "auto": true,
-      "cap": 42977986,
-      "coingecko": "mocaverse",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/37812/large/moca.jpg?1720693068",
-      "tier": "hot",
       "rank": 19
     },
     {
-      "sym": "CODEFORMER",
-      "name": "CODEFORMER github.com/sczhou/CODEFORMER",
-      "color": "#A78BFA",
-      "contract": "0xadfa25cb0f21e83a23c07d29a7bf30ab731d1918",
+      "sym": "BNKR",
+      "name": "BankrCoin",
+      "color": "#F2C14E",
+      "contract": "0x22af33fe49fd1fa80c7149773dde5890d3c76f3b",
       "exclude": [],
       "auto": true,
-      "cap": 42441247,
+      "cap": 46403985,
+      "coingecko": "bankercoin-2",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/52626/large/bankr-static.png?1736405365",
+      "trending": true,
       "tier": "hot",
       "rank": 20
     },
@@ -310,7 +313,7 @@
       "contract": "0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3",
       "exclude": [],
       "auto": true,
-      "cap": 41972749,
+      "cap": 38453318,
       "coingecko": "b3",
       "logoUrl": "https://coin-images.coingecko.com/coins/images/54287/large/B3.png?1739001374",
       "trending": true,
@@ -318,33 +321,19 @@
       "rank": 21
     },
     {
-      "sym": "SPIKE",
-      "name": "SPIKE",
-      "color": "#4C8DFF",
-      "contract": "0xb20000000000000000000070f6c1a66d7c1e4d01",
+      "sym": "DRB",
+      "name": "DebtReliefBot",
+      "color": "#0EA5E9",
+      "contract": "0x3ec2156d4c0a9cbdab4a016633b7bcf6a8d68ea2",
       "exclude": [],
       "auto": true,
-      "cap": 871251,
-      "coingecko": "spike-5",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/102178759/large/spike.jpg?1790220697",
+      "cap": 21925350,
+      "coingecko": "debtreliefbot",
+      "logoUrl": "https://coin-images.coingecko.com/coins/images/54784/large/1000143570.jpg?1759054009",
       "trending": true,
       "tier": "hot",
       "rank": 22
-    },
-    {
-      "sym": "BNKR",
-      "name": "BankrCoin",
-      "color": "#F2C14E",
-      "contract": "0x22af33fe49fd1fa80c7149773dde5890d3c76f3b",
-      "exclude": [],
-      "auto": true,
-      "cap": 40347386,
-      "coingecko": "bankercoin-2",
-      "logoUrl": "https://coin-images.coingecko.com/coins/images/52626/large/bankr-static.png?1736405365",
-      "trending": true,
-      "tier": "hot",
-      "rank": 23
     }
   ],
-  "discovered_at": "2026-09-25T05:15:29.972Z"
+  "discovered_at": "2026-09-26T05:50:25.378Z"
 }
