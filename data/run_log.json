@@ -1,5 +1,5 @@
 {
- "started": "2026-09-26T11:22:26.388Z",
+ "started": "2026-09-26T12:27:39.742Z",
  "tier": "hot",
  "tokens": {
   "BRETT": {
@@ -7,133 +7,133 @@
    "src": "bitquery",
    "top": 100,
    "infra": 35,
-   "price": 0.00598373
+   "price": 0.00598752
   },
   "TOSHI": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 46,
-   "price": 0.00013368
+   "price": 0.00013339
   },
   "BASECAT": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 6,
-   "price": 0.01729612
+   "price": 0.01698996
   },
   "AERO": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 58,
-   "price": 0.904066
+   "price": 0.928092
   },
   "VIRTUAL": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 54,
-   "price": 0.790767
+   "price": 0.789242
   },
   "SR": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 2,
-   "price": 0.00110011
+   "price": 0.00109774
   },
   "BPAD": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 1,
-   "price": 0.00007634
+   "price": 0.00007679
   },
   "EDEL": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 4,
-   "price": 0.03006794
+   "price": 0.03019269
   },
   "VVV": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 56,
-   "price": 29.81
+   "price": 29.77
   },
   "DRV": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 6,
-   "price": 0.421539
+   "price": 0.419281
   },
   "TIBBIR": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 4,
-   "price": 0.293131
+   "price": 0.289765
   },
   "AWE": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 36,
-   "price": 0.071408
+   "price": 0.07039
   },
   "CHIP": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 19,
-   "price": 0.04891431
+   "price": 0.04898227
   },
   "MAG7SSI": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 10,
-   "price": 0.564561
+   "price": 0.564477
   },
   "O": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 15,
-   "price": 0.543928
+   "price": 0.544371
   },
   "DIEM": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 23,
-   "price": 1986.29
+   "price": 1982.66
   },
   "NOCK": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 5,
-   "price": 0.0309725
+   "price": 0.03138213
   },
   "OMI": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 18,
-   "price": 0.00022989
+   "price": 0.00022973
   },
   "FRENPET": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 3,
-   "price": 7.59
+   "price": 7.58
   },
   "BIM": {
    "ok": true,
@@ -147,62 +147,62 @@
    "src": "bitquery",
    "top": 100,
    "infra": 16,
-   "price": 0.00968555
+   "price": 0.00982018
   },
   "MSETH": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 12,
-   "price": 2371.07
+   "price": 2378.16
   },
   "KTA": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 25,
-   "price": 0.082186
+   "price": 0.082078
   },
   "BNKR": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 16,
-   "price": 0.00045561
+   "price": 0.0004568
   },
   "B3": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 24,
-   "price": 0.00081037
+   "price": 0.00081275
   },
   "DRB": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 8,
-   "price": 0.00021294
+   "price": 0.00021596
   }
  },
  "errors": [],
  "tags": {
-  "WHALE": 629,
-  "OG": 320,
+  "WHALE": 630,
+  "OG": 319,
   "CT": 26,
   "SNIPE": 21,
-  "DIAMOND": 245
+  "DIAMOND": 244
  },
- "finished": "2026-09-26T12:26:17.079Z",
+ "finished": "2026-09-26T13:14:44.540Z",
  "budgets": {
   "arkham": 0,
-  "profile": 73,
+  "profile": 395,
   "frontrun": 150,
   "rpc": 396,
   "funding": 0
  },
  "webhook": {
-  "have": 310,
+  "have": 309,
   "want": 309,
   "added": 0,
   "removed": 1,
