@@ -1,5 +1,5 @@
 {
- "started": "2026-09-25T23:19:31.835Z",
+ "started": "2026-09-26T00:26:03.177Z",
  "tier": "hot",
  "tokens": {
   "BRETT": {
@@ -7,133 +7,133 @@
    "src": "bitquery",
    "top": 100,
    "infra": 35,
-   "price": 0.00577946
+   "price": 0.00579027
   },
   "TOSHI": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 46,
-   "price": 0.00012945
+   "price": 0.00012963
   },
   "BASECAT": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
-   "infra": 6,
-   "price": 0.01674995
+   "infra": 5,
+   "price": 0.01682382
   },
   "AERO": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 59,
-   "price": 0.841369
+   "price": 0.844252
   },
   "VIRTUAL": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 57,
-   "price": 0.79741
+   "price": 0.801954
   },
   "SR": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 2,
-   "price": 0.00130181
+   "price": 0.00130899
   },
   "BPAD": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 1,
-   "price": 0.00006973
+   "price": 0.00006962
   },
   "EDEL": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 4,
-   "price": 0.02927394
+   "price": 0.02962057
   },
   "VVV": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
-   "infra": 53,
-   "price": 30.28
+   "infra": 54,
+   "price": 30.41
   },
   "DRV": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 6,
-   "price": 0.441264
+   "price": 0.435397
   },
   "TIBBIR": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 4,
-   "price": 0.272547
+   "price": 0.2775
   },
   "AWE": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 36,
-   "price": 0.065881
+   "price": 0.065952
   },
   "MAG7SSI": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 10,
-   "price": 0.565092
+   "price": 0.56401
   },
   "O": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 15,
-   "price": 0.545357
+   "price": 0.547511
   },
   "DIEM": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
-   "infra": 24,
-   "price": 2049.26
+   "infra": 23,
+   "price": 2036.98
   },
   "NOCK": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 5,
-   "price": 0.03056104
+   "price": 0.03123842
   },
   "BIO": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 35,
-   "price": 0.03296599
+   "price": 0.03305197
   },
   "FRENPET": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 3,
-   "price": 9.23
+   "price": 8.27
   },
   "OMI": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 18,
-   "price": 0.00023438
+   "price": 0.00023539
   },
   "BIM": {
    "ok": true,
@@ -147,65 +147,65 @@
    "src": "bitquery",
    "top": 100,
    "infra": 12,
-   "price": 2381.3
+   "price": 2384.55
   },
   "KTA": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 25,
-   "price": 0.082506
+   "price": 0.081847
   },
   "MOCA": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 20,
-   "price": 0.01047948
+   "price": 0.01057939
   },
   "CODEFORMER": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 0,
-   "price": 0.03678
+   "price": 0.03643
   },
   "B3": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
-   "infra": 24,
-   "price": 0.00085407
+   "infra": 25,
+   "price": 0.00084142
   },
   "SPIKE": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 1,
-   "price": 0.00054607
+   "price": 0.00051304
   },
   "BNKR": {
    "ok": true,
    "src": "bitquery",
    "top": 100,
    "infra": 16,
-   "price": 0.00047557
+   "price": 0.00046213
   }
  },
  "errors": [],
  "tags": {
   "WHALE": 629,
-  "OG": 322,
+  "OG": 323,
   "CT": 25,
   "SNIPE": 21,
-  "DIAMOND": 254
+  "DIAMOND": 253
  },
- "finished": "2026-09-26T00:24:47.016Z",
+ "finished": "2026-09-26T01:22:48.586Z",
  "budgets": {
   "arkham": 0,
-  "profile": 60,
+  "profile": 141,
   "frontrun": 150,
-  "rpc": 392,
+  "rpc": 376,
   "funding": 0
  },
  "webhook": {
@@ -219,6 +219,6 @@
  },
  "alertTx": {
   "looked": 40,
-  "found": 30
+  "found": 28
  }
 }
